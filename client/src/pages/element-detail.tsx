@@ -283,13 +283,49 @@ export default function ElementDetail() {
           yPos += 3;
         }
         
-        // Performance Measures
+        // Performance Measures Overview
         if (process.performanceMeasureContent) {
           checkNewPage(20);
           doc.setFont('helvetica', 'bold');
-          addJustifiedText('Performance Measures:', 20, 9);
+          addJustifiedText('Performance Measures Overview:', 20, 9);
           doc.setFont('helvetica', 'normal');
           addJustifiedText(process.performanceMeasureContent, 25, 8, 165, 5);
+          yPos += 3;
+        }
+
+        // Individual Performance Measures
+        if (process.performanceMeasures && process.performanceMeasures.length > 0) {
+          checkNewPage(30);
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText(`Performance Measures (${process.performanceMeasures.length} measures):`, 20, 9);
+          yPos += 2;
+          
+          process.performanceMeasures.forEach((measure, measureIndex) => {
+            checkNewPage(20);
+            
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText(`${measureIndex + 1}. ${measure.measureName}`, 25, 8, 165, 5);
+            
+            doc.setFont('helvetica', 'normal');
+            
+            if (measure.formula) {
+              addJustifiedText(`Formula: ${measure.formula}`, 30, 8, 165, 10);
+            }
+            
+            if (measure.target) {
+              addJustifiedText(`Target: ${measure.target}`, 30, 8, 165, 10);
+            }
+            
+            if (measure.frequency) {
+              addJustifiedText(`Frequency: ${measure.frequency}`, 30, 8, 165, 10);
+            }
+            
+            if (measure.source) {
+              addJustifiedText(`Source: ${measure.source}`, 30, 8, 165, 10);
+            }
+            
+            yPos += 2;
+          });
           yPos += 3;
         }
         
