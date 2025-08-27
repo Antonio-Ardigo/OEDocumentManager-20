@@ -7,7 +7,8 @@ import {
   Folder, 
   Settings, 
   Cog,
-  LogOut
+  LogOut,
+  Network
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -17,6 +18,7 @@ export default function Sidebar() {
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "All Processes", href: "/processes", icon: Folder },
+    { name: "Mind Map", href: "/mindmap", icon: Network },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
