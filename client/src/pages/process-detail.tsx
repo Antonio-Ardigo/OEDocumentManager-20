@@ -261,9 +261,6 @@ export default function ProcessDetail() {
                 steps={process.steps || []}
               />
 
-              {/* TABLE OF CONTENTS Sections */}
-              <ProcessContentSections process={process} />
-
               {/* Process Steps */}
               <Card>
                 <CardHeader>
@@ -315,6 +312,9 @@ export default function ProcessDetail() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* TABLE OF CONTENTS Sections */}
+              <ProcessContentSections process={process} />
 
               {/* Performance Measures */}
               <Card>
