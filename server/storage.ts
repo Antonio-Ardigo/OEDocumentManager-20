@@ -5,6 +5,8 @@ import {
   processSteps,
   performanceMeasures,
   documentVersions,
+  strategicGoals,
+  elementPerformanceMetrics,
   type User,
   type UpsertUser,
   type OeElement,
@@ -17,6 +19,10 @@ import {
   type InsertPerformanceMeasure,
   type DocumentVersion,
   type InsertDocumentVersion,
+  type StrategicGoal,
+  type InsertStrategicGoal,
+  type ElementPerformanceMetric,
+  type InsertElementPerformanceMetric,
   type OeProcessWithDetails,
   type OeElementWithProcesses,
 } from "@shared/schema";
@@ -361,6 +367,89 @@ export class DatabaseStorage implements IStorage {
 
   async deletePerformanceMeasure(id: string): Promise<void> {
     await db.delete(performanceMeasures).where(eq(performanceMeasures.id, id));
+  }
+
+  // Strategic Goals operations
+  async getAllStrategicGoals(): Promise<StrategicGoal[]> {
+    return await db.select().from(strategicGoals).orderBy(strategicGoals.category, strategicGoals.priority);
+  }
+
+  async getStrategicGoalsByElement(elementId: string): Promise<StrategicGoal[]> {
+    return await db
+      .select()
+      .from(strategicGoals)
+      .where(eq(strategicGoals.elementId, elementId))
+      .orderBy(strategicGoals.category, strategicGoals.priority);
+  }
+
+  async createStrategicGoal(goal: InsertStrategicGoal): Promise<StrategicGoal> {
+    const [newGoal] = await db
+      .insert(strategicGoals)
+      .values(goal)
+      .returning();
+    return newGoal;
+  }
+
+  async updateStrategicGoal(id: string, goal: Partial<InsertStrategicGoal>): Promise<StrategicGoal> {
+    const [updatedGoal] = await db
+      .update(strategicGoals)
+      .set({ ...goal, updatedAt: new Date() })
+      .where(eq(strategicGoals.id, id))
+      .returning();
+    return updatedGoal;
+  }
+
+  async deleteStrategicGoal(id: string): Promise<void> {
+    await db.delete(strategicGoals).where(eq(strategicGoals.id, id));
+  }
+
+  // Element Performance Metrics operations
+  async getAllElementPerformanceMetrics(): Promise<ElementPerformanceMetric[]> {
+    return await db.select().from(elementPerformanceMetrics).orderBy(elementPerformanceMetrics.metricName);
+  }
+
+  async getElementPerformanceMetricsByElement(elementId: string): Promise<ElementPerformanceMetric[]> {
+    return await db
+      .select()
+      .from(elementPerformanceMetrics)
+      .where(eq(elementPerformanceMetrics.elementId, elementId))
+      .orderBy(elementPerformanceMetrics.metricName);
+  }
+
+  async createElementPerformanceMetric(metric: InsertElementPerformanceMetric): Promise<ElementPerformanceMetric> {
+    const [newMetric] = await db
+      .insert(elementPerformanceMetrics)
+      .values({
+        ...metric,
+        percentage: Math.round((metric.currentValue / metric.targetValue) * 100)
+      })
+      .returning();
+    return newMetric;
+  }
+
+  async updateElementPerformanceMetric(id: string, metric: Partial<InsertElementPerformanceMetric>): Promise<ElementPerformanceMetric> {
+    let updateData = { ...metric, updatedAt: new Date() };
+    
+    // Recalculate percentage if values changed
+    if (metric.currentValue !== undefined || metric.targetValue !== undefined) {
+      const existing = await db.select().from(elementPerformanceMetrics).where(eq(elementPerformanceMetrics.id, id)).limit(1);
+      if (existing.length > 0) {
+        const current = metric.currentValue ?? existing[0].currentValue;
+        const target = metric.targetValue ?? existing[0].targetValue;
+        updateData.percentage = Math.round((current / target) * 100);
+      }
+    }
+    
+    const [updatedMetric] = await db
+      .update(elementPerformanceMetrics)
+      .set(updateData)
+      .where(eq(elementPerformanceMetrics.id, id))
+      .returning();
+    return updatedMetric;
+  }
+
+  async deleteElementPerformanceMetric(id: string): Promise<void> {
+    await db.delete(elementPerformanceMetrics).where(eq(elementPerformanceMetrics.id, id));
   }
 
   // Document Version operations

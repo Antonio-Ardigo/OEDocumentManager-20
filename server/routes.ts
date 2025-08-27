@@ -8,6 +8,8 @@ import {
   insertProcessStepSchema,
   insertPerformanceMeasureSchema,
   insertDocumentVersionSchema,
+  insertStrategicGoalSchema,
+  insertElementPerformanceMetricSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -334,6 +336,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating document version:", error);
       res.status(500).json({ message: "Failed to create document version" });
+    }
+  });
+
+  // Strategic Goals routes
+  app.get('/api/strategic-goals', isAuthenticated, async (req, res) => {
+    try {
+      const goals = await storage.getAllStrategicGoals();
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching strategic goals:", error);
+      res.status(500).json({ message: "Failed to fetch strategic goals" });
+    }
+  });
+
+  app.get('/api/strategic-goals/element/:elementId', isAuthenticated, async (req, res) => {
+    try {
+      const goals = await storage.getStrategicGoalsByElement(req.params.elementId);
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching strategic goals for element:", error);
+      res.status(500).json({ message: "Failed to fetch strategic goals" });
+    }
+  });
+
+  app.post('/api/strategic-goals', isAuthenticated, async (req, res) => {
+    try {
+      const goalData = insertStrategicGoalSchema.parse(req.body);
+      const goal = await storage.createStrategicGoal(goalData);
+      res.status(201).json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating strategic goal:", error);
+      res.status(500).json({ message: "Failed to create strategic goal" });
+    }
+  });
+
+  app.put('/api/strategic-goals/:id', isAuthenticated, async (req, res) => {
+    try {
+      const goalData = insertStrategicGoalSchema.partial().parse(req.body);
+      const goal = await storage.updateStrategicGoal(req.params.id, goalData);
+      res.json(goal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating strategic goal:", error);
+      res.status(500).json({ message: "Failed to update strategic goal" });
+    }
+  });
+
+  app.delete('/api/strategic-goals/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteStrategicGoal(req.params.id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting strategic goal:", error);
+      res.status(500).json({ message: "Failed to delete strategic goal" });
+    }
+  });
+
+  // Element Performance Metrics routes
+  app.get('/api/performance-metrics', isAuthenticated, async (req, res) => {
+    try {
+      const metrics = await storage.getAllElementPerformanceMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching performance metrics:", error);
+      res.status(500).json({ message: "Failed to fetch performance metrics" });
+    }
+  });
+
+  app.get('/api/performance-metrics/element/:elementId', isAuthenticated, async (req, res) => {
+    try {
+      const metrics = await storage.getElementPerformanceMetricsByElement(req.params.elementId);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching performance metrics for element:", error);
+      res.status(500).json({ message: "Failed to fetch performance metrics" });
+    }
+  });
+
+  app.post('/api/performance-metrics', isAuthenticated, async (req, res) => {
+    try {
+      const metricData = insertElementPerformanceMetricSchema.parse(req.body);
+      const metric = await storage.createElementPerformanceMetric(metricData);
+      res.status(201).json(metric);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating performance metric:", error);
+      res.status(500).json({ message: "Failed to create performance metric" });
+    }
+  });
+
+  app.put('/api/performance-metrics/:id', isAuthenticated, async (req, res) => {
+    try {
+      const metricData = insertElementPerformanceMetricSchema.partial().parse(req.body);
+      const metric = await storage.updateElementPerformanceMetric(req.params.id, metricData);
+      res.json(metric);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating performance metric:", error);
+      res.status(500).json({ message: "Failed to update performance metric" });
+    }
+  });
+
+  app.delete('/api/performance-metrics/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteElementPerformanceMetric(req.params.id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting performance metric:", error);
+      res.status(500).json({ message: "Failed to delete performance metric" });
     }
   });
 

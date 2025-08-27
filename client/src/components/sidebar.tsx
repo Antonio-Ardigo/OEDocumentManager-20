@@ -8,7 +8,8 @@ import {
   Settings, 
   Cog,
   LogOut,
-  Network
+  Network,
+  BarChart3
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -19,6 +20,7 @@ export default function Sidebar() {
     { name: "Dashboard", href: "/", icon: Home },
     { name: "All Processes", href: "/processes", icon: Folder },
     { name: "Mind Map", href: "/mindmap", icon: Network },
+    { name: "Balanced Scorecard", href: "/scorecard", icon: BarChart3 },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 

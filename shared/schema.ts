@@ -108,9 +108,40 @@ export const documentVersions = pgTable("document_versions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Strategic Goals table for Balanced Scorecard
+export const strategicGoals = pgTable("strategic_goals", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  elementId: uuid("element_id").references(() => oeElements.id, { onDelete: 'cascade' }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  targetValue: integer("target_value").notNull(),
+  currentValue: integer("current_value").default(0),
+  unit: varchar("unit", { length: 50 }),
+  category: varchar("category", { length: 50 }).notNull(), // Financial, Customer, Internal Process, Learning & Growth
+  priority: varchar("priority", { length: 20 }).default("Medium"), // High, Medium, Low
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Element Performance Metrics table for actual performance values
+export const elementPerformanceMetrics = pgTable("element_performance_metrics", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  elementId: uuid("element_id").references(() => oeElements.id, { onDelete: 'cascade' }),
+  metricName: varchar("metric_name", { length: 255 }).notNull(),
+  currentValue: integer("current_value").notNull(),
+  targetValue: integer("target_value").notNull(),
+  unit: varchar("unit", { length: 50 }),
+  trend: varchar("trend", { length: 20 }).default("stable"), // up, down, stable
+  percentage: integer("percentage").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const oeElementsRelations = relations(oeElements, ({ many }) => ({
   processes: many(oeProcesses),
+  strategicGoals: many(strategicGoals),
+  performanceMetrics: many(elementPerformanceMetrics),
 }));
 
 export const oeProcessesRelations = relations(oeProcesses, ({ one, many }) => ({
@@ -156,6 +187,20 @@ export const documentVersionsRelations = relations(documentVersions, ({ one }) =
   }),
 }));
 
+export const strategicGoalsRelations = relations(strategicGoals, ({ one }) => ({
+  element: one(oeElements, {
+    fields: [strategicGoals.elementId],
+    references: [oeElements.id],
+  }),
+}));
+
+export const elementPerformanceMetricsRelations = relations(elementPerformanceMetrics, ({ one }) => ({
+  element: one(oeElements, {
+    fields: [elementPerformanceMetrics.elementId],
+    references: [oeElements.id],
+  }),
+}));
+
 // Insert schemas
 export const insertOeElementSchema = createInsertSchema(oeElements).omit({
   id: true,
@@ -186,6 +231,18 @@ export const insertDocumentVersionSchema = createInsertSchema(documentVersions).
   createdAt: true,
 });
 
+export const insertStrategicGoalSchema = createInsertSchema(strategicGoals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertElementPerformanceMetricSchema = createInsertSchema(elementPerformanceMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -199,6 +256,10 @@ export type PerformanceMeasure = typeof performanceMeasures.$inferSelect;
 export type InsertPerformanceMeasure = z.infer<typeof insertPerformanceMeasureSchema>;
 export type DocumentVersion = typeof documentVersions.$inferSelect;
 export type InsertDocumentVersion = z.infer<typeof insertDocumentVersionSchema>;
+export type StrategicGoal = typeof strategicGoals.$inferSelect;
+export type InsertStrategicGoal = z.infer<typeof insertStrategicGoalSchema>;
+export type ElementPerformanceMetric = typeof elementPerformanceMetrics.$inferSelect;
+export type InsertElementPerformanceMetric = z.infer<typeof insertElementPerformanceMetricSchema>;
 
 // Extended types for API responses
 export type OeProcessWithDetails = OeProcess & {
@@ -211,4 +272,6 @@ export type OeProcessWithDetails = OeProcess & {
 
 export type OeElementWithProcesses = OeElement & {
   processes?: OeProcess[];
+  strategicGoals?: StrategicGoal[];
+  performanceMetrics?: ElementPerformanceMetric[];
 };
