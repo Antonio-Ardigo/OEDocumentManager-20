@@ -71,6 +71,19 @@ export interface IStorage {
   }>;
 }
 
+// Helper function for natural alphanumeric sorting
+function naturalSort(a: string, b: string): number {
+  const normalize = (str: string) => {
+    // Split string into parts of letters and numbers
+    return str.replace(/(\d+)/g, (match) => {
+      // Pad numbers with leading zeros for proper sorting
+      return match.padStart(10, '0');
+    });
+  };
+  
+  return normalize(a).localeCompare(normalize(b));
+}
+
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
@@ -95,21 +108,27 @@ export class DatabaseStorage implements IStorage {
 
   // OE Element operations
   async getAllOeElements(): Promise<OeElementWithProcesses[]> {
-    return await db.query.oeElements.findMany({
+    const elements = await db.query.oeElements.findMany({
       with: {
-        processes: {
-          orderBy: [sql`${oeProcesses.processNumber} COLLATE "C" ASC`],
-        },
+        processes: true, // Remove orderBy from query
       },
       orderBy: [oeElements.elementNumber],
     });
+    
+    // Sort processes using natural sorting
+    elements.forEach(element => {
+      if (element.processes) {
+        element.processes.sort((a, b) => naturalSort(a.processNumber, b.processNumber));
+      }
+    });
+    
+    return elements;
   }
 
   async getOeElementsForMindMap(): Promise<OeElementWithProcesses[]> {
-    return await db.query.oeElements.findMany({
+    const elements = await db.query.oeElements.findMany({
       with: {
         processes: {
-          orderBy: [sql`${oeProcesses.processNumber} COLLATE "C" ASC`],
           with: {
             steps: {
               orderBy: [processSteps.stepNumber],
@@ -119,14 +138,22 @@ export class DatabaseStorage implements IStorage {
       },
       orderBy: [oeElements.elementNumber],
     });
+    
+    // Sort processes using natural sorting
+    elements.forEach(element => {
+      if (element.processes) {
+        element.processes.sort((a, b) => naturalSort(a.processNumber, b.processNumber));
+      }
+    });
+    
+    return elements;
   }
 
   async getOeElement(id: string): Promise<OeElementWithProcesses | undefined> {
-    return await db.query.oeElements.findFirst({
+    const element = await db.query.oeElements.findFirst({
       where: eq(oeElements.id, id),
       with: {
         processes: {
-          orderBy: [sql`${oeProcesses.processNumber} COLLATE "C" ASC`],
           with: {
             steps: {
               orderBy: [processSteps.stepNumber],
@@ -138,6 +165,13 @@ export class DatabaseStorage implements IStorage {
         },
       },
     });
+    
+    // Sort processes using natural sorting
+    if (element?.processes) {
+      element.processes.sort((a, b) => naturalSort(a.processNumber, b.processNumber));
+    }
+    
+    return element;
   }
 
   async createOeElement(element: InsertOeElement): Promise<OeElement> {
@@ -187,7 +221,7 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    return await db.query.oeProcesses.findMany({
+    const processes = await db.query.oeProcesses.findMany({
       where: conditions.length > 0 ? and(...conditions) : undefined,
       with: {
         element: true,
@@ -201,8 +235,12 @@ export class DatabaseStorage implements IStorage {
         },
         createdByUser: true,
       },
-      orderBy: [sql`${oeProcesses.processNumber} COLLATE "C" ASC`],
     });
+    
+    // Sort processes using natural sorting
+    processes.sort((a, b) => naturalSort(a.processNumber, b.processNumber));
+    
+    return processes;
   }
 
   async getOeProcess(id: string): Promise<OeProcessWithDetails | undefined> {
