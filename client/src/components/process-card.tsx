@@ -18,9 +18,10 @@ import type { OeElementWithProcesses } from "@shared/schema";
 
 interface ProcessCardProps {
   element: OeElementWithProcesses;
+  viewMode?: "grid" | "list";
 }
 
-export default function ProcessCard({ element }: ProcessCardProps) {
+export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardProps) {
   const getElementIcon = (elementNumber: number) => {
     switch (elementNumber) {
       case 1: return Crown;
@@ -74,6 +75,66 @@ export default function ProcessCard({ element }: ProcessCardProps) {
 
   // Find if this is a featured element (e.g., Asset Management)
   const isFeatured = element.elementNumber === 4;
+
+  if (viewMode === "list") {
+    return (
+      <Link href={`/element/${element.id}`}>
+        <Card 
+          className={`process-card cursor-pointer transition-all duration-200 hover:shadow-md ${
+            isFeatured ? 'border-l-4 border-l-primary' : ''
+          }`}
+          data-testid={`process-card-${element.elementNumber}`}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
+                  <Icon className="text-xl" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="text-lg font-semibold" data-testid="element-title">
+                      OE Element No. {element.elementNumber}
+                    </h3>
+                    {isFeatured && (
+                      <Star className="w-4 h-4 text-primary fill-current" />
+                    )}
+                  </div>
+                  <h4 className="text-primary font-medium mb-1" data-testid="element-name">
+                    {element.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground" data-testid="element-description">
+                    {element.description || 'No description available'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                <div className="text-center">
+                  <div className="font-medium" data-testid="process-count">
+                    {processCount}
+                  </div>
+                  <div>Process{processCount !== 1 ? 'es' : ''}</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium" data-testid="progress-percentage">
+                    {progressPercentage}%
+                  </div>
+                  <div>Complete</div>
+                </div>
+                <Badge className={statusColor}>
+                  {statusText}
+                </Badge>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" data-testid="button-element-menu">
+                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
 
   return (
     <Link href={`/element/${element.id}`}>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -19,7 +19,9 @@ import {
   Clock, 
   CheckCircle2,
   Edit3,
-  User
+  User,
+  Grid3X3,
+  List
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
@@ -33,6 +35,8 @@ interface DashboardStats {
 export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [elementFilter, setElementFilter] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -123,6 +127,23 @@ export default function Dashboard() {
       default: return 'bg-blue-100 text-blue-800';
     }
   };
+
+  // Filter elements based on selected filter
+  const filteredElements = elements?.filter(element => {
+    if (!elementFilter) return true;
+    
+    switch (elementFilter) {
+      case 'active':
+        return element.isActive;
+      case 'inactive':
+        return !element.isActive;
+      case 'draft':
+        // Elements with no processes could be considered drafts
+        return !element.processes || element.processes.length === 0;
+      default:
+        return true;
+    }
+  }) || [];
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -263,15 +284,34 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">OE Elements</h2>
               <div className="flex items-center space-x-4">
-                <select className="px-3 py-2 border border-border rounded-md bg-background text-sm" data-testid="select-filter-elements">
+                <select 
+                  className="px-3 py-2 border border-border rounded-md bg-background text-sm" 
+                  data-testid="select-filter-elements"
+                  value={elementFilter}
+                  onChange={(e) => setElementFilter(e.target.value)}
+                >
                   <option value="">All Elements</option>
                   <option value="active">Active Only</option>
-                  <option value="review">Under Review</option>
+                  <option value="inactive">Inactive Only</option>
                   <option value="draft">Drafts</option>
                 </select>
-                <Button variant="secondary" size="sm" data-testid="button-toggle-view">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Grid View
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  data-testid="button-toggle-view"
+                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                >
+                  {viewMode === "grid" ? (
+                    <>
+                      <List className="w-4 h-4 mr-2" />
+                      List View
+                    </>
+                  ) : (
+                    <>
+                      <Grid3X3 className="w-4 h-4 mr-2" />
+                      Grid View
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -287,12 +327,32 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            ) : elements && elements.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {elements.map((element) => (
-                  <ProcessCard key={element.id} element={element} />
+            ) : filteredElements.length > 0 ? (
+              <div className={viewMode === "grid" 
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                : "space-y-4"
+              }>
+                {filteredElements.map((element) => (
+                  <ProcessCard key={element.id} element={element} viewMode={viewMode} />
                 ))}
               </div>
+            ) : elements && elements.length > 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Folder className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Elements Match Filter</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Try adjusting your filter or create a new element.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setElementFilter("")}
+                    data-testid="button-clear-filter"
+                  >
+                    Clear Filter
+                  </Button>
+                </CardContent>
+              </Card>
             ) : (
               <Card>
                 <CardContent className="p-8 text-center">
