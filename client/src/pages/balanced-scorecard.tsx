@@ -72,6 +72,7 @@ export default function BalancedScorecard() {
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
+  const [editingGoalData, setEditingGoalData] = useState<Partial<StrategicGoal>>({});
   const [editingMetric, setEditingMetric] = useState<string | null>(null);
   const [editingMetricData, setEditingMetricData] = useState<Partial<PerformanceMetric>>({});
   const [newGoal, setNewGoal] = useState({
@@ -177,6 +178,7 @@ export default function BalancedScorecard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/strategic-goals"] });
       setEditingGoal(null);
+      setEditingGoalData({});
       toast({
         title: "Success",
         description: "Strategic goal updated successfully",
@@ -575,53 +577,192 @@ export default function BalancedScorecard() {
                         {elementGoals.map((goal) => (
                           <Card key={goal.id} className="border">
                             <CardContent className="p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center space-x-2 mb-2">
-                                    <h4 className="font-semibold">{goal.title}</h4>
-                                    <Badge className={getCategoryColor(goal.category)}>
-                                      {goal.category}
-                                    </Badge>
-                                    <Badge variant={goal.priority === 'High' ? 'destructive' : goal.priority === 'Medium' ? 'default' : 'secondary'}>
-                                      {goal.priority}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mb-3">{goal.description}</p>
-                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                              {editingGoal === goal.id ? (
+                                // Edit form
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                      <span className="text-muted-foreground">Current: </span>
-                                      <span className="font-medium">{goal.currentValue}{goal.unit}</span>
+                                      <Label htmlFor={`goal-title-${goal.id}`}>Title</Label>
+                                      <Input
+                                        id={`goal-title-${goal.id}`}
+                                        value={editingGoalData.title || goal.title}
+                                        onChange={(e) => setEditingGoalData({
+                                          ...editingGoalData,
+                                          title: e.target.value
+                                        })}
+                                        data-testid={`input-goal-title-${goal.id}`}
+                                      />
                                     </div>
                                     <div>
-                                      <span className="text-muted-foreground">Target: </span>
-                                      <span className="font-medium">{goal.targetValue}{goal.unit}</span>
+                                      <Label htmlFor={`goal-category-${goal.id}`}>Category</Label>
+                                      <select
+                                        id={`goal-category-${goal.id}`}
+                                        value={editingGoalData.category || goal.category}
+                                        onChange={(e) => setEditingGoalData({
+                                          ...editingGoalData,
+                                          category: e.target.value as StrategicGoal['category']
+                                        })}
+                                        className="w-full p-2 border rounded-md"
+                                        data-testid={`select-goal-category-${goal.id}`}
+                                      >
+                                        <option value="Financial">Financial</option>
+                                        <option value="Customer">Customer</option>
+                                        <option value="Internal Process">Internal Process</option>
+                                        <option value="Learning & Growth">Learning & Growth</option>
+                                      </select>
                                     </div>
                                   </div>
-                                  <div className="mt-2">
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                      <div 
-                                        className={`h-2 rounded-full transition-all ${
-                                          goal.currentValue >= goal.targetValue ? 'bg-green-500' : 
-                                          goal.currentValue >= goal.targetValue * 0.75 ? 'bg-yellow-500' : 'bg-red-500'
-                                        }`}
-                                        style={{ width: `${Math.min((goal.currentValue / goal.targetValue) * 100, 100)}%` }}
-                                      ></div>
+                                  <div>
+                                    <Label htmlFor={`goal-description-${goal.id}`}>Description</Label>
+                                    <Textarea
+                                      id={`goal-description-${goal.id}`}
+                                      value={editingGoalData.description || goal.description}
+                                      onChange={(e) => setEditingGoalData({
+                                        ...editingGoalData,
+                                        description: e.target.value
+                                      })}
+                                      className="min-h-[60px]"
+                                      data-testid={`textarea-goal-description-${goal.id}`}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                      <Label htmlFor={`goal-current-${goal.id}`}>Current Value</Label>
+                                      <Input
+                                        id={`goal-current-${goal.id}`}
+                                        type="number"
+                                        value={editingGoalData.currentValue ?? goal.currentValue}
+                                        onChange={(e) => setEditingGoalData({
+                                          ...editingGoalData,
+                                          currentValue: parseFloat(e.target.value) || 0
+                                        })}
+                                        data-testid={`input-goal-current-${goal.id}`}
+                                      />
                                     </div>
-                                    <div className="text-right mt-1">
-                                      <span className="text-sm font-medium">
-                                        {Math.round((goal.currentValue / goal.targetValue) * 100)}%
-                                      </span>
+                                    <div>
+                                      <Label htmlFor={`goal-target-${goal.id}`}>Target Value</Label>
+                                      <Input
+                                        id={`goal-target-${goal.id}`}
+                                        type="number"
+                                        value={editingGoalData.targetValue ?? goal.targetValue}
+                                        onChange={(e) => setEditingGoalData({
+                                          ...editingGoalData,
+                                          targetValue: parseFloat(e.target.value) || 0
+                                        })}
+                                        data-testid={`input-goal-target-${goal.id}`}
+                                      />
                                     </div>
+                                    <div>
+                                      <Label htmlFor={`goal-unit-${goal.id}`}>Unit</Label>
+                                      <Input
+                                        id={`goal-unit-${goal.id}`}
+                                        value={editingGoalData.unit || goal.unit}
+                                        onChange={(e) => setEditingGoalData({
+                                          ...editingGoalData,
+                                          unit: e.target.value
+                                        })}
+                                        data-testid={`input-goal-unit-${goal.id}`}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <Label htmlFor={`goal-priority-${goal.id}`}>Priority</Label>
+                                    <select
+                                      id={`goal-priority-${goal.id}`}
+                                      value={editingGoalData.priority || goal.priority}
+                                      onChange={(e) => setEditingGoalData({
+                                        ...editingGoalData,
+                                        priority: e.target.value as StrategicGoal['priority']
+                                      })}
+                                      className="w-full p-2 border rounded-md"
+                                      data-testid={`select-goal-priority-${goal.id}`}
+                                    >
+                                      <option value="High">High</option>
+                                      <option value="Medium">Medium</option>
+                                      <option value="Low">Low</option>
+                                    </select>
+                                  </div>
+                                  <div className="flex justify-end space-x-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setEditingGoal(null);
+                                        setEditingGoalData({});
+                                      }}
+                                      data-testid={`button-cancel-goal-${goal.id}`}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        updateGoalMutation.mutate({
+                                          id: goal.id,
+                                          data: editingGoalData
+                                        });
+                                      }}
+                                      disabled={updateGoalMutation.isPending}
+                                      data-testid={`button-save-goal-${goal.id}`}
+                                    >
+                                      {updateGoalMutation.isPending ? 'Saving...' : 'Save'}
+                                    </Button>
                                   </div>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setEditingGoal(editingGoal === goal.id ? null : goal.id)}
-                                >
-                                  <Edit3 className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              ) : (
+                                // Display view
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                      <h4 className="font-semibold">{goal.title}</h4>
+                                      <Badge className={getCategoryColor(goal.category)}>
+                                        {goal.category}
+                                      </Badge>
+                                      <Badge variant={goal.priority === 'High' ? 'destructive' : goal.priority === 'Medium' ? 'default' : 'secondary'}>
+                                        {goal.priority}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mb-3">{goal.description}</p>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <span className="text-muted-foreground">Current: </span>
+                                        <span className="font-medium">{goal.currentValue}{goal.unit}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-muted-foreground">Target: </span>
+                                        <span className="font-medium">{goal.targetValue}{goal.unit}</span>
+                                      </div>
+                                    </div>
+                                    <div className="mt-2">
+                                      <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div 
+                                          className={`h-2 rounded-full transition-all ${
+                                            goal.currentValue >= goal.targetValue ? 'bg-green-500' : 
+                                            goal.currentValue >= goal.targetValue * 0.75 ? 'bg-yellow-500' : 'bg-red-500'
+                                          }`}
+                                          style={{ width: `${Math.min((goal.currentValue / goal.targetValue) * 100, 100)}%` }}
+                                        ></div>
+                                      </div>
+                                      <div className="text-right mt-1">
+                                        <span className="text-sm font-medium">
+                                          {Math.round((goal.currentValue / goal.targetValue) * 100)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingGoal(goal.id);
+                                      setEditingGoalData({});
+                                    }}
+                                    data-testid={`button-edit-goal-${goal.id}`}
+                                  >
+                                    <Edit3 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              )}
                             </CardContent>
                           </Card>
                         ))}
