@@ -73,15 +73,38 @@ export interface IStorage {
 
 // Helper function for natural alphanumeric sorting
 function naturalSort(a: string, b: string): number {
-  const normalize = (str: string) => {
-    // Split string into parts of letters and numbers
-    return str.replace(/(\d+)/g, (match) => {
-      // Pad numbers with leading zeros for proper sorting
-      return match.padStart(10, '0');
-    });
+  // Split both strings into arrays of alternating text and numbers
+  const splitIntoTokens = (str: string) => {
+    return str.match(/(\d+|\D+)/g) || [];
   };
   
-  return normalize(a).localeCompare(normalize(b));
+  const tokensA = splitIntoTokens(a);
+  const tokensB = splitIntoTokens(b);
+  
+  const maxLength = Math.max(tokensA.length, tokensB.length);
+  
+  for (let i = 0; i < maxLength; i++) {
+    const tokenA = tokensA[i] || '';
+    const tokenB = tokensB[i] || '';
+    
+    // If both tokens are numeric, compare as numbers
+    const numA = parseFloat(tokenA);
+    const numB = parseFloat(tokenB);
+    
+    if (!isNaN(numA) && !isNaN(numB)) {
+      if (numA !== numB) {
+        return numA - numB;
+      }
+    } else {
+      // Compare as strings
+      const comparison = tokenA.localeCompare(tokenB);
+      if (comparison !== 0) {
+        return comparison;
+      }
+    }
+  }
+  
+  return 0;
 }
 
 export class DatabaseStorage implements IStorage {
