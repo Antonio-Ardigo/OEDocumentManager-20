@@ -101,14 +101,6 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
                             <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
                               {step.stepName}
                             </p>
-                            {step.stepDetails && (
-                              <p className="text-green-600 dark:text-green-400 mt-1 leading-tight text-xs">
-                                {step.stepDetails.length > 80 
-                                  ? `${step.stepDetails.substring(0, 80)}...` 
-                                  : step.stepDetails
-                                }
-                              </p>
-                            )}
                           </div>
                         </div>
                       ))}
