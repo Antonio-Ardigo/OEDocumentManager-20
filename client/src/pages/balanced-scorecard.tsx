@@ -522,9 +522,6 @@ export default function BalancedScorecard() {
                               <Badge className={`mr-2 ${getCategoryColor(category)}`}>
                                 {category}
                               </Badge>
-                              <span className="text-sm text-muted-foreground">
-                                {categoryMeasures.length} measure{categoryMeasures.length !== 1 ? 's' : ''}
-                              </span>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -731,22 +728,6 @@ export default function BalancedScorecard() {
                                       <div>
                                         <span className="text-muted-foreground">Target: </span>
                                         <span className="font-medium">{goal.targetValue}{goal.unit}</span>
-                                      </div>
-                                    </div>
-                                    <div className="mt-2">
-                                      <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div 
-                                          className={`h-2 rounded-full transition-all ${
-                                            goal.currentValue >= goal.targetValue ? 'bg-green-500' : 
-                                            goal.currentValue >= goal.targetValue * 0.75 ? 'bg-yellow-500' : 'bg-red-500'
-                                          }`}
-                                          style={{ width: `${Math.min((goal.currentValue / goal.targetValue) * 100, 100)}%` }}
-                                        ></div>
-                                      </div>
-                                      <div className="text-right mt-1">
-                                        <span className="text-sm font-medium">
-                                          {Math.round((goal.currentValue / goal.targetValue) * 100)}%
-                                        </span>
                                       </div>
                                     </div>
                                   </div>
