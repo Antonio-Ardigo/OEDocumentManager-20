@@ -6,15 +6,21 @@ const path = require('path');
 
 console.log('🚀 Building WSM OE Manager Desktop Application...\n');
 
+// Set up paths - installer is in desktop-installer/ subdirectory
+const projectRoot = path.join(__dirname, '..');
+const installerDir = __dirname;
+const buildDir = path.join(installerDir, 'build');
+
 try {
   // Step 1: Build the web application
   console.log('📦 Building web application...');
+  process.chdir(projectRoot);
   execSync('npm run build', { stdio: 'inherit' });
 
   // Step 2: Create desktop-specific package.json
   console.log('📋 Preparing desktop package configuration...');
   
-  const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
   
   // Create a simplified package.json for Electron
   const desktopPackage = {
@@ -41,17 +47,24 @@ try {
     }
   };
 
-  // Write desktop package.json to dist folder
-  if (!fs.existsSync('dist')) {
-    fs.mkdirSync('dist');
+  // Create build directory
+  if (!fs.existsSync(buildDir)) {
+    fs.mkdirSync(buildDir, { recursive: true });
   }
   
+  // Copy web app dist files to build directory
+  const webDistDir = path.join(projectRoot, 'dist');
+  if (fs.existsSync(webDistDir)) {
+    execSync(`cp -r "${webDistDir}"/* "${buildDir}/"`, { stdio: 'inherit' });
+  }
+  
+  // Write desktop package.json to build folder
   fs.writeFileSync(
-    path.join('dist', 'package.json'), 
+    path.join(buildDir, 'package.json'), 
     JSON.stringify(desktopPackage, null, 2)
   );
 
-  // Step 3: Copy Electron files to dist
+  // Step 3: Copy Electron files to build directory
   console.log('📄 Copying Electron configuration files...');
   
   const filesToCopy = [
@@ -61,24 +74,26 @@ try {
   ];
 
   filesToCopy.forEach(file => {
-    if (fs.existsSync(file)) {
-      fs.copyFileSync(file, path.join('dist', file));
+    const sourceFile = path.join(installerDir, file);
+    if (fs.existsSync(sourceFile)) {
+      fs.copyFileSync(sourceFile, path.join(buildDir, file));
       console.log(`   ✓ Copied ${file}`);
     }
   });
 
   // Copy assets if they exist
-  if (fs.existsSync('assets')) {
-    const assetsDir = path.join('dist', 'assets');
-    if (!fs.existsSync(assetsDir)) {
-      fs.mkdirSync(assetsDir, { recursive: true });
+  const assetsDir = path.join(installerDir, 'assets');
+  if (fs.existsSync(assetsDir)) {
+    const targetAssetsDir = path.join(buildDir, 'assets');
+    if (!fs.existsSync(targetAssetsDir)) {
+      fs.mkdirSync(targetAssetsDir, { recursive: true });
     }
     
-    const assetFiles = fs.readdirSync('assets');
+    const assetFiles = fs.readdirSync(assetsDir);
     assetFiles.forEach(file => {
       fs.copyFileSync(
-        path.join('assets', file),
-        path.join(assetsDir, file)
+        path.join(assetsDir, file),
+        path.join(targetAssetsDir, file)
       );
     });
     console.log('   ✓ Copied assets directory');
@@ -87,9 +102,9 @@ try {
   // Step 4: Build Electron application
   console.log('🔧 Building Electron application packages...');
   
-  process.chdir('dist');
+  process.chdir(buildDir);
   
-  // Install production dependencies in dist folder
+  // Install production dependencies in build folder
   execSync('npm install --production', { stdio: 'inherit' });
   
   // Build for current platform
@@ -97,7 +112,7 @@ try {
 
   console.log('\n✅ Desktop application build completed!');
   console.log('\n📁 Installation files can be found in:');
-  console.log('   dist/dist-electron/');
+  console.log(`   ${path.join(buildDir, 'dist-electron')}/`);
   
   console.log('\n🎉 Your WSM OE Manager desktop app is ready to install!');
 
