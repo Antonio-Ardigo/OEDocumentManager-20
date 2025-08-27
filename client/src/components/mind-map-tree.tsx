@@ -50,91 +50,75 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
         </Card>
       </div>
 
-      {/* Tree Structure - Left Indented */}
-      <div className="space-y-4">
-        {processes.map((process, processIndex) => (
-          <div key={process.id} className="relative">
-            {/* Connection Line from Root */}
-            <div className="absolute left-6 top-0 w-0.5 h-full bg-border/40"></div>
-            
-            {/* Process Node - Indented */}
-            <div className="flex items-start ml-12">
-              <div className="flex-shrink-0 w-4 h-4 bg-blue-500 rounded-full mt-3 mr-4 relative z-10"></div>
-              <div className="flex-1 min-w-0">
-                <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md mb-4">
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                        <Activity className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-blue-700 dark:text-blue-300 text-base">
-                          {process.processNumber}
-                        </h4>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                          {process.name}
-                        </p>
-                      </div>
+      {/* Tree Structure - Parallel Processes */}
+      <div className="relative">
+        {/* Main vertical line from root */}
+        <div className="absolute left-6 top-0 w-0.5 h-12 bg-border/40"></div>
+        
+        {/* Horizontal line for processes */}
+        {processes.length > 1 && (
+          <div className="absolute left-6 top-12 w-full h-0.5 bg-border/40"></div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-12">
+          {processes.map((process, processIndex) => (
+            <div key={process.id} className="relative">
+              {/* Vertical line down to process */}
+              <div className="absolute left-1/2 -top-12 w-0.5 h-12 bg-border/40 transform -translate-x-1/2"></div>
+              
+              {/* Process Card */}
+              <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Activity className="w-4 h-4 text-white" />
                     </div>
-                  </CardContent>
-                </Card>
-
-                {/* Process Steps - Further Indented */}
-                {process.steps && process.steps.length > 0 && (
-                  <div className="ml-6 space-y-3">
-                    {process.steps.map((step, stepIndex) => (
-                      <div key={step.id} className="relative">
-                        {/* Connection Line for Steps */}
-                        <div className="absolute left-6 top-0 w-0.5 h-full bg-border/30"></div>
-                        
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 w-3 h-3 bg-green-500 rounded-full mt-2 mr-3 relative z-10"></div>
-                          <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800 flex-1 shadow-sm">
-                            <CardContent className="p-3">
-                              <div className="flex items-start space-x-3">
-                                {/* Bullet Point with Step Number */}
-                                <div className="flex-shrink-0 flex items-center space-x-2">
-                                  <Circle className="w-2 h-2 fill-green-600 text-green-600" />
-                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                    {step.stepNumber}
-                                  </div>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h5 className="font-medium text-sm text-green-700 dark:text-green-300 leading-tight mb-1">
-                                    • {step.stepName}
-                                  </h5>
-                                  {step.stepDetails && (
-                                    <div className="text-xs text-green-600 dark:text-green-400 space-y-1">
-                                      {/* Split details into bullet points */}
-                                      {step.stepDetails.split('. ').slice(0, 3).map((detail, idx) => (
-                                        <div key={idx} className="flex items-start space-x-1">
-                                          <Circle className="w-1.5 h-1.5 fill-green-400 text-green-400 flex-shrink-0 mt-1.5" />
-                                          <span className="leading-tight">
-                                            {detail.trim()}{detail.includes('.') ? '' : '.'}
-                                          </span>
-                                        </div>
-                                      ))}
-                                      {step.stepDetails.split('. ').length > 3 && (
-                                        <div className="flex items-center space-x-1 mt-1">
-                                          <Circle className="w-1.5 h-1.5 fill-green-400 text-green-400" />
-                                          <span className="italic">...and more</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-700 dark:text-blue-300 text-base">
+                        {process.processNumber}
+                      </h4>
+                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        {process.name}
+                      </p>
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Sequential Process Steps as Bullet Points */}
+                  {process.steps && process.steps.length > 0 && (
+                    <div className="space-y-2 pl-2">
+                      <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
+                        Sequential Steps:
+                      </h5>
+                      {process.steps.map((step, stepIndex) => (
+                        <div key={step.id} className="flex items-start space-x-2 text-xs">
+                          <div className="flex items-center space-x-1 flex-shrink-0">
+                            <Circle className="w-1.5 h-1.5 fill-blue-500 text-blue-500 mt-1" />
+                            <span className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                              {step.stepNumber}
+                            </span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-blue-700 dark:text-blue-300 leading-tight">
+                              {step.stepName}
+                            </p>
+                            {step.stepDetails && (
+                              <p className="text-blue-600 dark:text-blue-400 mt-1 leading-tight text-xs">
+                                {step.stepDetails.length > 80 
+                                  ? `${step.stepDetails.substring(0, 80)}...` 
+                                  : step.stepDetails
+                                }
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Legend */}
