@@ -44,11 +44,15 @@ export default function ProcessDetail() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: process, isLoading: processLoading } = useQuery<OeProcessWithDetails>({
+  const { data: process, isLoading: processLoading, error: processError } = useQuery<OeProcessWithDetails>({
     queryKey: ["/api/oe-processes", id],
     enabled: isAuthenticated && !!id,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
+  });
+
+  // Handle process error
+  useEffect(() => {
+    if (processError) {
+      if (isUnauthorizedError(processError)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -64,8 +68,8 @@ export default function ProcessDetail() {
         description: "Failed to load process details",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [processError, toast]);
 
   if (isLoading || (!isAuthenticated && !isLoading)) {
     return (

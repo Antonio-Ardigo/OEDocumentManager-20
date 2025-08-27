@@ -36,11 +36,15 @@ export default function ProcessEditor() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: process, isLoading: processLoading } = useQuery<OeProcessWithDetails>({
+  const { data: process, isLoading: processLoading, error: processError } = useQuery<OeProcessWithDetails>({
     queryKey: ["/api/oe-processes", id],
     enabled: isAuthenticated && isEditing && !!id,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
+  });
+
+  // Handle process error
+  useEffect(() => {
+    if (processError) {
+      if (isUnauthorizedError(processError)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -56,14 +60,18 @@ export default function ProcessEditor() {
         description: "Failed to load process details",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [processError, toast]);
 
-  const { data: elements, isLoading: elementsLoading } = useQuery<OeElementWithProcesses[]>({
+  const { data: elements, isLoading: elementsLoading, error: elementsError } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/oe-elements"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
+  });
+
+  // Handle elements error
+  useEffect(() => {
+    if (elementsError) {
+      if (isUnauthorizedError(elementsError)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -79,8 +87,8 @@ export default function ProcessEditor() {
         description: "Failed to load OE elements",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [elementsError, toast]);
 
   const createProcessMutation = useMutation({
     mutationFn: async (data: any) => {

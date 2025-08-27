@@ -49,11 +49,15 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
+  });
+
+  // Handle stats error
+  useEffect(() => {
+    if (statsError) {
+      if (isUnauthorizedError(statsError)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -69,14 +73,18 @@ export default function Dashboard() {
         description: "Failed to load dashboard statistics",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [statsError, toast]);
 
-  const { data: elements, isLoading: elementsLoading } = useQuery<OeElementWithProcesses[]>({
+  const { data: elements, isLoading: elementsLoading, error: elementsError } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/oe-elements"],
     enabled: isAuthenticated,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
+  });
+
+  // Handle elements error
+  useEffect(() => {
+    if (elementsError) {
+      if (isUnauthorizedError(elementsError)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -92,8 +100,8 @@ export default function Dashboard() {
         description: "Failed to load OE elements",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [elementsError, toast]);
 
   if (isLoading || (!isAuthenticated && !isLoading)) {
     return (
