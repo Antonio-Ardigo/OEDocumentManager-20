@@ -309,10 +309,8 @@ export default function BalancedScorecard() {
                   <CardDescription>Performance Overview</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center">
-                    <Badge className={getCategoryColor(category)}>
-                      {category}
-                    </Badge>
+                  <div className="text-center text-muted-foreground">
+                    Strategic performance overview
                   </div>
                 </CardContent>
               </Card>
