@@ -22,6 +22,7 @@ import {
   ArrowLeft,
   Star
 } from "lucide-react";
+import ProcessFlowDiagram from "@/components/process-flow-diagram";
 import type { OeProcessWithDetails } from "@shared/schema";
 
 export default function ProcessDetail() {
@@ -252,6 +253,13 @@ export default function ProcessDetail() {
                 </CardContent>
               </Card>
 
+              {/* Process Flow Diagram */}
+              <ProcessFlowDiagram 
+                processName={process.name}
+                processNumber={process.processNumber}
+                steps={process.steps || []}
+              />
+
               {/* Process Steps */}
               <Card>
                 <CardHeader>
@@ -443,7 +451,7 @@ export default function ProcessDetail() {
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {new Date(version.createdAt).toLocaleDateString()}
+                            {version.createdAt ? new Date(version.createdAt).toLocaleDateString() : 'Unknown'}
                           </div>
                         </div>
                       ))}
