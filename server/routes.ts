@@ -161,6 +161,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertOeProcessSchema.partial().parse(req.body);
+      const process = await storage.updateOeProcess(req.params.id, validatedData);
+      res.json(process);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating OE process:", error);
+      res.status(500).json({ message: "Failed to update OE process" });
+    }
+  });
+
   app.delete('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
     try {
       await storage.deleteOeProcess(req.params.id);

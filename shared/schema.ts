@@ -60,7 +60,11 @@ export const oeProcesses = pgTable("oe_processes", {
   revision: integer("revision").default(1),
   status: varchar("status", { length: 50 }).default("draft"), // draft, active, review, archived
   isMandatory: boolean("is_mandatory").default(false),
+  // TABLE OF CONTENTS sections
   expectations: text("expectations"),
+  responsibilities: text("responsibilities"),
+  processStepsContent: text("process_steps_content"),
+  performanceMeasureContent: text("performance_measure_content"),
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -198,11 +202,11 @@ export type InsertDocumentVersion = z.infer<typeof insertDocumentVersionSchema>;
 
 // Extended types for API responses
 export type OeProcessWithDetails = OeProcess & {
-  element?: OeElement;
+  element?: OeElement | null;
   steps?: ProcessStep[];
   performanceMeasures?: PerformanceMeasure[];
   versions?: DocumentVersion[];
-  createdByUser?: User;
+  createdByUser?: User | null;
 };
 
 export type OeElementWithProcesses = OeElement & {

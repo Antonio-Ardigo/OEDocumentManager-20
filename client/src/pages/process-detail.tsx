@@ -23,6 +23,7 @@ import {
   Star
 } from "lucide-react";
 import ProcessFlowDiagram from "@/components/process-flow-diagram";
+import ProcessContentSections from "@/components/process-content-sections";
 import type { OeProcessWithDetails } from "@shared/schema";
 
 export default function ProcessDetail() {
@@ -259,6 +260,9 @@ export default function ProcessDetail() {
                 processNumber={process.processNumber}
                 steps={process.steps || []}
               />
+
+              {/* TABLE OF CONTENTS Sections */}
+              <ProcessContentSections process={process} />
 
               {/* Process Steps */}
               <Card>
