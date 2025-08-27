@@ -524,88 +524,109 @@ export default function MindMap() {
     setIsCapturingCanvas(true);
     
     try {
-      // Try to use the browser's built-in print to PDF as fallback
-      if (window.print) {
-        // Create a new window with just the mind map content
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) {
-          throw new Error('Unable to open print window');
-        }
-
-        const mindMapContainer = document.querySelector('[data-mindmap-content]');
-        if (!mindMapContainer) {
-          throw new Error('Mind map content not found');
-        }
-
-        const printContent = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>OE Framework Mind Map</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                background: white;
-                padding: 20px;
-                color: black;
-              }
-              .mind-map-export { 
-                max-width: 100%;
-                overflow: visible;
-              }
-              .mind-map-export * {
-                background: transparent !important;
-                color: black !important;
-                border-color: #ccc !important;
-              }
-              @media print {
-                body { margin: 0; }
-                .mind-map-export { 
-                  transform: scale(0.8);
-                  transform-origin: top left;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            <h1>OE Framework Mind Map</h1>
-            <p>Generated on: ${new Date().toLocaleDateString()}</p>
-            <br>
-            <div class="mind-map-export">
-              ${mindMapContainer.innerHTML}
-            </div>
-            <script>
-              window.onload = function() {
-                setTimeout(function() {
-                  window.print();
-                  setTimeout(function() {
-                    window.close();
-                  }, 1000);
-                }, 500);
-              };
-            </script>
-          </body>
-          </html>
-        `;
-
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-
-        toast({
-          title: "Print Dialog Opened",
-          description: "Use your browser's print dialog to save as PDF",
-        });
-      } else {
-        throw new Error('Print functionality not available');
-      }
-    } catch (error) {
-      console.error("Error exporting canvas:", error);
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
       
-      // Fallback: provide instructions for manual screenshot
+      // Find the mind map content container with improved selectors
+      let mindMapContainer = document.querySelector('[data-mindmap-content]') as HTMLElement;
+      
+      if (!mindMapContainer) {
+        // Try finding by class
+        mindMapContainer = document.querySelector('.overflow-x-auto.pb-4') as HTMLElement;
+      }
+      
+      if (!mindMapContainer) {
+        // Try the card content
+        mindMapContainer = document.querySelector('[data-testid="mind-map-card"] .space-y-4, [data-testid="mind-map-card"] .grid') as HTMLElement;
+      }
+      
+      if (!mindMapContainer) {
+        throw new Error('Mind map content not found. Please make sure the mind map is visible.');
+      }
+
+      // Remove any transforms and ensure visibility
+      const originalStyle = mindMapContainer.style.cssText;
+      mindMapContainer.style.transform = 'none';
+      mindMapContainer.style.overflow = 'visible';
+      mindMapContainer.style.height = 'auto';
+      
+      // Wait for render
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const options = {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        foreignObjectRendering: true,
+        logging: false,
+        removeContainer: false,
+        async: true,
+        width: mindMapContainer.scrollWidth || mindMapContainer.offsetWidth,
+        height: mindMapContainer.scrollHeight || mindMapContainer.offsetHeight,
+      };
+
+      console.log('Capturing element with dimensions:', options.width + 'x' + options.height);
+
+      const canvas = await html2canvas(mindMapContainer, options);
+      
+      // Restore original style
+      mindMapContainer.style.cssText = originalStyle;
+
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error('Canvas capture failed - empty result');
+      }
+
+      // Create PDF with proper sizing
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Determine optimal orientation and sizing
+      const isLandscape = canvas.width > canvas.height;
+      const pdf = new jsPDF({
+        orientation: isLandscape ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate scaling to fit the page with margins
+      const margin = 10;
+      const maxWidth = pageWidth - (margin * 2);
+      const maxHeight = pageHeight - (margin * 2);
+      
+      const scaleX = maxWidth / (canvas.width * 0.264583); // Convert px to mm
+      const scaleY = maxHeight / (canvas.height * 0.264583);
+      const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
+      
+      const imgWidth = (canvas.width * 0.264583) * scale;
+      const imgHeight = (canvas.height * 0.264583) * scale;
+      
+      // Center the image
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
+
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // Add header
+      pdf.setFontSize(10);
+      pdf.setTextColor(100);
+      pdf.text('OE Framework Mind Map - ' + new Date().toLocaleDateString(), margin, margin);
+      
+      pdf.save('oe-framework-mindmap-visual.pdf');
+      
       toast({
-        title: "Manual Export Required",
-        description: "Please use your browser's screenshot tool or print function to capture the mind map",
+        title: "Visual Export Successful",
+        description: "Mind map exported to PDF successfully",
+      });
+      
+    } catch (error) {
+      console.error("Canvas export error:", error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      toast({
+        title: "Export Failed",
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
@@ -684,7 +705,7 @@ export default function MindMap() {
                   disabled={isExporting || isCapturingCanvas}
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  {isExporting ? 'Exporting...' : 'Export Text PDF'}
+                  {isExporting ? 'Exporting...' : 'Export PDF'}
                 </Button>
                 <Button 
                   onClick={exportCanvasToPDF} 
