@@ -131,18 +131,15 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
                   </div>
                   
                   {step.stepDetails && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {step.stepDetails.length > 60 
-                        ? `${step.stepDetails.substring(0, 60)}...`
-                        : step.stepDetails
-                      }
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {step.stepDetails}
                     </p>
                   )}
                   
                   {step.responsibilities && (
                     <div className="mt-2 pt-2 border-t border-border/50">
-                      <p className="text-xs font-medium text-muted-foreground line-clamp-1">
-                        {step.responsibilities.split(',')[0].trim()}
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {step.responsibilities}
                       </p>
                     </div>
                   )}
