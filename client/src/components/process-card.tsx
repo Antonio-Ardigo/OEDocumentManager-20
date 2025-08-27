@@ -96,8 +96,10 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
                   {element.icon ? (
                     <span className="text-2xl">{element.icon}</span>
-                  ) : (
+                  ) : Icon ? (
                     <Icon className="text-xl" />
+                  ) : (
+                    <Activity className="text-xl" />
                   )}
                 </div>
                 <div className="flex-1">
@@ -164,8 +166,10 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
               {element.icon ? (
                 <span className="text-2xl">{element.icon}</span>
-              ) : (
+              ) : Icon ? (
                 <Icon className="text-xl" />
+              ) : (
+                <Activity className="text-xl" />
               )}
             </div>
             <div className="flex items-center space-x-2">

@@ -17,7 +17,8 @@ import {
   FileText,
   Calendar,
   User,
-  Activity
+  Activity,
+  Edit
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
 import { MindMapTree } from "@/components/mind-map-tree";
@@ -188,6 +189,12 @@ export default function ElementDetail() {
             </div>
             
             <div className="flex items-center space-x-3">
+              <Button variant="outline" size="sm" asChild data-testid="button-edit-element">
+                <Link href={`/element/${element.id}/edit`}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Element
+                </Link>
+              </Button>
               <Button variant="outline" size="sm" data-testid="button-export">
                 <FileText className="w-4 h-4 mr-2" />
                 Export Report

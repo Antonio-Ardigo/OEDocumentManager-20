@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -30,7 +30,10 @@ export default function ElementEditor() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const { id } = useParams();
   const queryClient = useQueryClient();
+  
+  const isEditMode = Boolean(id);
 
   // Available icons for selection
   const iconOptions = [
@@ -65,6 +68,26 @@ export default function ElementEditor() {
     isActive: true,
   });
 
+  // Load existing element data for edit mode
+  const { data: existingElement, isLoading: elementLoading } = useQuery({
+    queryKey: ["/api/oe-elements", id],
+    enabled: isEditMode && !!id,
+  });
+
+  // Update form data when existing element loads
+  useEffect(() => {
+    if (existingElement && isEditMode) {
+      setFormData({
+        elementNumber: existingElement.elementNumber,
+        title: existingElement.title || "",
+        description: existingElement.description || "",
+        icon: existingElement.icon || "📋",
+        color: existingElement.color || "#3B82F6",
+        isActive: existingElement.isActive ?? true,
+      });
+    }
+  }, [existingElement, isEditMode]);
+
   // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -80,18 +103,25 @@ export default function ElementEditor() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const createElementMutation = useMutation({
+  const saveElementMutation = useMutation({
     mutationFn: async (data: ElementFormData) => {
-      return await apiRequest("/api/oe-elements", "POST", data);
+      if (isEditMode) {
+        return await apiRequest(`/api/oe-elements/${id}`, "PUT", data);
+      } else {
+        return await apiRequest("/api/oe-elements", "POST", data);
+      }
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "OE Element created successfully",
+        description: `OE Element ${isEditMode ? 'updated' : 'created'} successfully`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/oe-elements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      setLocation("/");
+      if (isEditMode) {
+        queryClient.invalidateQueries({ queryKey: ["/api/oe-elements", id] });
+      }
+      setLocation(isEditMode ? `/element/${id}` : "/");
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -107,7 +137,7 @@ export default function ElementEditor() {
       }
       toast({
         title: "Error",
-        description: "Failed to create OE element",
+        description: `Failed to ${isEditMode ? 'update' : 'create'} OE element`,
         variant: "destructive",
       });
     },
@@ -123,14 +153,14 @@ export default function ElementEditor() {
       });
       return;
     }
-    createElementMutation.mutate(formData);
+    saveElementMutation.mutate(formData);
   };
 
   const handleCancel = () => {
-    setLocation("/");
+    setLocation(isEditMode ? `/element/${id}` : "/");
   };
 
-  if (isLoading || (!isAuthenticated && !isLoading)) {
+  if (isLoading || (!isAuthenticated && !isLoading) || (isEditMode && elementLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -154,17 +184,20 @@ export default function ElementEditor() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <Button variant="ghost" size="sm" asChild data-testid="button-back">
-                  <Link href="/">
+                  <Link href={isEditMode ? `/element/${id}` : "/"}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
                   </Link>
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold" data-testid="element-editor-title">
-                    Create New OE Element
+                    {isEditMode ? 'Edit OE Element' : 'Create New OE Element'}
                   </h1>
                   <p className="text-muted-foreground">
-                    Add a new Operational Excellence element to the framework
+                    {isEditMode 
+                      ? 'Modify the Operational Excellence element details' 
+                      : 'Add a new Operational Excellence element to the framework'
+                    }
                   </p>
                 </div>
               </div>
@@ -269,11 +302,14 @@ export default function ElementEditor() {
                     </Button>
                     <Button
                       type="submit"
-                      disabled={createElementMutation.isPending}
+                      disabled={saveElementMutation.isPending}
                       data-testid="button-save"
                     >
                       <Save className="w-4 h-4 mr-2" />
-                      {createElementMutation.isPending ? "Creating..." : "Create Element"}
+                      {saveElementMutation.isPending 
+                        ? (isEditMode ? "Updating..." : "Creating...") 
+                        : (isEditMode ? "Update Element" : "Create Element")
+                      }
                     </Button>
                   </div>
                 </form>

@@ -29,6 +29,7 @@ function Router() {
           <Route path="/process/:id/edit" component={ProcessEditor} />
           <Route path="/create-process" component={ProcessEditor} />
           <Route path="/create-element" component={ElementEditor} />
+          <Route path="/element/:id/edit" component={ElementEditor} />
         </>
       )}
       <Route component={NotFound} />
