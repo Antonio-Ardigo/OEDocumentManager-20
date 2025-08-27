@@ -154,7 +154,7 @@ function MindMapNode({
   );
 }
 
-type VisualizationType = 'hierarchical' | 'radial' | 'grid';
+type VisualizationType = 'hierarchical' | 'grid';
 
 interface ViewProps {
   elements: OeElementWithProcesses[];
@@ -207,207 +207,6 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
   );
 }
 
-// Clean Mind Map Style like Traditional Mind Maps
-function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
-  const centerX = 600;
-  const centerY = 400;
-  const baseRadius = 200;
-
-  return (
-    <div className="relative min-h-[800px] w-full overflow-auto bg-white" style={{ minWidth: '1200px' }}>
-      <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
-        {/* Simple connection lines */}
-        {elements.map((element, elementIndex) => {
-          const elementAngle = (elementIndex * 2 * Math.PI) / elements.length - Math.PI / 2;
-          const elementX = centerX + baseRadius * Math.cos(elementAngle);
-          const elementY = centerY + baseRadius * Math.sin(elementAngle);
-          
-          return (
-            <g key={element.id}>
-              {/* Simple line from center to element */}
-              <line
-                x1={centerX}
-                y1={centerY}
-                x2={elementX}
-                y2={elementY}
-                stroke="#333"
-                strokeWidth="2"
-              />
-              
-              {/* Process connections */}
-              {element.processes?.map((process, processIndex) => {
-                if (!expandedNodes.has(element.id)) return null;
-                
-                const totalProcesses = element.processes?.length || 1;
-                const processAngleSpread = Math.PI / 3; // 60 degrees spread
-                const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * processAngleSpread) / Math.max(totalProcesses - 1, 1);
-                const processAngle = elementAngle + processAngleOffset;
-                const processRadius = 120;
-                const processX = elementX + processRadius * Math.cos(processAngle);
-                const processY = elementY + processRadius * Math.sin(processAngle);
-                
-                return (
-                  <g key={process.id}>
-                    <line
-                      x1={elementX}
-                      y1={elementY}
-                      x2={processX}
-                      y2={processY}
-                      stroke="#333"
-                      strokeWidth="1.5"
-                    />
-                    
-                    {/* Step connections */}
-                    {(process as any).steps?.map((step: any, stepIndex: number) => {
-                      if (!expandedNodes.has(process.id)) return null;
-                      
-                      const totalSteps = (process as any).steps?.length || 1;
-                      const stepAngleSpread = Math.PI / 4; // 45 degrees spread
-                      const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * stepAngleSpread) / Math.max(totalSteps - 1, 1);
-                      const stepAngle = processAngle + stepAngleOffset;
-                      const stepRadius = 80;
-                      const stepX = processX + stepRadius * Math.cos(stepAngle);
-                      const stepY = processY + stepRadius * Math.sin(stepAngle);
-                      
-                      return (
-                        <line
-                          key={step.id}
-                          x1={processX}
-                          y1={processY}
-                          x2={stepX}
-                          y2={stepY}
-                          stroke="#333"
-                          strokeWidth="1"
-                        />
-                      );
-                    })}
-                  </g>
-                );
-              })}
-            </g>
-          );
-        })}
-      </svg>
-      
-      {/* Center node */}
-      <div className="absolute" style={{ left: `${centerX - 30}px`, top: `${centerY - 15}px`, zIndex: 20 }}>
-        <div 
-          className="bg-white border-2 border-gray-800 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50"
-          onClick={() => {
-            // Expand all elements
-            const allNodes = new Set(expandedNodes);
-            elements.forEach(el => allNodes.add(el.id));
-            // This would need to be handled by parent component
-          }}
-        >
-          <span className="text-sm font-bold text-gray-800">OE Framework</span>
-        </div>
-      </div>
-      
-      {/* Element nodes with clean text labels */}
-      {elements.map((element, elementIndex) => {
-        const elementAngle = (elementIndex * 2 * Math.PI) / elements.length - Math.PI / 2;
-        const elementX = centerX + baseRadius * Math.cos(elementAngle);
-        const elementY = centerY + baseRadius * Math.sin(elementAngle);
-        
-        // Position text based on angle to avoid overlap
-        const isRight = Math.cos(elementAngle) > 0;
-        const labelX = elementX + (isRight ? 10 : -10);
-        const labelY = elementY;
-        
-        return (
-          <div key={element.id}>
-            {/* Element label */}
-            <div 
-              className="absolute cursor-pointer hover:bg-gray-100 rounded px-2 py-1"
-              style={{ 
-                left: `${labelX - (isRight ? 0 : 120)}px`, 
-                top: `${labelY - 12}px`, 
-                zIndex: 15,
-                textAlign: isRight ? 'left' : 'right',
-                minWidth: '120px'
-              }}
-              onClick={() => toggleNode(element.id)}
-            >
-              <span className="text-xs font-semibold text-blue-800">
-                Element {element.elementNumber}: {element.title}
-              </span>
-            </div>
-            
-            {/* Process nodes */}
-            {expandedNodes.has(element.id) && element.processes?.map((process, processIndex) => {
-              const totalProcesses = element.processes?.length || 1;
-              const processAngleSpread = Math.PI / 3;
-              const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * processAngleSpread) / Math.max(totalProcesses - 1, 1);
-              const processAngle = elementAngle + processAngleOffset;
-              const processRadius = 120;
-              const processX = elementX + processRadius * Math.cos(processAngle);
-              const processY = elementY + processRadius * Math.sin(processAngle);
-              
-              const processIsRight = Math.cos(processAngle) > 0;
-              const processLabelX = processX + (processIsRight ? 10 : -10);
-              
-              return (
-                <div key={process.id}>
-                  {/* Process label */}
-                  <div 
-                    className="absolute cursor-pointer hover:bg-gray-100 rounded px-2 py-1"
-                    style={{ 
-                      left: `${processLabelX - (processIsRight ? 0 : 100)}px`, 
-                      top: `${processY - 10}px`, 
-                      zIndex: 15,
-                      textAlign: processIsRight ? 'left' : 'right',
-                      minWidth: '100px'
-                    }}
-                    onClick={() => toggleNode(process.id)}
-                  >
-                    <span className="text-xs font-medium text-green-700">
-                      {process.processNumber}: {process.name}
-                    </span>
-                  </div>
-                  
-                  {/* Step nodes */}
-                  {expandedNodes.has(process.id) && (process as any).steps?.map((step: any, stepIndex: number) => {
-                    const totalSteps = (process as any).steps?.length || 1;
-                    const stepAngleSpread = Math.PI / 4;
-                    const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * stepAngleSpread) / Math.max(totalSteps - 1, 1);
-                    const stepAngle = processAngle + stepAngleOffset;
-                    const stepRadius = 80;
-                    const stepX = processX + stepRadius * Math.cos(stepAngle);
-                    const stepY = processY + stepRadius * Math.sin(stepAngle);
-                    
-                    const stepIsRight = Math.cos(stepAngle) > 0;
-                    const stepLabelX = stepX + (stepIsRight ? 10 : -10);
-                    
-                    return (
-                      <div key={step.id}>
-                        {/* Step label */}
-                        <div 
-                          className="absolute hover:bg-gray-100 rounded px-1 py-1"
-                          style={{ 
-                            left: `${stepLabelX - (stepIsRight ? 0 : 80)}px`, 
-                            top: `${stepY - 8}px`, 
-                            zIndex: 15,
-                            textAlign: stepIsRight ? 'left' : 'right',
-                            minWidth: '80px'
-                          }}
-                        >
-                          <span className="text-xs text-purple-700">
-                            {step.stepNumber}: {step.stepName}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 // Grid Layout View with Smaller Fonts
 function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
@@ -608,15 +407,6 @@ export default function MindMap() {
                     Tree
                   </Button>
                   <Button 
-                    onClick={() => setVisualizationType('radial')}
-                    variant={visualizationType === 'radial' ? 'default' : 'ghost'}
-                    size="sm"
-                    className="h-8"
-                  >
-                    <Network className="w-4 h-4 mr-1" />
-                    Radial
-                  </Button>
-                  <Button 
                     onClick={() => setVisualizationType('grid')}
                     variant={visualizationType === 'grid' ? 'default' : 'ghost'}
                     size="sm"
@@ -651,13 +441,6 @@ export default function MindMap() {
                 <div className="overflow-x-auto pb-4">
                   {visualizationType === 'hierarchical' && (
                     <HierarchicalView 
-                      elements={elements} 
-                      expandedNodes={expandedNodes} 
-                      toggleNode={toggleNode} 
-                    />
-                  )}
-                  {visualizationType === 'radial' && (
-                    <RadialView 
                       elements={elements} 
                       expandedNodes={expandedNodes} 
                       toggleNode={toggleNode} 
