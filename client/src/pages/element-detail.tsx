@@ -18,7 +18,8 @@ import {
   Calendar,
   User,
   Activity,
-  Edit
+  Edit,
+  Download
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
 import { MindMapTree } from "@/components/mind-map-tree";
@@ -70,6 +71,146 @@ export default function ElementDetail() {
       });
     }
   }, [elementError, toast]);
+
+  const handleExportPDF = async () => {
+    if (!element) return;
+    
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    let yPos = 20;
+    
+    // Helper function to add text and return new Y position
+    const addText = (text: string, x: number, fontSize: number = 12, maxWidth: number = 170) => {
+      doc.setFontSize(fontSize);
+      const lines = doc.splitTextToSize(text, maxWidth);
+      doc.text(lines, x, yPos);
+      yPos += lines.length * (fontSize * 0.5) + 5;
+      return yPos;
+    };
+    
+    // Helper function to add new page if needed
+    const checkNewPage = (requiredSpace: number = 30) => {
+      if (yPos + requiredSpace > 280) {
+        doc.addPage();
+        yPos = 20;
+      }
+    };
+
+    // Add header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(45, 55, 72);
+    addText(`OE Element No. ${element.elementNumber}: ${element.title}`, 20, 20);
+    
+    yPos += 5;
+    doc.setLineWidth(2);
+    doc.setDrawColor(59, 130, 246);
+    doc.line(20, yPos, 190, yPos);
+    yPos += 15;
+
+    // Element Overview
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(45, 55, 72);
+    addText('Element Overview', 20, 16);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    if (element.description) {
+      addText(`Description: ${element.description}`, 20, 12);
+    }
+    
+    addText(`Status: ${element.isActive ? 'Active' : 'Inactive'}`, 20, 12);
+    addText(`Total Processes: ${element.processes?.length || 0}`, 20, 12);
+    
+    if (element.createdAt) {
+      addText(`Created: ${new Date(element.createdAt).toLocaleDateString()}`, 20, 12);
+    }
+    if (element.updatedAt) {
+      addText(`Last Updated: ${new Date(element.updatedAt).toLocaleDateString()}`, 20, 12);
+    }
+    
+    yPos += 10;
+
+    // Processes Section
+    if (element.processes && element.processes.length > 0) {
+      checkNewPage(50);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(45, 55, 72);
+      addText('Associated Processes', 20, 16);
+      
+      element.processes.forEach((process, index) => {
+        checkNewPage(60);
+        
+        // Process header with colored background
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(59, 130, 246);
+        doc.setLineWidth(1);
+        doc.roundedRect(20, yPos - 5, 170, 25, 3, 3, 'FD');
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(45, 55, 72);
+        addText(`${process.processNumber}: ${process.name}`, 25, 14);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        
+        if (process.description) {
+          addText(`Description: ${process.description}`, 25, 12);
+        }
+        
+        addText(`Status: ${process.status || 'Draft'}`, 25, 12);
+        addText(`Revision: ${process.revision || 1}`, 25, 12);
+        
+        if (process.processOwner) {
+          addText(`Process Owner: ${process.processOwner}`, 25, 12);
+        }
+        
+        if (process.steps && process.steps.length > 0) {
+          yPos += 5;
+          doc.setFont('helvetica', 'bold');
+          addText(`Process Steps (${process.steps.length}):`, 25, 12);
+          doc.setFont('helvetica', 'normal');
+          
+          process.steps.forEach((step) => {
+            checkNewPage(20);
+            addText(`${step.stepNumber}. ${step.stepName}`, 30, 11, 160);
+            if (step.stepDetails) {
+              doc.setFontSize(10);
+              doc.setTextColor(100, 100, 100);
+              addText(`   ${step.stepDetails}`, 30, 10, 160);
+              doc.setFontSize(12);
+              doc.setTextColor(45, 55, 72);
+            }
+          });
+        }
+        
+        yPos += 10;
+      });
+    }
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Generated on ${new Date().toLocaleDateString()} - Page ${i} of ${pageCount}`, 20, 290);
+      doc.text('WSM Operational Excellence Framework', 190 - 50, 290);
+    }
+
+    // Save the PDF
+    doc.save(`OE-Element-${element.elementNumber}-${element.title.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`);
+    
+    toast({
+      title: "Export Successful",
+      description: "Element report has been exported as PDF",
+    });
+  };
 
   if (isLoading || (!isAuthenticated && !isLoading)) {
     return (
@@ -195,8 +336,13 @@ export default function ElementDetail() {
                   Edit Element
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" data-testid="button-export">
-                <FileText className="w-4 h-4 mr-2" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExportPDF}
+                data-testid="button-export"
+              >
+                <Download className="w-4 h-4 mr-2" />
                 Export Report
               </Button>
               <Button size="sm" asChild data-testid="button-create-process">
