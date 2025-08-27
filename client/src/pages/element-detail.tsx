@@ -675,54 +675,55 @@ export default function ElementDetail() {
                     <div className="space-y-6">
                       {element.processes.map((process) => (
                         <div key={process.id} className="border-l-4 border-primary/20 pl-4">
-                          <div className="mb-3">
-                            <h3 className="font-semibold text-sm flex items-center space-x-2">
-                              <Activity className="w-4 h-4 text-primary" />
+                          <div className="mb-4">
+                            <h3 className="font-semibold text-lg flex items-center space-x-2">
+                              <Activity className="w-5 h-5 text-primary" />
                               <span>{process.processNumber}: {process.name}</span>
                             </h3>
                           </div>
                           
                           {(process as any).performanceMeasures && (process as any).performanceMeasures.length > 0 ? (
-                            <div className="space-y-3">
-                              {(process as any).performanceMeasures.map((measure: any, index: number) => (
-                                <Card key={measure.id} className="bg-muted/50">
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <h4 className="font-medium text-sm text-primary">
-                                        {index + 1}. {measure.measureName}
-                                      </h4>
-                                      {measure.target && (
-                                        <Badge variant="outline" className="text-xs">
-                                          Target: {measure.target}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-                                      {measure.formula && (
-                                        <div>
-                                          <span className="font-medium">Formula:</span>
-                                          <p className="mt-1">{measure.formula}</p>
+                            <div className="overflow-x-auto">
+                              <table className="w-full border border-border rounded-lg">
+                                <thead>
+                                  <tr className="border-b bg-muted/50">
+                                    <th className="text-left p-3 font-semibold text-sm">#</th>
+                                    <th className="text-left p-3 font-semibold text-sm">Measure Name</th>
+                                    <th className="text-left p-3 font-semibold text-sm">Target</th>
+                                    <th className="text-left p-3 font-semibold text-sm">Formula</th>
+                                    <th className="text-left p-3 font-semibold text-sm">Frequency</th>
+                                    <th className="text-left p-3 font-semibold text-sm">Source</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(process as any).performanceMeasures.map((measure: any, index: number) => (
+                                    <tr key={measure.id} className="border-b last:border-b-0 hover:bg-muted/30">
+                                      <td className="p-3 text-sm font-medium text-primary">{index + 1}</td>
+                                      <td className="p-3 text-sm font-medium">{measure.measureName}</td>
+                                      <td className="p-3">
+                                        {measure.target && (
+                                          <Badge variant="outline" className="text-xs">
+                                            {measure.target}
+                                          </Badge>
+                                        )}
+                                      </td>
+                                      <td className="p-3 text-xs text-muted-foreground max-w-xs">
+                                        <div className="truncate" title={measure.formula}>
+                                          {measure.formula || '-'}
                                         </div>
-                                      )}
-                                      
-                                      {measure.frequency && (
-                                        <div>
-                                          <span className="font-medium">Frequency:</span>
-                                          <p className="mt-1">{measure.frequency}</p>
+                                      </td>
+                                      <td className="p-3 text-xs text-muted-foreground">
+                                        {measure.frequency || '-'}
+                                      </td>
+                                      <td className="p-3 text-xs text-muted-foreground max-w-xs">
+                                        <div className="truncate" title={measure.source}>
+                                          {measure.source || '-'}
                                         </div>
-                                      )}
-                                      
-                                      {measure.source && (
-                                        <div className="col-span-2">
-                                          <span className="font-medium">Source:</span>
-                                          <p className="mt-1">{measure.source}</p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
                           ) : (
                             <div className="text-center py-4 text-muted-foreground bg-muted/30 rounded-lg">
