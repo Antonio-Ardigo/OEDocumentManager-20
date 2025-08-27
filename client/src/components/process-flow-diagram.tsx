@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, ArrowDown, Download, FileText } from "lucide-react";
 import type { ProcessStep } from "@shared/schema";
 
 interface ProcessFlowDiagramProps {
@@ -14,50 +15,136 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
     return null;
   }
 
-  // Create visual styles based on process type
+  // Create visual styles based on process type (all horizontal now)
   const getProcessStyles = (processNumber: string) => {
     switch (processNumber) {
       case 'OE-4.1':
         return {
           primary: 'bg-blue-500',
-          secondary: 'bg-blue-100',
+          secondary: 'bg-blue-50',
           accent: 'text-blue-700',
-          flow: 'horizontal'
+          border: 'border-blue-200'
         };
       case 'OE-4.2':
         return {
           primary: 'bg-green-500',
-          secondary: 'bg-green-100',
+          secondary: 'bg-green-50',
           accent: 'text-green-700',
-          flow: 'vertical'
+          border: 'border-green-200'
         };
       default:
         return {
           primary: 'bg-purple-500',
-          secondary: 'bg-purple-100',
+          secondary: 'bg-purple-50',
           accent: 'text-purple-700',
-          flow: 'horizontal'
+          border: 'border-purple-200'
         };
     }
   };
 
   const styles = getProcessStyles(processNumber);
-  const isHorizontal = styles.flow === 'horizontal';
+  
+  // Get enabling elements for process
+  const getEnablingElements = (processNumber: string) => {
+    switch (processNumber) {
+      case 'OE-4.1':
+        return ['Risk Management', 'Document Control', 'Change Management', 'Quality Assurance'];
+      case 'OE-4.2':
+        return ['Performance Monitoring', 'Maintenance Planning', 'Inspection Programs', 'Asset Integrity'];
+      default:
+        return ['Quality Management', 'Risk Assessment', 'Documentation', 'Training'];
+    }
+  };
+
+  const enablingElements = getEnablingElements(processNumber);
+  
+  // Get process description
+  const getProcessDescription = (processNumber: string) => {
+    switch (processNumber) {
+      case 'OE-4.1':
+        return {
+          purpose: "This process ensures effective management of physical assets throughout their entire lifecycle from design and procurement through construction, commissioning, and handover to operations.",
+          scope: "Applies to all major capital projects, equipment procurement, and infrastructure development within WSM operations.",
+          expectedOutcomes: ["Optimized asset performance", "Cost-effective procurement", "Quality construction delivery", "Smooth operational handover"]
+        };
+      case 'OE-4.2':
+        return {
+          purpose: "This process establishes systematic approaches for maintaining asset integrity, optimizing performance, and ensuring safe and reliable operations throughout the asset lifecycle.",
+          scope: "Covers all operational assets including facilities, equipment, and infrastructure systems under WSM management.",
+          expectedOutcomes: ["Maximum asset uptime", "Predictive maintenance", "Cost optimization", "Safety compliance"]
+        };
+      default:
+        return {
+          purpose: "This process defines systematic approaches for managing operational excellence activities within the organization.",
+          scope: "Applies to all relevant organizational activities and stakeholders.",
+          expectedOutcomes: ["Improved efficiency", "Enhanced quality", "Risk mitigation", "Continuous improvement"]
+        };
+    }
+  };
+
+  const processDesc = getProcessDescription(processNumber);
+
+  const handleExportPDF = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text(`WSM Process: ${processName}`, 20, 30);
+    
+    // Add process number
+    doc.setFontSize(14);
+    doc.text(`Process Number: ${processNumber}`, 20, 45);
+    
+    // Add purpose
+    doc.setFontSize(12);
+    doc.text('Purpose:', 20, 65);
+    const purposeLines = doc.splitTextToSize(processDesc.purpose, 170);
+    doc.text(purposeLines, 20, 75);
+    
+    // Add scope
+    const scopeY = 75 + (purposeLines.length * 7) + 10;
+    doc.text('Scope:', 20, scopeY);
+    const scopeLines = doc.splitTextToSize(processDesc.scope, 170);
+    doc.text(scopeLines, 20, scopeY + 10);
+    
+    // Add steps
+    const stepsY = scopeY + (scopeLines.length * 7) + 20;
+    doc.text('Process Steps:', 20, stepsY);
+    
+    steps.forEach((step, index) => {
+      const stepY = stepsY + 15 + (index * 25);
+      doc.text(`${step.stepNumber}. ${step.stepName}`, 25, stepY);
+      if (step.stepDetails) {
+        const detailLines = doc.splitTextToSize(step.stepDetails, 160);
+        doc.text(detailLines, 30, stepY + 7);
+      }
+    });
+    
+    // Save the PDF
+    doc.save(`${processNumber}-${processName.replace(/\s+/g, '-')}.pdf`);
+  };
 
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <div 
-            className={`w-6 h-6 ${styles.primary} rounded-lg flex items-center justify-center text-white text-xs font-bold`}
-          >
-            {steps.length}
-          </div>
-          <span>Process Flow Overview</span>
-          <Badge variant="outline" className={styles.accent}>
-            {processNumber}
-          </Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center space-x-2">
+            <div 
+              className={`w-6 h-6 ${styles.primary} rounded-lg flex items-center justify-center text-white text-xs font-bold`}
+            >
+              {steps.length}
+            </div>
+            <span>Process Flow Overview</span>
+            <Badge variant="outline" className={styles.accent}>
+              {processNumber}
+            </Badge>
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={handleExportPDF} data-testid="button-export-pdf">
+            <Download className="w-4 h-4 mr-2" />
+            Export PDF
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -70,20 +157,20 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
           </div>
 
           {/* Flow Diagram */}
-          <div className={`flex ${isHorizontal ? 'flex-row items-center justify-center space-x-2 overflow-x-auto pb-4' : 'flex-col items-center space-y-3'}`}>
+          <div className="flex flex-row items-center justify-start space-x-3 overflow-x-auto pb-4">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+              <div key={step.id} className="flex items-center flex-shrink-0">
                 {/* Step Box */}
                 <div 
-                  className={`${isHorizontal ? 'min-w-48 max-w-64' : 'w-80'} ${styles.secondary} rounded-lg p-4 border-2 border-transparent hover:border-primary/30 transition-all duration-200 cursor-pointer group`}
+                  className={`min-w-32 max-w-48 ${styles.secondary} ${styles.border} rounded-lg p-3 border hover:shadow-sm transition-all duration-200 cursor-pointer group`}
                   data-testid={`flow-step-${index}`}
                 >
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className={`w-8 h-8 ${styles.primary} rounded-full flex items-center justify-center text-white font-bold text-sm`}>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className={`w-6 h-6 ${styles.primary} rounded-full flex items-center justify-center text-white font-bold text-xs`}>
                       {step.stepNumber}
                     </div>
                     <div className="flex-1">
-                      <h4 className={`font-medium text-sm ${styles.accent} group-hover:text-primary`}>
+                      <h4 className={`font-medium text-xs ${styles.accent} group-hover:text-primary line-clamp-1`}>
                         {step.stepName}
                       </h4>
                     </div>
@@ -91,8 +178,8 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
                   
                   {step.stepDetails && (
                     <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {step.stepDetails.length > 80 
-                        ? `${step.stepDetails.substring(0, 80)}...`
+                      {step.stepDetails.length > 60 
+                        ? `${step.stepDetails.substring(0, 60)}...`
                         : step.stepDetails
                       }
                     </p>
@@ -100,8 +187,8 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
                   
                   {step.responsibilities && (
                     <div className="mt-2 pt-2 border-t border-border/50">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Owner: {step.responsibilities.split(',')[0].trim()}
+                      <p className="text-xs font-medium text-muted-foreground line-clamp-1">
+                        {step.responsibilities.split(',')[0].trim()}
                       </p>
                     </div>
                   )}
@@ -109,20 +196,58 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
 
                 {/* Arrow connector (except for last step) */}
                 {index < steps.length - 1 && (
-                  <div className={`flex items-center justify-center ${isHorizontal ? 'mx-2' : 'my-2'}`}>
-                    {isHorizontal ? (
-                      <ChevronRight 
-                        className={`w-6 h-6 ${styles.accent} animate-pulse`}
-                      />
-                    ) : (
-                      <ArrowDown 
-                        className={`w-6 h-6 ${styles.accent} animate-pulse`}
-                      />
-                    )}
+                  <div className="flex items-center justify-center mx-2">
+                    <ChevronRight 
+                      className={`w-4 h-4 ${styles.accent}`}
+                    />
                   </div>
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Process Description */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-sm mb-2 flex items-center">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Purpose
+                </h4>
+                <p className="text-sm text-muted-foreground">{processDesc.purpose}</p>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-sm mb-2">Scope</h4>
+                <p className="text-sm text-muted-foreground">{processDesc.scope}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-sm mb-2">Expected Outcomes</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {processDesc.expectedOutcomes.map((outcome, index) => (
+                    <li key={index} className="flex items-center">
+                      <div className={`w-2 h-2 ${styles.primary} rounded-full mr-2`}></div>
+                      {outcome}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Enabling Elements */}
+          <div className={`${styles.secondary} ${styles.border} rounded-lg p-4 border`}>
+            <h4 className="font-semibold text-sm mb-3">Enabling OE Elements</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {enablingElements.map((element, index) => (
+                <div key={index} className={`bg-white rounded px-3 py-2 text-center border ${styles.border}`}>
+                  <span className={`text-xs font-medium ${styles.accent}`}>{element}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Process Summary */}
@@ -137,7 +262,7 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
                 </span>
               </div>
               <Badge variant="secondary" className="text-xs">
-                {isHorizontal ? 'Horizontal Flow' : 'Vertical Flow'}
+                Horizontal Flow
               </Badge>
             </div>
           </div>
