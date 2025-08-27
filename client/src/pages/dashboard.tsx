@@ -209,16 +209,16 @@ export default function Dashboard() {
                 variant="outline"
                 className="h-auto p-6 justify-start"
                 asChild
-                data-testid="button-create-process"
+                data-testid="button-create-element"
               >
-                <Link href="/create-process">
+                <Link href="/create-element">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                       <Plus className="text-primary text-xl" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold">Create New Process</h3>
-                      <p className="text-sm text-muted-foreground">Start a new OE process from template</p>
+                      <h3 className="font-semibold">Create New Element</h3>
+                      <p className="text-sm text-muted-foreground">Add a new OE element to the framework</p>
                     </div>
                   </div>
                 </Link>
@@ -302,7 +302,7 @@ export default function Dashboard() {
                     Start by creating your first OE element to begin managing processes.
                   </p>
                   <Button asChild data-testid="button-create-first-element">
-                    <Link href="/create-process">
+                    <Link href="/create-element">
                       <Plus className="w-4 h-4 mr-2" />
                       Create First Element
                     </Link>
@@ -357,9 +357,9 @@ export default function Dashboard() {
       <Button 
         className="fab w-14 h-14 rounded-full shadow-lg hover:scale-105 transition-transform"
         asChild
-        data-testid="fab-create-process"
+        data-testid="fab-create-element"
       >
-        <Link href="/create-process">
+        <Link href="/create-element">
           <Plus className="w-6 h-6" />
         </Link>
       </Button>

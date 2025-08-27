@@ -10,6 +10,7 @@ import AllProcesses from "@/pages/all-processes";
 import ElementDetail from "@/pages/element-detail";
 import ProcessDetail from "@/pages/process-detail";
 import ProcessEditor from "@/pages/process-editor";
+import ElementEditor from "@/pages/element-editor";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
           <Route path="/process/:id" component={ProcessDetail} />
           <Route path="/process/:id/edit" component={ProcessEditor} />
           <Route path="/create-process" component={ProcessEditor} />
+          <Route path="/create-element" component={ElementEditor} />
         </>
       )}
       <Route component={NotFound} />
