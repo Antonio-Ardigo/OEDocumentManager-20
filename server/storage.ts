@@ -111,6 +111,11 @@ export class DatabaseStorage implements IStorage {
       with: {
         processes: {
           orderBy: [oeProcesses.processNumber],
+          with: {
+            steps: {
+              orderBy: [processSteps.stepNumber],
+            },
+          },
         },
       },
     });

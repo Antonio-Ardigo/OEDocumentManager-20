@@ -232,7 +232,7 @@ export default function ElementDetail() {
                         id: process.id,
                         processNumber: process.processNumber,
                         name: process.name,
-                        steps: (process as any).steps?.map((step: any) => ({
+                        steps: process.steps?.map(step => ({
                           id: step.id,
                           stepNumber: step.stepNumber,
                           stepName: step.stepName,
