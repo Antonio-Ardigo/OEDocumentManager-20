@@ -49,8 +49,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all OE elements with processes and steps for mind map
-  app.get('/api/oe-elements/mindmap', isAuthenticated, async (req, res) => {
+  // Get all OE elements with processes and steps for mind map (must come before :id route)
+  app.get('/api/mindmap/elements', isAuthenticated, async (req, res) => {
     try {
       const elements = await storage.getOeElementsForMindMap();
       res.json(elements);
