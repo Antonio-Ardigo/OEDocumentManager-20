@@ -70,6 +70,8 @@ export default function BalancedScorecard() {
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
+  const [editingMetric, setEditingMetric] = useState<string | null>(null);
+  const [editingMetricData, setEditingMetricData] = useState<Partial<PerformanceMetric>>({});
   const [newGoal, setNewGoal] = useState({
     title: '',
     description: '',
@@ -182,6 +184,28 @@ export default function BalancedScorecard() {
       toast({
         title: "Error",
         description: "Failed to update strategic goal",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMetricMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      await apiRequest(`/api/performance-metrics/${id}`, 'PUT', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/performance-metrics"] });
+      setEditingMetric(null);
+      setEditingMetricData({});
+      toast({
+        title: "Success",
+        description: "Performance metric updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update performance metric",
         variant: "destructive",
       });
     },
@@ -322,21 +346,147 @@ export default function BalancedScorecard() {
                         {elementMetrics.map((metric) => (
                           <Card key={metric.id} className="border">
                             <CardContent className="p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-sm">{metric.metricName}</h4>
-                                {getTrendIcon(metric.trend)}
-                              </div>
-                              <div className="text-2xl font-bold mb-1">
-                                {metric.currentValue}{metric.unit}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Target: {metric.targetValue}{metric.unit}
-                              </div>
-                              <div className="text-sm">
-                                <span className={`font-medium ${metric.percentage >= 100 ? 'text-green-600' : metric.percentage >= 75 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                  {metric.percentage}% of target
-                                </span>
-                              </div>
+                              {editingMetric === metric.id ? (
+                                // Edit form
+                                <div className="space-y-3">
+                                  <div>
+                                    <Label htmlFor={`metric-name-${metric.id}`}>Metric Name</Label>
+                                    <Input
+                                      id={`metric-name-${metric.id}`}
+                                      value={editingMetricData.metricName || metric.metricName}
+                                      onChange={(e) => setEditingMetricData({
+                                        ...editingMetricData,
+                                        metricName: e.target.value
+                                      })}
+                                      data-testid={`input-metric-name-${metric.id}`}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <Label htmlFor={`current-value-${metric.id}`}>Current Value</Label>
+                                      <Input
+                                        id={`current-value-${metric.id}`}
+                                        type="number"
+                                        value={editingMetricData.currentValue ?? metric.currentValue}
+                                        onChange={(e) => setEditingMetricData({
+                                          ...editingMetricData,
+                                          currentValue: parseFloat(e.target.value) || 0
+                                        })}
+                                        data-testid={`input-current-value-${metric.id}`}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`target-value-${metric.id}`}>Target Value</Label>
+                                      <Input
+                                        id={`target-value-${metric.id}`}
+                                        type="number"
+                                        value={editingMetricData.targetValue ?? metric.targetValue}
+                                        onChange={(e) => setEditingMetricData({
+                                          ...editingMetricData,
+                                          targetValue: parseFloat(e.target.value) || 0
+                                        })}
+                                        data-testid={`input-target-value-${metric.id}`}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <Label htmlFor={`unit-${metric.id}`}>Unit</Label>
+                                      <Input
+                                        id={`unit-${metric.id}`}
+                                        value={editingMetricData.unit || metric.unit}
+                                        onChange={(e) => setEditingMetricData({
+                                          ...editingMetricData,
+                                          unit: e.target.value
+                                        })}
+                                        data-testid={`input-unit-${metric.id}`}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`trend-${metric.id}`}>Trend</Label>
+                                      <select
+                                        id={`trend-${metric.id}`}
+                                        value={editingMetricData.trend || metric.trend}
+                                        onChange={(e) => setEditingMetricData({
+                                          ...editingMetricData,
+                                          trend: e.target.value as 'up' | 'down' | 'stable'
+                                        })}
+                                        className="w-full p-2 border rounded-md"
+                                        data-testid={`select-trend-${metric.id}`}
+                                      >
+                                        <option value="up">Up</option>
+                                        <option value="down">Down</option>
+                                        <option value="stable">Stable</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-end space-x-2 mt-4">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setEditingMetric(null);
+                                        setEditingMetricData({});
+                                      }}
+                                      data-testid={`button-cancel-edit-${metric.id}`}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        const currentValue = editingMetricData.currentValue ?? metric.currentValue;
+                                        const targetValue = editingMetricData.targetValue ?? metric.targetValue;
+                                        const percentage = targetValue > 0 ? Math.round((currentValue / targetValue) * 100) : 0;
+                                        
+                                        updateMetricMutation.mutate({
+                                          id: metric.id,
+                                          data: {
+                                            ...editingMetricData,
+                                            percentage
+                                          }
+                                        });
+                                      }}
+                                      disabled={updateMetricMutation.isPending}
+                                      data-testid={`button-save-edit-${metric.id}`}
+                                    >
+                                      {updateMetricMutation.isPending ? 'Saving...' : 'Save'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                // Display view
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="font-medium text-sm">{metric.metricName}</h4>
+                                    <div className="flex items-center space-x-2">
+                                      {getTrendIcon(metric.trend)}
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setEditingMetric(metric.id);
+                                          setEditingMetricData({});
+                                        }}
+                                        data-testid={`button-edit-metric-${metric.id}`}
+                                      >
+                                        <Edit3 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <div className="text-2xl font-bold mb-1">
+                                    {metric.currentValue}{metric.unit}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    Target: {metric.targetValue}{metric.unit}
+                                  </div>
+                                  <div className="text-sm">
+                                    <span className={`font-medium ${metric.percentage >= 100 ? 'text-green-600' : metric.percentage >= 75 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                      {metric.percentage}% of target
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                             </CardContent>
                           </Card>
                         ))}
