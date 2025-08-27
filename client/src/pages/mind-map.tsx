@@ -566,7 +566,7 @@ export default function MindMap() {
       // Store original styles and prepare for capture
       const originalStyles = new Map();
       
-      // Force visibility and remove problematic styles
+      // Force visibility and ensure uniform background
       const allElements = mindMapContainer.querySelectorAll('*');
       allElements.forEach((el: Element) => {
         const htmlEl = el as HTMLElement;
@@ -580,6 +580,19 @@ export default function MindMap() {
         // Remove transforms that might cause issues
         htmlEl.style.transform = 'none';
         htmlEl.style.filter = 'none';
+        
+        // Ensure consistent backgrounds - force white background for containers
+        const tagName = htmlEl.tagName.toLowerCase();
+        if (['div', 'section', 'article', 'main', 'body'].includes(tagName)) {
+          htmlEl.style.backgroundColor = '#ffffff';
+        }
+        
+        // Handle cards and content areas specifically
+        if (htmlEl.classList.contains('card') || htmlEl.classList.contains('bg-muted') || 
+            htmlEl.classList.contains('bg-green-50') || htmlEl.classList.contains('bg-blue-50') ||
+            htmlEl.classList.contains('bg-purple-50')) {
+          htmlEl.style.backgroundColor = '#ffffff';
+        }
       });
 
       // Prepare container
