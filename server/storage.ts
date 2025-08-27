@@ -21,7 +21,7 @@ import {
   type OeElementWithProcesses,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or, sql } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql, asc } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -98,7 +98,7 @@ export class DatabaseStorage implements IStorage {
     return await db.query.oeElements.findMany({
       with: {
         processes: {
-          orderBy: [desc(oeProcesses.updatedAt)],
+          orderBy: [asc(oeProcesses.processNumber)],
         },
       },
       orderBy: [oeElements.elementNumber],
@@ -201,7 +201,7 @@ export class DatabaseStorage implements IStorage {
         },
         createdByUser: true,
       },
-      orderBy: [desc(oeProcesses.updatedAt)],
+      orderBy: [asc(oeProcesses.processNumber)],
     });
   }
 
