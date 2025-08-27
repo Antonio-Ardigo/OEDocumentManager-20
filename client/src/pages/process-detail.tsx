@@ -62,7 +62,7 @@ export default function ProcessDetail() {
       const diagramWidth = 170;
       const stepWidth = 35;
       const stepHeight = 45;
-      const spacing = (diagramWidth - (process.steps.length * stepWidth)) / (process.steps.length + 1);
+      const spacing = (diagramWidth - ((process.steps?.length || 0) * stepWidth)) / ((process.steps?.length || 0) + 1);
       
       // Draw diagram title with underline
       doc.setFont('helvetica', 'bold');
@@ -76,7 +76,7 @@ export default function ProcessDetail() {
       const flowStartY = startY + 25;
       
       // Draw process steps with enhanced styling
-      process.steps.forEach((step, index) => {
+      process.steps?.forEach((step, index) => {
         const x = 20 + spacing + (index * (stepWidth + spacing));
         const y = flowStartY;
         
@@ -121,7 +121,7 @@ export default function ProcessDetail() {
         });
         
         // Enhanced arrow to next step
-        if (index < process.steps.length - 1) {
+        if (index < (process.steps?.length || 0) - 1) {
           const arrowY = y + stepHeight/2;
           const arrowStartX = x + stepWidth + 3;
           const arrowEndX = x + stepWidth + spacing - 3;
