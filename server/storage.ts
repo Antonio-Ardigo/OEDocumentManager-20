@@ -30,7 +30,7 @@ export interface IStorage {
 
   // OE Element operations
   getAllOeElements(): Promise<OeElementWithProcesses[]>;
-  getOeElement(id: string): Promise<OeElement | undefined>;
+  getOeElement(id: string): Promise<OeElementWithProcesses | undefined>;
   createOeElement(element: InsertOeElement): Promise<OeElement>;
   updateOeElement(id: string, element: Partial<InsertOeElement>): Promise<OeElement>;
   deleteOeElement(id: string): Promise<void>;
@@ -105,9 +105,14 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getOeElement(id: string): Promise<OeElement | undefined> {
+  async getOeElement(id: string): Promise<OeElementWithProcesses | undefined> {
     return await db.query.oeElements.findFirst({
       where: eq(oeElements.id, id),
+      with: {
+        processes: {
+          orderBy: [oeProcesses.processNumber],
+        },
+      },
     });
   }
 
