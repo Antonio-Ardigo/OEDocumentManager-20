@@ -38,8 +38,9 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: false, // Allow HTTP for development/preview
       maxAge: sessionTtl,
+      sameSite: 'lax', // Allow cross-site requests for preview
     },
   });
 }

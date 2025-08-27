@@ -12,6 +12,13 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add headers for preview/iframe support
+  app.use((req, res, next) => {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Content-Security-Policy', "frame-ancestors 'self' *.replit.dev *.replit.com");
+    next();
+  });
+
   // Auth middleware
   await setupAuth(app);
 
