@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { Link } from "wouter";
 
@@ -30,6 +31,30 @@ export default function ElementEditor() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+
+  // Available icons for selection
+  const iconOptions = [
+    { value: "👑", label: "👑 Crown" },
+    { value: "📊", label: "📊 Chart" },
+    { value: "🏭", label: "🏭 Factory" },
+    { value: "⚙️", label: "⚙️ Gear" },
+    { value: "🎯", label: "🎯 Target" },
+    { value: "💼", label: "💼 Briefcase" },
+    { value: "🔒", label: "🔒 Security" },
+    { value: "🎓", label: "🎓 Education" },
+    { value: "📋", label: "📋 Clipboard" },
+    { value: "🚀", label: "🚀 Rocket" },
+    { value: "💡", label: "💡 Lightbulb" },
+    { value: "🔧", label: "🔧 Wrench" },
+    { value: "📈", label: "📈 Growth" },
+    { value: "🏆", label: "🏆 Trophy" },
+    { value: "🌟", label: "🌟 Star" },
+    { value: "💰", label: "💰 Money" },
+    { value: "🔍", label: "🔍 Search" },
+    { value: "📱", label: "📱 Mobile" },
+    { value: "🌍", label: "🌍 Globe" },
+    { value: "🔥", label: "🔥 Fire" }
+  ];
 
   const [formData, setFormData] = useState<ElementFormData>({
     elementNumber: 1,
@@ -166,14 +191,22 @@ export default function ElementEditor() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="icon">Icon (Emoji)</Label>
-                      <Input
-                        id="icon"
-                        placeholder="📋"
+                      <Label htmlFor="icon">Icon</Label>
+                      <Select
                         value={formData.icon}
-                        onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                        data-testid="input-icon"
-                      />
+                        onValueChange={(value) => setFormData({ ...formData, icon: value })}
+                      >
+                        <SelectTrigger data-testid="select-icon">
+                          <SelectValue placeholder="Select an icon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {iconOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 

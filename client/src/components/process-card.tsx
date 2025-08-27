@@ -23,6 +23,11 @@ interface ProcessCardProps {
 
 export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardProps) {
   const getElementIcon = (elementNumber: number) => {
+    // If element has a custom icon, use it, otherwise fallback to default icons
+    if (element.icon) {
+      return null; // We'll render the emoji directly
+    }
+    
     switch (elementNumber) {
       case 1: return Crown;
       case 2: return Activity;
@@ -89,7 +94,11 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
-                  <Icon className="text-xl" />
+                  {element.icon ? (
+                    <span className="text-2xl">{element.icon}</span>
+                  ) : (
+                    <Icon className="text-xl" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
@@ -153,7 +162,11 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
-              <Icon className="text-xl" />
+              {element.icon ? (
+                <span className="text-2xl">{element.icon}</span>
+              ) : (
+                <Icon className="text-xl" />
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <Badge className={statusColor}>
