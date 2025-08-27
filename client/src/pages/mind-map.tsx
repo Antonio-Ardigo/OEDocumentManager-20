@@ -53,6 +53,7 @@ interface MindMapNodeProps {
   level: number;
   nodeType: 'element' | 'process' | 'step';
   badge?: string;
+  hideText?: boolean;
 }
 
 function MindMapNode({ 
@@ -63,7 +64,8 @@ function MindMapNode({
   onToggle, 
   level, 
   nodeType,
-  badge 
+  badge,
+  hideText = false
 }: MindMapNodeProps) {
   const getNodeStyle = () => {
     switch (nodeType) {
@@ -158,7 +160,7 @@ function MindMapNode({
                 </Badge>
               )}
             </div>
-            {subtitle && (
+            {subtitle && !hideText && (
               <p className="text-xs text-gray-600 leading-tight">{subtitle}</p>
             )}
           </div>
@@ -181,10 +183,11 @@ interface ViewProps {
   elements: OeElementWithProcesses[];
   expandedNodes: Set<string>;
   toggleNode: (nodeId: string) => void;
+  hideText: boolean;
 }
 
 // Hierarchical Tree View with Smaller Fonts
-function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
+function HierarchicalView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) {
   return (
     <div className="space-y-4">
       {elements.map((element) => (
@@ -197,6 +200,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
           level={0}
           nodeType="element"
           badge={`${element.processes?.length || 0} Processes`}
+          hideText={hideText}
         >
           {element.processes?.sort((a, b) => compareVersionNumbers(a.processNumber, b.processNumber)).map((process) => (
             <MindMapNode
@@ -208,6 +212,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
               level={1}
               nodeType="process"
               badge={`${(process as any).steps?.length || 0} Steps`}
+              hideText={hideText}
             >
               {(process as any).steps?.sort((a: any, b: any) => {
                 const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
@@ -222,6 +227,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
                   onToggle={() => {}}
                   level={2}
                   nodeType="step"
+                  hideText={hideText}
                 />
               ))}
             </MindMapNode>
@@ -234,7 +240,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
 
 
 // Grid Layout View with Smaller Fonts
-function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
+function GridView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       {elements.map((element) => (
@@ -252,7 +258,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
               </div>
               {expandedNodes.has(element.id) ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </CardTitle>
-            {element.description && (
+            {element.description && !hideText && (
               <p className="text-xs text-muted-foreground">{element.description}</p>
             )}
           </CardHeader>
@@ -275,7 +281,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
                         </div>
                         {expandedNodes.has(process.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </div>
-                      <p className="text-xs text-green-700 mb-2">{process.name}</p>
+                      {!hideText && <p className="text-xs text-green-700 mb-2">{process.name}</p>}
                       
                       {expandedNodes.has(process.id) && (
                         <div className="grid grid-cols-1 gap-2">
@@ -291,7 +297,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
                                 </div>
                                 <span className="text-xs font-medium text-purple-800">{step.stepName}</span>
                               </div>
-                              {step.stepDetails && (
+                              {step.stepDetails && !hideText && (
                                 <p className="text-xs text-purple-600 pl-7">{step.stepDetails}</p>
                               )}
                             </div>
@@ -317,6 +323,7 @@ export default function MindMap() {
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('hierarchical');
   const [isExporting, setIsExporting] = useState(false);
   const [isCapturingCanvas, setIsCapturingCanvas] = useState(false);
+  const [hideText, setHideText] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -791,6 +798,13 @@ export default function MindMap() {
                   Collapse All
                 </Button>
                 <Button 
+                  onClick={() => setHideText(!hideText)} 
+                  variant={hideText ? "default" : "outline"} 
+                  size="sm"
+                >
+                  Titles Only
+                </Button>
+                <Button 
                   onClick={exportToPDF} 
                   variant="outline" 
                   size="sm"
@@ -830,6 +844,7 @@ export default function MindMap() {
                       elements={elements} 
                       expandedNodes={expandedNodes} 
                       toggleNode={toggleNode} 
+                      hideText={hideText}
                     />
                   )}
                   {visualizationType === 'grid' && (
@@ -837,6 +852,7 @@ export default function MindMap() {
                       elements={elements} 
                       expandedNodes={expandedNodes} 
                       toggleNode={toggleNode} 
+                      hideText={hideText}
                     />
                   )}
                 </div>
