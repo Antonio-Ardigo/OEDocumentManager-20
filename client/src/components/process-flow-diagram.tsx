@@ -124,7 +124,7 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
                       {step.stepNumber}
                     </div>
                     <div className="flex-1">
-                      <h4 className={`font-medium text-xs ${styles.accent} group-hover:text-primary line-clamp-1`}>
+                      <h4 className={`font-medium text-xs ${styles.accent} group-hover:text-primary leading-tight`}>
                         {step.stepName}
                       </h4>
                     </div>
