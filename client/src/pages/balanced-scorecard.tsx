@@ -309,18 +309,10 @@ export default function BalancedScorecard() {
                   <CardDescription>Performance Overview</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Goals: {totalGoals} | Process Measures: {totalMeasures}</span>
-                    <span className="text-sm font-medium">{achievedGoals}/{totalGoals}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                  <div className="text-right mt-1">
-                    <span className="text-sm font-medium">{percentage}%</span>
+                  <div className="text-center">
+                    <Badge className={getCategoryColor(category)}>
+                      {category}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
