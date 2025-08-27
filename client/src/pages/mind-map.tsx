@@ -19,7 +19,8 @@ import {
   Target,
   TreePine,
   Workflow,
-  Grid3X3
+  Grid3X3,
+  Download
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
@@ -177,7 +178,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
           nodeType="element"
           badge={`${element.processes?.length || 0} Processes`}
         >
-          {element.processes?.map((process) => (
+          {element.processes?.sort((a, b) => a.processNumber.localeCompare(b.processNumber)).map((process) => (
             <MindMapNode
               key={process.id}
               title={`${process.processNumber}: ${process.name}`}
@@ -188,7 +189,11 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
               nodeType="process"
               badge={`${(process as any).steps?.length || 0} Steps`}
             >
-              {(process as any).steps?.map((step: any, index: number) => (
+              {(process as any).steps?.sort((a: any, b: any) => {
+                const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
+                const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
+                return aNum.localeCompare(bNum);
+              }).map((step: any, index: number) => (
                 <MindMapNode
                   key={step.id}
                   title={`Step ${step.stepNumber}: ${step.stepName}`}
@@ -235,7 +240,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
           {expandedNodes.has(element.id) && (
             <CardContent className="pt-0">
               <div className="space-y-3">
-                {element.processes?.map((process) => (
+                {element.processes?.sort((a, b) => a.processNumber.localeCompare(b.processNumber)).map((process) => (
                   <Card key={process.id} className="border border-green-200 bg-green-50">
                     <CardContent className="p-3">
                       <div 
@@ -254,7 +259,11 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
                       
                       {expandedNodes.has(process.id) && (
                         <div className="grid grid-cols-1 gap-2">
-                          {(process as any).steps?.map((step: any) => (
+                          {(process as any).steps?.sort((a: any, b: any) => {
+                            const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
+                            const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
+                            return aNum.localeCompare(bNum);
+                          }).map((step: any) => (
                             <div key={step.id} className="bg-white border border-purple-200 rounded p-2">
                               <div className="flex items-center space-x-2 mb-1">
                                 <div className="w-5 h-5 bg-purple-500 rounded flex items-center justify-center text-white text-xs font-bold">
@@ -286,6 +295,7 @@ export default function MindMap() {
   const { isAuthenticated, isLoading } = useAuth();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('hierarchical');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -358,6 +368,147 @@ export default function MindMap() {
     setExpandedNodes(new Set());
   };
 
+  const exportToPDF = async () => {
+    if (!elements || elements.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "Please ensure there are elements to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    
+    try {
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF();
+      
+      // Set up fonts and styling
+      pdf.setFont("helvetica");
+      let currentY = 20;
+      const pageHeight = pdf.internal.pageSize.height;
+      const pageWidth = pdf.internal.pageSize.width;
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+
+      // Title
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("OE Framework Mind Map", margin, currentY);
+      currentY += 15;
+
+      // Date
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, currentY);
+      currentY += 20;
+
+      // Process elements in order
+      const sortedElements = [...elements].sort((a, b) => a.elementNumber - b.elementNumber);
+
+      for (const element of sortedElements) {
+        // Check for page break
+        if (currentY > pageHeight - 40) {
+          pdf.addPage();
+          currentY = 20;
+        }
+
+        // Element header
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`OE Element ${element.elementNumber}: ${element.title}`, margin, currentY);
+        currentY += 10;
+
+        if (element.description) {
+          pdf.setFontSize(9);
+          pdf.setFont("helvetica", "normal");
+          const descLines = pdf.splitTextToSize(element.description, maxWidth);
+          pdf.text(descLines, margin, currentY);
+          currentY += (descLines.length * 4) + 5;
+        }
+
+        // Processes
+        if (element.processes && element.processes.length > 0) {
+          const sortedProcesses = [...element.processes].sort((a, b) => 
+            a.processNumber.localeCompare(b.processNumber)
+          );
+
+          for (const process of sortedProcesses) {
+            // Check for page break
+            if (currentY > pageHeight - 30) {
+              pdf.addPage();
+              currentY = 20;
+            }
+
+            pdf.setFontSize(10);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(`  ${process.processNumber}: ${process.name}`, margin + 10, currentY);
+            currentY += 8;
+
+            if (process.description) {
+              pdf.setFontSize(8);
+              pdf.setFont("helvetica", "normal");
+              const procDescLines = pdf.splitTextToSize(process.description, maxWidth - 20);
+              pdf.text(procDescLines, margin + 15, currentY);
+              currentY += (procDescLines.length * 3) + 3;
+            }
+
+            // Steps
+            if ((process as any).steps && (process as any).steps.length > 0) {
+              const sortedSteps = [...(process as any).steps].sort((a: any, b: any) => {
+                const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
+                const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
+                return aNum.localeCompare(bNum);
+              });
+
+              for (const step of sortedSteps) {
+                // Check for page break
+                if (currentY > pageHeight - 20) {
+                  pdf.addPage();
+                  currentY = 20;
+                }
+
+                pdf.setFontSize(9);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(`    Step ${step.stepNumber}: ${step.stepName}`, margin + 20, currentY);
+                currentY += 6;
+
+                if (step.stepDetails) {
+                  pdf.setFontSize(8);
+                  pdf.setFont("helvetica", "normal");
+                  const stepDetailLines = pdf.splitTextToSize(step.stepDetails, maxWidth - 30);
+                  pdf.text(stepDetailLines, margin + 25, currentY);
+                  currentY += (stepDetailLines.length * 3) + 2;
+                }
+                currentY += 2;
+              }
+            }
+            currentY += 5;
+          }
+        }
+        currentY += 10;
+      }
+
+      // Save the PDF
+      pdf.save('oe-framework-mindmap.pdf');
+      
+      toast({
+        title: "Export Successful",
+        description: "Mind map exported to PDF successfully",
+      });
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export mind map to PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (isLoading || elementsLoading) {
     return (
       <div className="flex min-h-screen bg-background">
@@ -421,6 +572,15 @@ export default function MindMap() {
                 </Button>
                 <Button onClick={collapseAll} variant="outline" size="sm">
                   Collapse All
+                </Button>
+                <Button 
+                  onClick={exportToPDF} 
+                  variant="outline" 
+                  size="sm"
+                  disabled={isExporting}
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  {isExporting ? 'Exporting...' : 'Export PDF'}
                 </Button>
               </div>
             </div>
