@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
+import ElementDetail from "@/pages/element-detail";
 import ProcessDetail from "@/pages/process-detail";
 import ProcessEditor from "@/pages/process-editor";
 import NotFound from "@/pages/not-found";
@@ -20,6 +21,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Dashboard} />
+          <Route path="/element/:id" component={ElementDetail} />
           <Route path="/process/:id" component={ProcessDetail} />
           <Route path="/process/:id/edit" component={ProcessEditor} />
           <Route path="/create-process" component={ProcessEditor} />
