@@ -49,6 +49,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all OE elements with processes and steps for mind map
+  app.get('/api/oe-elements/mindmap', isAuthenticated, async (req, res) => {
+    try {
+      const elements = await storage.getOeElementsForMindMap();
+      res.json(elements);
+    } catch (error) {
+      console.error("Error fetching OE elements for mind map:", error);
+      res.status(500).json({ message: "Failed to fetch OE elements for mind map" });
+    }
+  });
+
   app.get('/api/oe-elements/:id', isAuthenticated, async (req, res) => {
     try {
       const element = await storage.getOeElement(req.params.id);

@@ -172,7 +172,7 @@ export default function MindMap() {
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: elements, isLoading: elementsLoading, error } = useQuery<OeElementWithProcesses[]>({
-    queryKey: ["/api/oe-elements"],
+    queryKey: ["/api/oe-elements/mindmap"],
     enabled: isAuthenticated,
   });
 

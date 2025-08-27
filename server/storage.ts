@@ -105,6 +105,22 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  async getOeElementsForMindMap(): Promise<OeElementWithProcesses[]> {
+    return await db.query.oeElements.findMany({
+      with: {
+        processes: {
+          orderBy: [oeProcesses.processNumber],
+          with: {
+            steps: {
+              orderBy: [processSteps.stepNumber],
+            },
+          },
+        },
+      },
+      orderBy: [oeElements.elementNumber],
+    });
+  }
+
   async getOeElement(id: string): Promise<OeElementWithProcesses | undefined> {
     return await db.query.oeElements.findFirst({
       where: eq(oeElements.id, id),
