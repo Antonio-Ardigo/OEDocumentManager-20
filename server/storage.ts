@@ -98,7 +98,7 @@ export class DatabaseStorage implements IStorage {
     return await db.query.oeElements.findMany({
       with: {
         processes: {
-          orderBy: [asc(oeProcesses.processNumber)],
+          orderBy: [sql`CAST(${oeProcesses.processNumber} AS INTEGER) ASC`],
         },
       },
       orderBy: [oeElements.elementNumber],
@@ -109,7 +109,7 @@ export class DatabaseStorage implements IStorage {
     return await db.query.oeElements.findMany({
       with: {
         processes: {
-          orderBy: [asc(oeProcesses.processNumber)],
+          orderBy: [sql`CAST(${oeProcesses.processNumber} AS INTEGER) ASC`],
           with: {
             steps: {
               orderBy: [processSteps.stepNumber],
@@ -126,7 +126,7 @@ export class DatabaseStorage implements IStorage {
       where: eq(oeElements.id, id),
       with: {
         processes: {
-          orderBy: [asc(oeProcesses.processNumber)],
+          orderBy: [sql`CAST(${oeProcesses.processNumber} AS INTEGER) ASC`],
           with: {
             steps: {
               orderBy: [processSteps.stepNumber],
@@ -201,7 +201,7 @@ export class DatabaseStorage implements IStorage {
         },
         createdByUser: true,
       },
-      orderBy: [asc(oeProcesses.processNumber)],
+      orderBy: [sql`CAST(${oeProcesses.processNumber} AS INTEGER) ASC`],
     });
   }
 
