@@ -20,6 +20,7 @@ import {
   Activity
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
+import { MindMapTree } from "@/components/mind-map-tree";
 import type { OeElementWithProcesses } from "@shared/schema";
 
 export default function ElementDetail() {
@@ -213,12 +214,34 @@ export default function ElementDetail() {
                 </CardHeader>
                 <CardContent>
                   {element.description ? (
-                    <p className="text-muted-foreground" data-testid="element-description">
+                    <p className="text-muted-foreground mb-6" data-testid="element-description">
                       {element.description}
                     </p>
                   ) : (
-                    <p className="text-muted-foreground italic">No description available.</p>
+                    <p className="text-muted-foreground italic mb-6">No description available.</p>
                   )}
+                  
+                  {/* Mind Map Tree */}
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+                      <Activity className="w-5 h-5" />
+                      <span>Process Mind Map</span>
+                    </h3>
+                    <MindMapTree 
+                      processes={element.processes?.map(process => ({
+                        id: process.id,
+                        processNumber: process.processNumber,
+                        name: process.name,
+                        steps: (process as any).steps?.map((step: any) => ({
+                          id: step.id,
+                          stepNumber: step.stepNumber,
+                          stepName: step.stepName,
+                          stepDetails: step.stepDetails
+                        })) || []
+                      })) || []}
+                      elementTitle={element.title}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
