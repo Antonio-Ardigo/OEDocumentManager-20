@@ -207,76 +207,130 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
   );
 }
 
-// Radial/Circular Diagram View with Curved Lines
+// Radial/Circular Diagram View with Professional Design
 function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
+  const centerX = 800;
+  const centerY = 450;
+  const baseRadius = 280;
+
   return (
-    <div className="relative min-h-[800px] w-full overflow-auto" style={{ minWidth: '1200px' }}>
-      <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
+    <div className="relative min-h-[900px] w-full overflow-auto bg-gradient-to-br from-slate-50 to-blue-50" style={{ minWidth: '1600px' }}>
+      <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-            refX="0" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280" />
+          {/* Professional gradient definitions */}
+          <linearGradient id="elementGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 0.8 }} />
+            <stop offset="100%" style={{ stopColor: '#1d4ed8', stopOpacity: 0.9 }} />
+          </linearGradient>
+          <linearGradient id="processGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#10b981', stopOpacity: 0.8 }} />
+            <stop offset="100%" style={{ stopColor: '#059669', stopOpacity: 0.9 }} />
+          </linearGradient>
+          <linearGradient id="stepGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#8b5cf6', stopOpacity: 0.8 }} />
+            <stop offset="100%" style={{ stopColor: '#7c3aed', stopOpacity: 0.9 }} />
+          </linearGradient>
+          
+          {/* Enhanced arrow markers */}
+          <marker id="elementArrow" markerWidth="12" markerHeight="8" 
+            refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,8 L12,4 z" fill="url(#elementGradient)" />
           </marker>
+          <marker id="processArrow" markerWidth="10" markerHeight="6" 
+            refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L10,3 z" fill="url(#processGradient)" />
+          </marker>
+          <marker id="stepArrow" markerWidth="8" markerHeight="5" 
+            refX="6" refY="2.5" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,5 L8,2.5 z" fill="url(#stepGradient)" />
+          </marker>
+
+          {/* Professional drop shadow filter */}
+          <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.3"/>
+          </filter>
         </defs>
         
+        {/* Central orbital rings */}
+        <circle cx={centerX} cy={centerY} r={baseRadius * 0.3} 
+          fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="5,5" opacity="0.4" />
+        <circle cx={centerX} cy={centerY} r={baseRadius * 0.6} 
+          fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="5,5" opacity="0.3" />
+        <circle cx={centerX} cy={centerY} r={baseRadius} 
+          fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="5,5" opacity="0.2" />
+        
+        {/* Connection lines */}
         {elements.map((element, elementIndex) => {
-          const centerX = 600;
-          const centerY = 400;
-          const elementRadius = 200;
-          const elementAngle = (elementIndex * 2 * Math.PI) / elements.length;
-          const elementX = centerX + elementRadius * Math.cos(elementAngle);
-          const elementY = centerY + elementRadius * Math.sin(elementAngle);
+          const elementAngle = (elementIndex * 2 * Math.PI) / elements.length - Math.PI / 2;
+          const elementX = centerX + baseRadius * Math.cos(elementAngle);
+          const elementY = centerY + baseRadius * Math.sin(elementAngle);
           
           return (
             <g key={element.id}>
-              {/* Curved line from center to element */}
+              {/* Smooth curved line from center to element */}
               <path
-                d={`M ${centerX} ${centerY} Q ${centerX + (elementX - centerX) * 0.5} ${centerY + (elementY - centerY) * 0.3} ${elementX} ${elementY}`}
-                stroke="#3b82f6"
-                strokeWidth="3"
+                d={`M ${centerX} ${centerY} 
+                    C ${centerX + (elementX - centerX) * 0.3} ${centerY + (elementY - centerY) * 0.3},
+                      ${centerX + (elementX - centerX) * 0.7} ${centerY + (elementY - centerY) * 0.7},
+                      ${elementX} ${elementY}`}
+                stroke="url(#elementGradient)"
+                strokeWidth="4"
                 fill="none"
-                markerEnd="url(#arrowhead)"
-                opacity="0.7"
+                markerEnd="url(#elementArrow)"
+                opacity="0.8"
+                filter="url(#dropshadow)"
               />
               
-              {/* Process connections */}
+              {/* Process connections with improved curves */}
               {element.processes?.map((process, processIndex) => {
                 if (!expandedNodes.has(element.id)) return null;
                 
-                const processRadius = 120;
-                const processAngle = elementAngle + (processIndex - 1) * 0.5;
+                const totalProcesses = element.processes?.length || 1;
+                const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * Math.PI) / (totalProcesses + 1);
+                const processAngle = elementAngle + processAngleOffset;
+                const processRadius = 160;
                 const processX = elementX + processRadius * Math.cos(processAngle);
                 const processY = elementY + processRadius * Math.sin(processAngle);
                 
                 return (
                   <g key={process.id}>
                     <path
-                      d={`M ${elementX} ${elementY} Q ${elementX + (processX - elementX) * 0.3} ${elementY + (processY - elementY) * 0.7} ${processX} ${processY}`}
-                      stroke="#10b981"
-                      strokeWidth="2"
+                      d={`M ${elementX} ${elementY} 
+                          C ${elementX + (processX - elementX) * 0.4} ${elementY + (processY - elementY) * 0.1},
+                            ${elementX + (processX - elementX) * 0.6} ${elementY + (processY - elementY) * 0.9},
+                            ${processX} ${processY}`}
+                      stroke="url(#processGradient)"
+                      strokeWidth="3"
                       fill="none"
-                      markerEnd="url(#arrowhead)"
-                      opacity="0.6"
+                      markerEnd="url(#processArrow)"
+                      opacity="0.7"
+                      filter="url(#dropshadow)"
                     />
                     
-                    {/* Step connections */}
+                    {/* Step connections with elegant curves */}
                     {(process as any).steps?.map((step: any, stepIndex: number) => {
                       if (!expandedNodes.has(process.id)) return null;
                       
-                      const stepRadius = 80;
-                      const stepAngle = processAngle + (stepIndex - 2) * 0.3;
+                      const totalSteps = (process as any).steps?.length || 1;
+                      const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * Math.PI) / (totalSteps + 2);
+                      const stepAngle = processAngle + stepAngleOffset;
+                      const stepRadius = 120;
                       const stepX = processX + stepRadius * Math.cos(stepAngle);
                       const stepY = processY + stepRadius * Math.sin(stepAngle);
                       
                       return (
                         <path
                           key={step.id}
-                          d={`M ${processX} ${processY} Q ${processX + (stepX - processX) * 0.5} ${processY + (stepY - processY) * 0.5} ${stepX} ${stepY}`}
-                          stroke="#8b5cf6"
-                          strokeWidth="1.5"
+                          d={`M ${processX} ${processY} 
+                              C ${processX + (stepX - processX) * 0.3} ${processY + (stepY - processY) * 0.1},
+                                ${processX + (stepX - processX) * 0.7} ${processY + (stepY - processY) * 0.9},
+                                ${stepX} ${stepY}`}
+                          stroke="url(#stepGradient)"
+                          strokeWidth="2"
                           fill="none"
-                          markerEnd="url(#arrowhead)"
-                          opacity="0.5"
+                          markerEnd="url(#stepArrow)"
+                          opacity="0.6"
+                          filter="url(#dropshadow)"
                         />
                       );
                     })}
@@ -288,76 +342,84 @@ function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
         })}
       </svg>
       
-      {/* Center node */}
-      <div className="absolute" style={{ left: '580px', top: '380px', zIndex: 10 }}>
-        <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-          OE
+      {/* Enhanced center node */}
+      <div className="absolute" style={{ left: `${centerX - 35}px`, top: `${centerY - 35}px`, zIndex: 20 }}>
+        <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white font-bold shadow-2xl border-4 border-white">
+          <div className="text-center">
+            <div className="text-lg font-bold">OE</div>
+            <div className="text-xs opacity-80">Framework</div>
+          </div>
         </div>
       </div>
       
-      {/* Element nodes */}
+      {/* Professional element nodes */}
       {elements.map((element, elementIndex) => {
-        const centerX = 600;
-        const centerY = 400;
-        const elementRadius = 200;
-        const elementAngle = (elementIndex * 2 * Math.PI) / elements.length;
-        const elementX = centerX + elementRadius * Math.cos(elementAngle) - 60;
-        const elementY = centerY + elementRadius * Math.sin(elementAngle) - 30;
+        const elementAngle = (elementIndex * 2 * Math.PI) / elements.length - Math.PI / 2;
+        const elementX = centerX + baseRadius * Math.cos(elementAngle) - 80;
+        const elementY = centerY + baseRadius * Math.sin(elementAngle) - 45;
         
         return (
-          <div key={element.id} className="absolute" style={{ left: `${elementX}px`, top: `${elementY}px`, zIndex: 10 }}>
+          <div key={element.id} className="absolute" style={{ left: `${elementX}px`, top: `${elementY}px`, zIndex: 15 }}>
             <div 
-              className="bg-blue-100 border-2 border-blue-300 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all max-w-32 text-center"
+              className="bg-gradient-to-br from-blue-100 to-blue-200 border-3 border-blue-400 rounded-xl p-4 cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:scale-105 max-w-40 text-center shadow-lg"
               onClick={() => toggleNode(element.id)}
             >
-              <div className="flex items-center justify-center mb-1">
-                <Folder className="w-4 h-4 text-blue-600 mr-1" />
-                <span className="text-xs font-bold text-blue-800">#{element.elementNumber}</span>
+              <div className="flex items-center justify-center mb-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+                  {element.elementNumber}
+                </div>
               </div>
-              <p className="text-xs text-blue-700 font-medium leading-tight">{element.title}</p>
-              <Badge variant="outline" className="text-xs mt-1">
-                {element.processes?.length || 0} processes
+              <h3 className="text-sm font-bold text-blue-900 mb-1 leading-tight">{element.title}</h3>
+              <Badge variant="secondary" className="text-xs bg-blue-500 text-white">
+                {element.processes?.length || 0} Processes
               </Badge>
             </div>
             
-            {/* Process nodes */}
+            {/* Enhanced process nodes */}
             {expandedNodes.has(element.id) && element.processes?.map((process, processIndex) => {
-              const processRadius = 120;
-              const processAngle = elementAngle + (processIndex - 1) * 0.5;
-              const processX = processRadius * Math.cos(processAngle) - 50;
-              const processY = processRadius * Math.sin(processAngle) - 25;
+              const totalProcesses = element.processes?.length || 1;
+              const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * Math.PI) / (totalProcesses + 1);
+              const processAngle = elementAngle + processAngleOffset;
+              const processRadius = 160;
+              const processX = processRadius * Math.cos(processAngle) - 65;
+              const processY = processRadius * Math.sin(processAngle) - 35;
               
               return (
                 <div key={process.id} className="absolute" style={{ left: `${processX}px`, top: `${processY}px` }}>
                   <div 
-                    className="bg-green-100 border-2 border-green-300 rounded-lg p-2 cursor-pointer hover:shadow-lg transition-all max-w-28 text-center"
+                    className="bg-gradient-to-br from-green-100 to-green-200 border-3 border-green-400 rounded-xl p-3 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 max-w-32 text-center shadow-md"
                     onClick={() => toggleNode(process.id)}
                   >
-                    <div className="flex items-center justify-center mb-1">
-                      <Activity className="w-3 h-3 text-green-600 mr-1" />
-                      <span className="text-xs font-bold text-green-800">{process.processNumber}</span>
+                    <div className="flex items-center justify-center mb-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                        <Activity className="w-3 h-3" />
+                      </div>
                     </div>
-                    <p className="text-xs text-green-700 leading-tight">{process.name}</p>
-                    <Badge variant="outline" className="text-xs mt-1">
-                      {(process as any).steps?.length || 0} steps
+                    <p className="text-xs font-bold text-green-900 mb-1 leading-tight">{process.processNumber}</p>
+                    <p className="text-xs text-green-800 mb-2 leading-tight">{process.name}</p>
+                    <Badge variant="secondary" className="text-xs bg-green-500 text-white">
+                      {(process as any).steps?.length || 0} Steps
                     </Badge>
                   </div>
                   
-                  {/* Step nodes */}
+                  {/* Premium step nodes */}
                   {expandedNodes.has(process.id) && (process as any).steps?.map((step: any, stepIndex: number) => {
-                    const stepRadius = 80;
-                    const stepAngle = processAngle + (stepIndex - 2) * 0.3;
-                    const stepX = stepRadius * Math.cos(stepAngle) - 40;
-                    const stepY = stepRadius * Math.sin(stepAngle) - 20;
+                    const totalSteps = (process as any).steps?.length || 1;
+                    const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * Math.PI) / (totalSteps + 2);
+                    const stepAngle = processAngle + stepAngleOffset;
+                    const stepRadius = 120;
+                    const stepX = stepRadius * Math.cos(stepAngle) - 50;
+                    const stepY = stepRadius * Math.sin(stepAngle) - 30;
                     
                     return (
                       <div key={step.id} className="absolute" style={{ left: `${stepX}px`, top: `${stepY}px` }}>
-                        <div className="bg-purple-100 border-2 border-purple-300 rounded-lg p-2 max-w-24 text-center">
+                        <div className="bg-gradient-to-br from-purple-100 to-purple-200 border-2 border-purple-400 rounded-lg p-2 max-w-24 text-center shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                           <div className="flex items-center justify-center mb-1">
-                            <Target className="w-3 h-3 text-purple-600 mr-1" />
-                            <span className="text-xs font-bold text-purple-800">{step.stepNumber}</span>
+                            <div className="w-5 h-5 bg-gradient-to-br from-purple-500 to-purple-600 rounded flex items-center justify-center text-white text-xs font-bold">
+                              {step.stepNumber}
+                            </div>
                           </div>
-                          <p className="text-xs text-purple-700 leading-tight">{step.stepName}</p>
+                          <p className="text-xs font-semibold text-purple-900 leading-tight">{step.stepName}</p>
                         </div>
                       </div>
                     );
