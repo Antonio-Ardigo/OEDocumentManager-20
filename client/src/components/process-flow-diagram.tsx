@@ -8,10 +8,9 @@ interface ProcessFlowDiagramProps {
   processName: string;
   processNumber: string;
   steps: ProcessStep[];
-  onExportPDF?: () => void;
 }
 
-export default function ProcessFlowDiagram({ processName, processNumber, steps, onExportPDF }: ProcessFlowDiagramProps) {
+export default function ProcessFlowDiagram({ processName, processNumber, steps }: ProcessFlowDiagramProps) {
   if (!steps || steps.length === 0) {
     return null;
   }
