@@ -92,6 +92,7 @@ export const performanceMeasures = pgTable("performance_measures", {
   source: varchar("source", { length: 255 }),
   frequency: varchar("frequency", { length: 100 }),
   target: varchar("target", { length: 100 }),
+  scorecardCategory: varchar("scorecard_category", { length: 50 }), // Financial, Customer, Internal Process, Learning & Growth
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

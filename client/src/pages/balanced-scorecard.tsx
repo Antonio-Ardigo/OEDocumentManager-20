@@ -49,6 +49,22 @@ interface PerformanceMetric {
   percentage: number;
 }
 
+interface ProcessPerformanceMeasure {
+  id: string;
+  measureName: string;
+  formula?: string;
+  source?: string;
+  frequency?: string;
+  target?: string;
+  scorecardCategory?: string;
+  processId: string;
+  elementId: string;
+  elementNumber: number;
+  elementTitle: string;
+  processName: string;
+  processNumber: string;
+}
+
 export default function BalancedScorecard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
@@ -90,6 +106,12 @@ export default function BalancedScorecard() {
 
   const { data: metrics = [], isLoading: metricsLoading } = useQuery<PerformanceMetric[]>({
     queryKey: ["/api/performance-metrics"],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch process performance measures with scorecard categories
+  const { data: processPerformanceMeasures = [], isLoading: processMeasuresLoading } = useQuery<ProcessPerformanceMeasure[]>({
+    queryKey: ["/api/scorecard/performance-measures"],
     enabled: isAuthenticated,
   });
 
@@ -199,7 +221,18 @@ export default function BalancedScorecard() {
     return metrics.filter(metric => metric.elementId === elementId);
   };
 
-  if (isLoading || elementsLoading || goalsLoading || metricsLoading) {
+  // Group process performance measures by scorecard category and element
+  const getProcessMeasuresForElementAndCategory = (elementId: string, category: string) => {
+    return processPerformanceMeasures.filter(measure => 
+      measure.elementId === elementId && measure.scorecardCategory === category
+    );
+  };
+
+  const getProcessMeasuresForElement = (elementId: string) => {
+    return processPerformanceMeasures.filter(measure => measure.elementId === elementId);
+  };
+
+  if (isLoading || elementsLoading || goalsLoading || metricsLoading || processMeasuresLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -230,7 +263,9 @@ export default function BalancedScorecard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].map((category) => {
             const categoryGoals = goals.filter(goal => goal.category === category);
+            const categoryProcessMeasures = processPerformanceMeasures.filter(measure => measure.scorecardCategory === category);
             const totalGoals = categoryGoals.length;
+            const totalMeasures = categoryProcessMeasures.length;
             const achievedGoals = categoryGoals.filter(goal => goal.currentValue >= goal.targetValue).length;
             const percentage = totalGoals > 0 ? Math.round((achievedGoals / totalGoals) * 100) : 0;
             
@@ -242,7 +277,7 @@ export default function BalancedScorecard() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Goals Achieved</span>
+                    <span className="text-sm text-muted-foreground">Goals: {totalGoals} | Process Measures: {totalMeasures}</span>
                     <span className="text-sm font-medium">{achievedGoals}/{totalGoals}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -265,6 +300,7 @@ export default function BalancedScorecard() {
           {elements?.map((element) => {
             const elementGoals = getGoalsForElement(element.id);
             const elementMetrics = getMetricsForElement(element.id);
+            const elementProcessMeasures = getProcessMeasuresForElement(element.id);
             
             return (
               <Card key={element.id} className="border-2">
@@ -305,6 +341,68 @@ export default function BalancedScorecard() {
                           </Card>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Process Performance Measures by Scorecard Category */}
+                  {elementProcessMeasures.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center">
+                        <BarChart3 className="w-5 h-5 mr-2" />
+                        Process Performance Measures
+                      </h3>
+                      
+                      {['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].map((category) => {
+                        const categoryMeasures = getProcessMeasuresForElementAndCategory(element.id, category);
+                        
+                        if (categoryMeasures.length === 0) return null;
+                        
+                        return (
+                          <div key={category} className="mb-6">
+                            <div className="flex items-center mb-3">
+                              <Badge className={`mr-2 ${getCategoryColor(category)}`}>
+                                {category}
+                              </Badge>
+                              <span className="text-sm text-muted-foreground">
+                                {categoryMeasures.length} measure{categoryMeasures.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {categoryMeasures.map((measure) => (
+                                <Card key={measure.id} className="border">
+                                  <CardContent className="p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <h4 className="font-medium text-sm">{measure.measureName}</h4>
+                                      <Badge variant="outline" className="text-xs">
+                                        {measure.processNumber}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground mb-2">
+                                      From: {measure.processName}
+                                    </div>
+                                    {measure.target && (
+                                      <div className="text-sm text-foreground">
+                                        Target: {measure.target}
+                                      </div>
+                                    )}
+                                    {measure.frequency && (
+                                      <div className="text-xs text-muted-foreground">
+                                        Frequency: {measure.frequency}
+                                      </div>
+                                    )}
+                                    {measure.formula && (
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        Formula: {measure.formula}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 

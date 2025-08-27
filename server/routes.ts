@@ -457,6 +457,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Process performance measures grouped by scorecard category
+  app.get('/api/scorecard/performance-measures', isAuthenticated, async (req, res) => {
+    try {
+      const measures = await storage.getPerformanceMeasuresForScorecard();
+      res.json(measures);
+    } catch (error) {
+      console.error("Error fetching scorecard performance measures:", error);
+      res.status(500).json({ message: "Failed to fetch scorecard performance measures" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

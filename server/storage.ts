@@ -27,7 +27,7 @@ import {
   type OeElementWithProcesses,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or, sql, asc } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql, asc, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -450,6 +450,33 @@ export class DatabaseStorage implements IStorage {
 
   async deleteElementPerformanceMetric(id: string): Promise<void> {
     await db.delete(elementPerformanceMetrics).where(eq(elementPerformanceMetrics.id, id));
+  }
+
+  // Get performance measures for scorecard grouped by category and element
+  async getPerformanceMeasuresForScorecard() {
+    const result = await db
+      .select({
+        id: performanceMeasures.id,
+        measureName: performanceMeasures.measureName,
+        formula: performanceMeasures.formula,
+        source: performanceMeasures.source,
+        frequency: performanceMeasures.frequency,
+        target: performanceMeasures.target,
+        scorecardCategory: performanceMeasures.scorecardCategory,
+        processId: performanceMeasures.processId,
+        elementId: oeProcesses.elementId,
+        elementNumber: oeElements.elementNumber,
+        elementTitle: oeElements.title,
+        processName: oeProcesses.name,
+        processNumber: oeProcesses.processNumber,
+      })
+      .from(performanceMeasures)
+      .innerJoin(oeProcesses, eq(performanceMeasures.processId, oeProcesses.id))
+      .innerJoin(oeElements, eq(oeProcesses.elementId, oeElements.id))
+      .where(isNotNull(performanceMeasures.scorecardCategory))
+      .orderBy(oeElements.elementNumber, performanceMeasures.scorecardCategory, performanceMeasures.measureName);
+    
+    return result;
   }
 
   // Document Version operations

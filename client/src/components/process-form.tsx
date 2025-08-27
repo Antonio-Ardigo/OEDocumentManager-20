@@ -52,6 +52,7 @@ const processFormSchema = z.object({
     source: z.string().optional(),
     frequency: z.string().optional(),
     target: z.string().optional(),
+    scorecardCategory: z.string().optional(),
   })).default([]),
 });
 
@@ -159,6 +160,7 @@ export default function ProcessForm({
       source: "",
       frequency: "",
       target: "",
+      scorecardCategory: "",
     });
   };
 
@@ -706,7 +708,7 @@ export default function ProcessForm({
                     />
                   </div>
 
-                  <div className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <FormField
                       control={form.control}
                       name={`performanceMeasures.${index}.target`}
@@ -720,6 +722,30 @@ export default function ProcessForm({
                               data-testid={`input-measure-target-${index}`}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`performanceMeasures.${index}.scorecardCategory`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Scorecard Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid={`select-scorecard-category-${index}`}>
+                                <SelectValue placeholder="Select scorecard category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Financial">Financial</SelectItem>
+                              <SelectItem value="Customer">Customer</SelectItem>
+                              <SelectItem value="Internal Process">Internal Process</SelectItem>
+                              <SelectItem value="Learning & Growth">Learning & Growth</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
