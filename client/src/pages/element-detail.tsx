@@ -77,296 +77,291 @@ export default function ElementDetail() {
     
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
-    let yPos = 20;
+    let yPos = 30;
     
-    // Helper function to add text and return new Y position
-    const addText = (text: string, x: number, fontSize: number = 12, maxWidth: number = 170) => {
+    // Helper function to add justified text
+    const addJustifiedText = (text: string, x: number, fontSize: number = 12, maxWidth: number = 170, indent: number = 0) => {
       doc.setFontSize(fontSize);
-      const lines = doc.splitTextToSize(text, maxWidth);
-      doc.text(lines, x, yPos);
-      yPos += lines.length * (fontSize * 0.5) + 5;
+      const lines = doc.splitTextToSize(text, maxWidth - indent);
+      
+      lines.forEach((line: string, index: number) => {
+        // Justify text except for the last line
+        if (index < lines.length - 1 && line.length > maxWidth * 0.7) {
+          const words = line.split(' ');
+          if (words.length > 1) {
+            const totalWordsWidth = words.reduce((acc, word) => acc + doc.getTextWidth(word), 0);
+            const totalSpaces = maxWidth - totalWordsWidth - indent;
+            const spaceWidth = totalSpaces / (words.length - 1);
+            
+            let currentX = x + indent;
+            words.forEach((word, wordIndex) => {
+              doc.text(word, currentX, yPos);
+              currentX += doc.getTextWidth(word);
+              if (wordIndex < words.length - 1) {
+                currentX += spaceWidth;
+              }
+            });
+          } else {
+            doc.text(line, x + indent, yPos);
+          }
+        } else {
+          doc.text(line, x + indent, yPos);
+        }
+        yPos += fontSize * 0.5 + 2;
+      });
+      
       return yPos;
+    };
+    
+    // Helper function for chapter headings
+    const addChapterHeading = (title: string, level: number = 1) => {
+      checkNewPage(25);
+      yPos += level === 1 ? 15 : 10;
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(level === 1 ? 16 : 14);
+      doc.text(title.toUpperCase(), 20, yPos);
+      
+      // Simple underline for main headings
+      if (level === 1) {
+        doc.setLineWidth(0.5);
+        doc.line(20, yPos + 2, 20 + doc.getTextWidth(title.toUpperCase()), yPos + 2);
+      }
+      
+      yPos += level === 1 ? 12 : 8;
     };
     
     // Helper function to add new page if needed
     const checkNewPage = (requiredSpace: number = 30) => {
-      if (yPos + requiredSpace > 280) {
+      if (yPos + requiredSpace > 270) {
         doc.addPage();
-        yPos = 20;
+        yPos = 30;
       }
     };
 
-    // Enhanced header with professional branding
-    const addProfessionalHeader = () => {
-      // Background gradient effect
-      doc.setFillColor(59, 130, 246);
-      doc.rect(0, 0, 210, 35, 'F');
-      
-      // Company/Framework branding
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('WSM OPERATIONAL EXCELLENCE FRAMEWORK', 20, 15);
-      
-      // Main title with enhanced styling
-      doc.setFontSize(18);
-      doc.text(`OE ELEMENT No. ${element.elementNumber}`, 20, 28);
-      
-      // Element title
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'normal');
-      const titleText = element.title.toUpperCase();
-      doc.text(titleText, 20, 40);
-      
-      // Decorative line
-      doc.setLineWidth(2);
-      doc.setDrawColor(255, 255, 255);
-      doc.line(20, 45, 190, 45);
-      
-      yPos = 60;
-    };
-
-    addProfessionalHeader();
-
-    // Enhanced Element Overview with visual info boxes
-    const addInfoBox = (title: string, content: string, color: [number, number, number]) => {
-      checkNewPage(25);
-      
-      // Info box background
-      doc.setFillColor(color[0], color[1], color[2]);
-      doc.roundedRect(20, yPos - 3, 170, 20, 3, 3, 'F');
-      
-      // White text for title
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text(title, 25, yPos + 8);
-      
-      // Content text
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text(content, 25, yPos + 15);
-      
-      yPos += 25;
-    };
-
-    // Section header
-    doc.setTextColor(45, 55, 72);
+    // Document Title Page
+    doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('OPERATIONAL EXCELLENCE ELEMENT', 105, 60, { align: 'center' });
+    
+    doc.setFontSize(24);
+    doc.text(`ELEMENT No. ${element.elementNumber}`, 105, 80, { align: 'center' });
+    
     doc.setFontSize(18);
-    addText('ELEMENT OVERVIEW', 20, 18);
+    doc.setFont('helvetica', 'normal');
+    doc.text(element.title.toUpperCase(), 105, 100, { align: 'center' });
     
-    yPos += 10;
+    // Document info
+    doc.setFontSize(12);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 140, { align: 'center' });
+    doc.text('WSM Operational Excellence Framework', 105, 155, { align: 'center' });
+    
+    // Simple line separator
+    doc.setLineWidth(1);
+    doc.line(50, 170, 160, 170);
+    
+    doc.addPage();
+    yPos = 30;
 
-    // Status and key metrics with color-coded info boxes
-    addInfoBox('STATUS', element.isActive ? 'ACTIVE ✓' : 'INACTIVE ✗', 
-               element.isActive ? [34, 197, 94] : [239, 68, 68]);
+    // Chapter 1: Element Overview
+    addChapterHeading('1. ELEMENT OVERVIEW', 1);
     
-    addInfoBox('TOTAL PROCESSES', `${element.processes?.length || 0} Processes Defined`, [59, 130, 246]);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    
+    addJustifiedText(`Element Number: ${element.elementNumber}`, 20, 12);
+    yPos += 5;
+    addJustifiedText(`Element Title: ${element.title}`, 20, 12);
+    yPos += 5;
+    addJustifiedText(`Status: ${element.isActive ? 'Active' : 'Inactive'}`, 20, 12);
+    yPos += 5;
+    addJustifiedText(`Total Associated Processes: ${element.processes?.length || 0}`, 20, 12);
+    yPos += 10;
     
     if (element.description) {
-      // Description in a larger box
-      checkNewPage(40);
-      doc.setFillColor(248, 250, 252);
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(1);
-      doc.roundedRect(20, yPos - 3, 170, 35, 3, 3, 'FD');
-      
-      doc.setTextColor(45, 55, 72);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('DESCRIPTION', 25, yPos + 8);
-      
+      addJustifiedText('Description:', 20, 12);
+      yPos += 2;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      const descLines = doc.splitTextToSize(element.description, 160);
-      doc.text(descLines, 25, yPos + 18);
-      
-      yPos += 45;
+      addJustifiedText(element.description, 20, 12);
+      yPos += 10;
     }
     
-    // Timeline info
     if (element.createdAt || element.updatedAt) {
-      checkNewPage(30);
-      doc.setFillColor(124, 58, 237);
-      doc.roundedRect(20, yPos - 3, 170, 25, 3, 3, 'F');
-      
-      doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('TIMELINE', 25, yPos + 8);
-      
+      addJustifiedText('Timeline Information:', 20, 12);
+      yPos += 2;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      let timelineText = '';
+      
       if (element.createdAt) {
-        timelineText += `Created: ${new Date(element.createdAt).toLocaleDateString()}`;
+        addJustifiedText(`Created: ${new Date(element.createdAt).toLocaleDateString()}`, 20, 12);
       }
       if (element.updatedAt) {
-        if (timelineText) timelineText += ' | ';
-        timelineText += `Last Updated: ${new Date(element.updatedAt).toLocaleDateString()}`;
+        addJustifiedText(`Last Updated: ${new Date(element.updatedAt).toLocaleDateString()}`, 20, 12);
       }
-      doc.text(timelineText, 25, yPos + 18);
-      
-      yPos += 35;
+      yPos += 10;
     }
 
-    // Enhanced Processes Section with visual charts
+    // Chapter 2: Associated Processes
     if (element.processes && element.processes.length > 0) {
-      checkNewPage(80);
+      addChapterHeading('2. ASSOCIATED PROCESSES', 1);
       
-      // Section header with decorative styling
-      doc.setFillColor(45, 55, 72);
-      doc.rect(20, yPos - 5, 170, 25, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text('ASSOCIATED PROCESSES', 25, yPos + 8);
-      yPos += 35;
+      doc.setFont('helvetica', 'normal');
+      addJustifiedText(`This element contains ${element.processes.length} associated processes that define the operational procedures and standards. Each process includes detailed steps, responsibilities, and performance measures to ensure consistent execution and continuous improvement.`, 20, 12);
+      yPos += 15;
       
-      // Process statistics chart
-      const processStats = {
-        active: element.processes.filter(p => p.status === 'active').length,
-        draft: element.processes.filter(p => p.status === 'draft').length,
-        review: element.processes.filter(p => p.status === 'review').length,
-        archived: element.processes.filter(p => p.status === 'archived').length,
-      };
-      
-      // Draw process status chart
-      checkNewPage(80);
-      doc.setTextColor(45, 55, 72);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.text('PROCESS STATUS OVERVIEW', 20, yPos + 10);
-      
-      let chartX = 20;
-      const chartY = yPos + 20;
-      const barWidth = 35;
-      const maxBarHeight = 40;
-      const totalProcesses = element.processes.length;
-      
-      const statusColors = {
-        active: [34, 197, 94],
-        draft: [156, 163, 175],
-        review: [251, 191, 36],
-        archived: [239, 68, 68]
-      };
-      
-      Object.entries(processStats).forEach(([status, count]) => {
-        if (count > 0) {
-          const barHeight = Math.max((count / totalProcesses) * maxBarHeight, 5);
-          
-          // Draw bar
-          const color = statusColors[status as keyof typeof statusColors];
-          doc.setFillColor(color[0], color[1], color[2]);
-          doc.roundedRect(chartX, chartY + maxBarHeight - barHeight, barWidth, barHeight, 2, 2, 'F');
-          
-          // Draw count on top
-          doc.setTextColor(45, 55, 72);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(12);
-          doc.text(count.toString(), chartX + barWidth/2 - 3, chartY + maxBarHeight - barHeight - 5);
-          
-          // Draw status label
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.text(status.toUpperCase(), chartX, chartY + maxBarHeight + 10);
-          
-          chartX += barWidth + 10;
-        }
-      });
-      
-      yPos = chartY + maxBarHeight + 25;
-      
-      // Individual process cards with enhanced design
       element.processes.forEach((process, index) => {
-        checkNewPage(100);
+        checkNewPage(60);
         
-        // Process card with gradient effect
-        const cardColors = {
-          active: [34, 197, 94],
-          draft: [156, 163, 175], 
-          review: [251, 191, 36],
-          archived: [239, 68, 68]
-        };
+        // Process subheading
+        addChapterHeading(`2.${index + 1} ${process.processNumber}: ${process.name}`, 2);
         
-        const statusColor = cardColors[process.status as keyof typeof cardColors] || [59, 130, 246];
-        
-        // Card shadow effect
-        doc.setFillColor(200, 200, 200);
-        doc.roundedRect(22, yPos + 2, 170, 35, 5, 5, 'F');
-        
-        // Main card
-        doc.setFillColor(255, 255, 255);
-        doc.setDrawColor(statusColor[0], statusColor[1], statusColor[2]);
-        doc.setLineWidth(2);
-        doc.roundedRect(20, yPos, 170, 35, 5, 5, 'FD');
-        
-        // Status indicator stripe
-        doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-        doc.roundedRect(20, yPos, 8, 35, 5, 5, 'F');
-        
-        // Process header
-        doc.setTextColor(45, 55, 72);
+        // Process details
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
-        doc.text(`${process.processNumber}`, 35, yPos + 12);
+        addJustifiedText('Process Information:', 20, 12);
+        yPos += 2;
         
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(12);
-        const processTitle = doc.splitTextToSize(process.name, 120);
-        doc.text(processTitle, 35, yPos + 22);
+        addJustifiedText(`Process Number: ${process.processNumber}`, 25, 11, 170, 5);
+        addJustifiedText(`Process Name: ${process.name}`, 25, 11, 170, 5);
+        addJustifiedText(`Status: ${process.status || 'Draft'}`, 25, 11, 170, 5);
+        addJustifiedText(`Revision: ${process.revision || 1}`, 25, 11, 170, 5);
         
-        // Status badge
-        doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-        doc.roundedRect(150, yPos + 5, 35, 12, 6, 6, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.text((process.status || 'DRAFT').toUpperCase(), 155, yPos + 12);
-        
-        // Process owner
         if (process.processOwner) {
-          doc.setTextColor(100, 100, 100);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          doc.text(`Owner: ${process.processOwner}`, 35, yPos + 30);
+          addJustifiedText(`Process Owner: ${process.processOwner}`, 25, 11, 170, 5);
         }
         
-        yPos += 45;
+        if (process.issueDate) {
+          addJustifiedText(`Issue Date: ${new Date(process.issueDate).toLocaleDateString()}`, 25, 11, 170, 5);
+        }
         
-        // Note: Process steps would be displayed here if available
-        // For now, we'll show a placeholder indicating steps exist
-        yPos += 10;
+        if (process.effectiveDate) {
+          addJustifiedText(`Effective Date: ${new Date(process.effectiveDate).toLocaleDateString()}`, 25, 11, 170, 5);
+        }
+        
+        if (process.reviewDate) {
+          addJustifiedText(`Review Date: ${new Date(process.reviewDate).toLocaleDateString()}`, 25, 11, 170, 5);
+        }
+        
+        yPos += 8;
+        
+        // Process description
+        if (process.description) {
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Process Description:', 20, 12);
+          yPos += 2;
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText(process.description, 25, 11, 170, 5);
+          yPos += 8;
+        }
+        
+        // Purpose
+        if (process.purpose) {
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Purpose:', 20, 12);
+          yPos += 2;
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText(process.purpose, 25, 11, 170, 5);
+          yPos += 8;
+        }
+        
+        // Scope
+        if (process.scope) {
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Scope:', 20, 12);
+          yPos += 2;
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText(process.scope, 25, 11, 170, 5);
+          yPos += 8;
+        }
+        
+        // Responsibilities
+        if (process.responsibilities) {
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Responsibilities:', 20, 12);
+          yPos += 2;
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText(process.responsibilities, 25, 11, 170, 5);
+          yPos += 8;
+        }
+        
+        // Process Steps
+        if (process.steps && process.steps.length > 0) {
+          checkNewPage(40);
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText(`Process Steps (${process.steps.length} steps):`, 20, 12);
+          yPos += 5;
+          
+          process.steps.forEach((step) => {
+            checkNewPage(25);
+            
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText(`Step ${step.stepNumber}: ${step.stepName}`, 25, 11, 170, 5);
+            yPos += 2;
+            
+            doc.setFont('helvetica', 'normal');
+            
+            if (step.stepDetails) {
+              addJustifiedText(`Details: ${step.stepDetails}`, 30, 10, 170, 10);
+            }
+            
+            if (step.responsibilities) {
+              addJustifiedText(`Responsibilities: ${step.responsibilities}`, 30, 10, 170, 10);
+            }
+            
+            if (step.references) {
+              addJustifiedText(`References: ${step.references}`, 30, 10, 170, 10);
+            }
+            
+            yPos += 8;
+          });
+        }
+        
+        // Process Steps Content (if no individual steps but has content)
+        if (process.processStepsContent && (!process.steps || process.steps.length === 0)) {
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Process Steps:', 20, 12);
+          yPos += 2;
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText(process.processStepsContent, 25, 11, 170, 5);
+          yPos += 8;
+        }
+        
+        // Performance Measures
+        if (process.performanceMeasureContent) {
+          checkNewPage(25);
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Performance Measures:', 20, 12);
+          yPos += 2;
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText(process.performanceMeasureContent, 25, 11, 170, 5);
+          yPos += 8;
+        }
         
         yPos += 15; // Space between processes
       });
     }
 
-    // Enhanced Footer with professional styling  
+    // Footer for all pages
     const pageCount = (doc as any).getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       
-      // Footer background
-      doc.setFillColor(248, 250, 252);
-      doc.rect(0, 285, 210, 12, 'F');
-      
-      // Footer line
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(1);
+      // Simple footer line
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(0, 0, 0);
       doc.line(20, 285, 190, 285);
       
       // Footer text
-      doc.setTextColor(100, 100, 100);
+      doc.setTextColor(0, 0, 0);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      doc.text(`Generated ${new Date().toLocaleDateString()} | Page ${i} of ${pageCount}`, 20, 292);
-      doc.text('WSM Operational Excellence Framework', 140, 292);
-      
-      // Decorative element
-      doc.setFillColor(59, 130, 246);
-      doc.circle(200, 291, 2, 'F');
+      doc.text(`OE Element ${element.elementNumber} - ${element.title}`, 20, 292);
+      doc.text(`Page ${i} of ${pageCount}`, 190, 292, { align: 'right' });
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 292, { align: 'center' });
     }
 
     // Save the PDF
