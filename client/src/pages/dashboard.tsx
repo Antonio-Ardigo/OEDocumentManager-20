@@ -225,7 +225,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <Button
                 variant="outline"
                 className="h-auto p-6 justify-start"
@@ -245,37 +245,6 @@ export default function Dashboard() {
                 </Link>
               </Button>
               
-              <Button
-                variant="outline"
-                className="h-auto p-6 justify-start"
-                data-testid="button-import-process"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                    <Upload className="text-accent text-xl" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold">Import Process</h3>
-                    <p className="text-sm text-muted-foreground">Upload existing process documents</p>
-                  </div>
-                </div>
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="h-auto p-6 justify-start"
-                data-testid="button-browse-templates"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <FileText className="text-green-600 text-xl" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold">Browse Templates</h3>
-                    <p className="text-sm text-muted-foreground">View all available OE templates</p>
-                  </div>
-                </div>
-              </Button>
             </div>
           </div>
 

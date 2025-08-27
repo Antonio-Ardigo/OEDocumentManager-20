@@ -238,13 +238,6 @@ export default function ElementDetail() {
           addJustifiedText(`Issue Date: ${new Date(process.issueDate).toLocaleDateString()}`, 25, 11, 170, 5);
         }
         
-        if (process.effectiveDate) {
-          addJustifiedText(`Effective Date: ${new Date(process.effectiveDate).toLocaleDateString()}`, 25, 11, 170, 5);
-        }
-        
-        if (process.reviewDate) {
-          addJustifiedText(`Review Date: ${new Date(process.reviewDate).toLocaleDateString()}`, 25, 11, 170, 5);
-        }
         
         yPos += 8;
         
@@ -258,25 +251,6 @@ export default function ElementDetail() {
           yPos += 8;
         }
         
-        // Purpose
-        if (process.purpose) {
-          doc.setFont('helvetica', 'bold');
-          addJustifiedText('Purpose:', 20, 12);
-          yPos += 2;
-          doc.setFont('helvetica', 'normal');
-          addJustifiedText(process.purpose, 25, 11, 170, 5);
-          yPos += 8;
-        }
-        
-        // Scope
-        if (process.scope) {
-          doc.setFont('helvetica', 'bold');
-          addJustifiedText('Scope:', 20, 12);
-          yPos += 2;
-          doc.setFont('helvetica', 'normal');
-          addJustifiedText(process.scope, 25, 11, 170, 5);
-          yPos += 8;
-        }
         
         // Responsibilities
         if (process.responsibilities) {
@@ -288,40 +262,8 @@ export default function ElementDetail() {
           yPos += 8;
         }
         
-        // Process Steps
-        if (process.steps && process.steps.length > 0) {
-          checkNewPage(40);
-          doc.setFont('helvetica', 'bold');
-          addJustifiedText(`Process Steps (${process.steps.length} steps):`, 20, 12);
-          yPos += 5;
-          
-          process.steps.forEach((step) => {
-            checkNewPage(25);
-            
-            doc.setFont('helvetica', 'bold');
-            addJustifiedText(`Step ${step.stepNumber}: ${step.stepName}`, 25, 11, 170, 5);
-            yPos += 2;
-            
-            doc.setFont('helvetica', 'normal');
-            
-            if (step.stepDetails) {
-              addJustifiedText(`Details: ${step.stepDetails}`, 30, 10, 170, 10);
-            }
-            
-            if (step.responsibilities) {
-              addJustifiedText(`Responsibilities: ${step.responsibilities}`, 30, 10, 170, 10);
-            }
-            
-            if (step.references) {
-              addJustifiedText(`References: ${step.references}`, 30, 10, 170, 10);
-            }
-            
-            yPos += 8;
-          });
-        }
-        
-        // Process Steps Content (if no individual steps but has content)
-        if (process.processStepsContent && (!process.steps || process.steps.length === 0)) {
+        // Process Steps Content
+        if (process.processStepsContent) {
           doc.setFont('helvetica', 'bold');
           addJustifiedText('Process Steps:', 20, 12);
           yPos += 2;
