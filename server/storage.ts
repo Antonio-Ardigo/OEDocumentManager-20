@@ -109,7 +109,7 @@ export class DatabaseStorage implements IStorage {
     return await db.query.oeElements.findMany({
       with: {
         processes: {
-          orderBy: [oeProcesses.processNumber],
+          orderBy: [asc(oeProcesses.processNumber)],
           with: {
             steps: {
               orderBy: [processSteps.stepNumber],
@@ -126,7 +126,7 @@ export class DatabaseStorage implements IStorage {
       where: eq(oeElements.id, id),
       with: {
         processes: {
-          orderBy: [oeProcesses.processNumber],
+          orderBy: [asc(oeProcesses.processNumber)],
           with: {
             steps: {
               orderBy: [processSteps.stepNumber],
