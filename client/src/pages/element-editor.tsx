@@ -107,9 +107,9 @@ export default function ElementEditor() {
   const saveElementMutation = useMutation({
     mutationFn: async (data: ElementFormData) => {
       if (isEditMode) {
-        return await apiRequest(`/api/oe-elements/${id}`, "PUT", data);
+        return await apiRequest("PUT", `/api/oe-elements/${id}`, data);
       } else {
-        return await apiRequest("/api/oe-elements", "POST", data);
+        return await apiRequest("POST", "/api/oe-elements", data);
       }
     },
     onSuccess: () => {
