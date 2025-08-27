@@ -56,39 +56,65 @@ export default function ProcessDetail() {
       }
     };
 
-    // Draw process flow diagram box
-    const drawProcessFlowBox = (step: any, x: number, y: number, width: number = 50, height: number = 30) => {
-      // Draw box
-      doc.setDrawColor(59, 130, 246); // Blue color
-      doc.setFillColor(239, 246, 255); // Light blue fill
-      doc.roundedRect(x, y, width, height, 3, 3, 'FD');
+    // Draw professional process flow table
+    const drawProcessFlowTable = () => {
+      const startY = yPos;
+      const tableWidth = 170;
+      const columnWidth = tableWidth / process.steps.length;
+      const rowHeight = 50;
       
-      // Add step number circle
-      doc.setFillColor(59, 130, 246);
-      doc.circle(x + 8, y + 8, 5, 'F');
-      
-      // Add step number text
+      // Draw table header
+      doc.setFillColor(45, 55, 72); // Dark gray
+      doc.rect(20, startY, tableWidth, 12, 'F');
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(8);
-      doc.text(step.stepNumber.toString(), x + 6, y + 10);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('PROCESS FLOW SEQUENCE', 20 + tableWidth/2 - 40, startY + 8);
       
-      // Add step name
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(8);
-      const stepName = step.stepName.length > 12 ? step.stepName.substring(0, 12) + '...' : step.stepName;
-      doc.text(stepName, x + 2, y + 20);
-    };
-
-    // Draw arrow between boxes
-    const drawArrow = (fromX: number, fromY: number, toX: number, toY: number) => {
-      doc.setDrawColor(59, 130, 246);
-      doc.setLineWidth(2);
-      doc.line(fromX, fromY, toX, toY);
+      // Draw step boxes
+      process.steps.forEach((step, index) => {
+        const x = 20 + (index * columnWidth);
+        const y = startY + 12;
+        
+        // Step box background
+        doc.setFillColor(index % 2 === 0 ? 245 : 250, 248, 255); // Alternating light colors
+        doc.setDrawColor(59, 130, 246);
+        doc.setLineWidth(1);
+        doc.rect(x, y, columnWidth, rowHeight, 'FD');
+        
+        // Step number circle
+        doc.setFillColor(59, 130, 246);
+        doc.circle(x + columnWidth/2, y + 12, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text(step.stepNumber.toString(), x + columnWidth/2 - 3, y + 15);
+        
+        // Step name
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        const stepName = step.stepName;
+        const nameLines = doc.splitTextToSize(stepName, columnWidth - 4);
+        doc.text(nameLines, x + 2, y + 28);
+        
+        // Arrow to next step
+        if (index < process.steps.length - 1) {
+          doc.setDrawColor(59, 130, 246);
+          doc.setLineWidth(3);
+          const arrowY = y + rowHeight/2;
+          const arrowStartX = x + columnWidth - 2;
+          const arrowEndX = x + columnWidth + 2;
+          
+          // Arrow line
+          doc.line(arrowStartX, arrowY, arrowEndX, arrowY);
+          // Arrow head
+          doc.line(arrowEndX - 3, arrowY - 2, arrowEndX, arrowY);
+          doc.line(arrowEndX - 3, arrowY + 2, arrowEndX, arrowY);
+        }
+      });
       
-      // Arrow head
-      const headSize = 3;
-      doc.line(toX - headSize, toY - headSize, toX, toY);
-      doc.line(toX - headSize, toY + headSize, toX, toY);
+      return startY + 12 + rowHeight + 10;
     };
     
     // Header
@@ -106,41 +132,29 @@ export default function ProcessDetail() {
     
     yPos += 10;
     
-    // Process Flow Diagram - Visual representation
+    // Process Flow Diagram - Professional table representation
     checkNewPage(80);
     doc.setFont('helvetica', 'bold');
     addText('PROCESS FLOW DIAGRAM', 20, 14);
     doc.setFont('helvetica', 'normal');
-    yPos += 10;
     
-    // Draw visual flow diagram
+    // Draw professional flow table
     if (process.steps && process.steps.length > 0) {
-      const boxWidth = 50;
-      const boxHeight = 30;
-      const spacing = 15;
-      const startX = 20;
-      const flowY = yPos;
-      
-      process.steps.forEach((step, index) => {
-        const x = startX + (index * (boxWidth + spacing));
-        drawProcessFlowBox(step, x, flowY, boxWidth, boxHeight);
-        
-        // Draw arrow to next box
-        if (index < process.steps.length - 1) {
-          drawArrow(x + boxWidth, flowY + boxHeight/2, x + boxWidth + spacing, flowY + boxHeight/2);
-        }
-      });
-      
-      yPos += boxHeight + 20;
+      yPos = drawProcessFlowTable();
     }
     
-    // Process summary text
-    const flowText = process.steps?.map((step, index) => {
-      const arrow = index < process.steps.length - 1 ? ' → ' : '';
-      return `[${step.stepNumber}] ${step.stepName}${arrow}`;
-    }).join('') || '';
+    // Process flow summary
+    yPos += 10;
+    doc.setFont('helvetica', 'bold');
+    addText('PROCESS SUMMARY', 20, 12);
+    doc.setFont('helvetica', 'normal');
     
-    addText(`Flow Summary: ${flowText}`, 20, 10, 170);
+    if (process.steps && process.steps.length > 0) {
+      process.steps.forEach((step, index) => {
+        const stepText = `${step.stepNumber}. ${step.stepName}`;
+        addText(stepText, 25, 10, 165);
+      });
+    }
     
     // Process steps details
     if (process.steps && process.steps.length > 0) {
