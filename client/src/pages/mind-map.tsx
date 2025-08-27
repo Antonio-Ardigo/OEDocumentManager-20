@@ -20,7 +20,8 @@ import {
   TreePine,
   Workflow,
   Grid3X3,
-  Download
+  Download,
+  Camera
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
@@ -296,6 +297,7 @@ export default function MindMap() {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('hierarchical');
   const [isExporting, setIsExporting] = useState(false);
+  const [isCapturingCanvas, setIsCapturingCanvas] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -509,6 +511,86 @@ export default function MindMap() {
     }
   };
 
+  const exportCanvasToPDF = async () => {
+    if (!elements || elements.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "Please ensure there are elements to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCapturingCanvas(true);
+    
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+      
+      // Find the mind map content container
+      const mindMapContainer = document.querySelector('[data-mindmap-content]') as HTMLElement;
+      if (!mindMapContainer) {
+        throw new Error('Mind map container not found');
+      }
+
+      // Capture the canvas
+      const canvas = await html2canvas(mindMapContainer, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher quality
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgAspectRatio = canvas.width / canvas.height;
+      const pdfAspectRatio = pdfWidth / pdfHeight;
+
+      let imgWidth, imgHeight, x, y;
+
+      if (imgAspectRatio > pdfAspectRatio) {
+        // Image is wider than PDF
+        imgWidth = pdfWidth;
+        imgHeight = pdfWidth / imgAspectRatio;
+        x = 0;
+        y = (pdfHeight - imgHeight) / 2;
+      } else {
+        // Image is taller than PDF
+        imgHeight = pdfHeight;
+        imgWidth = pdfHeight * imgAspectRatio;
+        x = (pdfWidth - imgWidth) / 2;
+        y = 0;
+      }
+
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      pdf.save('oe-framework-mindmap-visual.pdf');
+      
+      toast({
+        title: "Visual Export Successful",
+        description: "Mind map canvas exported to PDF successfully",
+      });
+    } catch (error) {
+      console.error("Error exporting canvas:", error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export mind map canvas to PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCapturingCanvas(false);
+    }
+  };
+
   if (isLoading || elementsLoading) {
     return (
       <div className="flex min-h-screen bg-background">
@@ -577,10 +659,19 @@ export default function MindMap() {
                   onClick={exportToPDF} 
                   variant="outline" 
                   size="sm"
-                  disabled={isExporting}
+                  disabled={isExporting || isCapturingCanvas}
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  {isExporting ? 'Exporting...' : 'Export PDF'}
+                  {isExporting ? 'Exporting...' : 'Export Text PDF'}
+                </Button>
+                <Button 
+                  onClick={exportCanvasToPDF} 
+                  variant="outline" 
+                  size="sm"
+                  disabled={isExporting || isCapturingCanvas}
+                >
+                  <Camera className="w-4 h-4 mr-1" />
+                  {isCapturingCanvas ? 'Capturing...' : 'Export Visual PDF'}
                 </Button>
               </div>
             </div>
@@ -598,7 +689,7 @@ export default function MindMap() {
             </CardHeader>
             <CardContent>
               {elements && elements.length > 0 ? (
-                <div className="overflow-x-auto pb-4">
+                <div className="overflow-x-auto pb-4" data-mindmap-content>
                   {visualizationType === 'hierarchical' && (
                     <HierarchicalView 
                       elements={elements} 
