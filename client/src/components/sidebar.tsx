@@ -5,9 +5,6 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Home, 
   Folder, 
-  Users, 
-  BarChart3, 
-  FileText, 
   Settings, 
   Cog,
   LogOut
@@ -20,9 +17,6 @@ export default function Sidebar() {
   const navigation = [
     { name: "Dashboard", href: "/", icon: Home },
     { name: "All Processes", href: "/processes", icon: Folder },
-    { name: "Team Management", href: "/team", icon: Users },
-    { name: "Analytics", href: "/analytics", icon: BarChart3 },
-    { name: "Export & Reports", href: "/reports", icon: FileText },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
