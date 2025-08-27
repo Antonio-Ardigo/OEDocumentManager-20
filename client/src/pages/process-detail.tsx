@@ -56,65 +56,109 @@ export default function ProcessDetail() {
       }
     };
 
-    // Draw professional process flow table
+    // Draw enhanced professional process flow diagram
     const drawProcessFlowTable = () => {
       const startY = yPos;
-      const tableWidth = 170;
-      const columnWidth = tableWidth / process.steps.length;
-      const rowHeight = 50;
+      const diagramWidth = 170;
+      const stepWidth = 35;
+      const stepHeight = 45;
+      const spacing = (diagramWidth - (process.steps.length * stepWidth)) / (process.steps.length + 1);
       
-      // Draw table header
-      doc.setFillColor(45, 55, 72); // Dark gray
-      doc.rect(20, startY, tableWidth, 12, 'F');
-      doc.setTextColor(255, 255, 255);
+      // Draw diagram title with underline
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('PROCESS FLOW SEQUENCE', 20 + tableWidth/2 - 40, startY + 8);
+      doc.setFontSize(14);
+      doc.setTextColor(45, 55, 72);
+      doc.text('PROCESS FLOW DIAGRAM', 20 + diagramWidth/2 - 35, startY + 10);
+      doc.setLineWidth(2);
+      doc.setDrawColor(59, 130, 246);
+      doc.line(20 + diagramWidth/2 - 35, startY + 12, 20 + diagramWidth/2 + 35, startY + 12);
       
-      // Draw step boxes
+      const flowStartY = startY + 25;
+      
+      // Draw process steps with enhanced styling
       process.steps.forEach((step, index) => {
-        const x = 20 + (index * columnWidth);
-        const y = startY + 12;
+        const x = 20 + spacing + (index * (stepWidth + spacing));
+        const y = flowStartY;
         
-        // Step box background
-        doc.setFillColor(index % 2 === 0 ? 245 : 250, 248, 255); // Alternating light colors
+        // Drop shadow effect
+        doc.setFillColor(200, 200, 200);
+        doc.roundedRect(x + 2, y + 2, stepWidth, stepHeight, 5, 5, 'F');
+        
+        // Main step box with gradient effect
+        doc.setFillColor(248, 250, 252); // Light background
         doc.setDrawColor(59, 130, 246);
-        doc.setLineWidth(1);
-        doc.rect(x, y, columnWidth, rowHeight, 'FD');
+        doc.setLineWidth(2);
+        doc.roundedRect(x, y, stepWidth, stepHeight, 5, 5, 'FD');
         
-        // Step number circle
+        // Step number badge with enhanced styling
         doc.setFillColor(59, 130, 246);
-        doc.circle(x + columnWidth/2, y + 12, 8, 'F');
+        doc.circle(x + stepWidth/2, y + 12, 10, 'F');
+        
+        // White border around number circle
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(2);
+        doc.circle(x + stepWidth/2, y + 12, 10, 'D');
+        
+        // Step number
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
-        doc.text(step.stepNumber.toString(), x + columnWidth/2 - 3, y + 15);
+        const numX = step.stepNumber.toString().length === 1 ? x + stepWidth/2 - 3 : x + stepWidth/2 - 5;
+        doc.text(step.stepNumber.toString(), numX, y + 16);
         
-        // Step name
-        doc.setTextColor(0, 0, 0);
+        // Step name with better formatting
+        doc.setTextColor(45, 55, 72);
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         const stepName = step.stepName;
-        const nameLines = doc.splitTextToSize(stepName, columnWidth - 4);
-        doc.text(nameLines, x + 2, y + 28);
+        const nameLines = doc.splitTextToSize(stepName, stepWidth - 4);
+        const textStartY = y + 28;
+        nameLines.forEach((line: string, lineIndex: number) => {
+          const lineY = textStartY + (lineIndex * 4);
+          if (lineY < y + stepHeight - 2) {
+            doc.text(line, x + 2, lineY);
+          }
+        });
         
-        // Arrow to next step
+        // Enhanced arrow to next step
         if (index < process.steps.length - 1) {
-          doc.setDrawColor(59, 130, 246);
-          doc.setLineWidth(3);
-          const arrowY = y + rowHeight/2;
-          const arrowStartX = x + columnWidth - 2;
-          const arrowEndX = x + columnWidth + 2;
+          const arrowY = y + stepHeight/2;
+          const arrowStartX = x + stepWidth + 3;
+          const arrowEndX = x + stepWidth + spacing - 3;
           
-          // Arrow line
+          // Arrow shaft with gradient effect
+          doc.setDrawColor(59, 130, 246);
+          doc.setLineWidth(4);
           doc.line(arrowStartX, arrowY, arrowEndX, arrowY);
-          // Arrow head
-          doc.line(arrowEndX - 3, arrowY - 2, arrowEndX, arrowY);
-          doc.line(arrowEndX - 3, arrowY + 2, arrowEndX, arrowY);
+          
+          // Arrow head with enhanced styling
+          doc.setFillColor(59, 130, 246);
+          const arrowPoints = [
+            [arrowEndX, arrowY],
+            [arrowEndX - 6, arrowY - 4],
+            [arrowEndX - 6, arrowY + 4]
+          ];
+          
+          doc.triangle(arrowPoints[0][0], arrowPoints[0][1], 
+                      arrowPoints[1][0], arrowPoints[1][1],
+                      arrowPoints[2][0], arrowPoints[2][1], 'F');
         }
       });
       
-      return startY + 12 + rowHeight + 10;
+      // Add process flow indicators
+      const indicatorY = flowStartY + stepHeight + 15;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text('START', 20, indicatorY);
+      doc.text('END', 20 + diagramWidth - 15, indicatorY);
+      
+      // Draw flow line beneath
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(1);
+      doc.line(20, indicatorY + 2, 20 + diagramWidth, indicatorY + 2);
+      
+      return indicatorY + 15;
     };
     
     // Header
