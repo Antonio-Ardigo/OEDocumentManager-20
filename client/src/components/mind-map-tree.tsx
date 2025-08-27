@@ -83,7 +83,7 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
                     </div>
                   </div>
 
-                  {/* Sequential Process Steps as Bullet Points */}
+                  {/* Sequential Process Steps as Green Bullet Points */}
                   {process.steps && process.steps.length > 0 && (
                     <div className="space-y-2 pl-2">
                       <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
@@ -92,17 +92,17 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
                       {process.steps.map((step, stepIndex) => (
                         <div key={step.id} className="flex items-start space-x-2 text-xs">
                           <div className="flex items-center space-x-1 flex-shrink-0">
-                            <Circle className="w-1.5 h-1.5 fill-blue-500 text-blue-500 mt-1" />
-                            <span className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500 mt-1" />
+                            <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
                               {step.stepNumber}
                             </span>
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-blue-700 dark:text-blue-300 leading-tight">
+                            <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
                               {step.stepName}
                             </p>
                             {step.stepDetails && (
-                              <p className="text-blue-600 dark:text-blue-400 mt-1 leading-tight text-xs">
+                              <p className="text-green-600 dark:text-green-400 mt-1 leading-tight text-xs">
                                 {step.stepDetails.length > 80 
                                   ? `${step.stepDetails.substring(0, 80)}...` 
                                   : step.stepDetails
