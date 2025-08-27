@@ -94,7 +94,7 @@ function MindMapNode({
       
       {/* Node Card */}
       <div 
-        className={`relative ${styles.border} ${styles.bg} border-2 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105`}
+        className={`relative ${styles.border} ${styles.bg} border-2 rounded-lg p-3 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105`}
         style={{ marginLeft: `${level * 40}px` }}
         onClick={hasChildren ? onToggle : undefined}
       >
@@ -119,16 +119,16 @@ function MindMapNode({
           )}
           
           {/* Node Icon */}
-          <div className={`w-8 h-8 ${styles.accent} rounded-lg flex items-center justify-center text-white`}>
-            {nodeType === 'element' && <Folder className="w-4 h-4" />}
-            {nodeType === 'process' && <Activity className="w-4 h-4" />}
-            {nodeType === 'step' && <Target className="w-4 h-4" />}
+          <div className={`w-6 h-6 ${styles.accent} rounded-lg flex items-center justify-center text-white`}>
+            {nodeType === 'element' && <Folder className="w-3 h-3" />}
+            {nodeType === 'process' && <Activity className="w-3 h-3" />}
+            {nodeType === 'step' && <Target className="w-3 h-3" />}
           </div>
           
           {/* Node Content */}
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-1">
-              <h3 className={`font-bold text-sm ${styles.text}`}>
+              <h3 className={`font-semibold text-xs ${styles.text}`}>
                 {title}
               </h3>
               {badge && (
@@ -162,10 +162,10 @@ interface ViewProps {
   toggleNode: (nodeId: string) => void;
 }
 
-// Hierarchical Tree View (Original)
+// Hierarchical Tree View with Smaller Fonts
 function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {elements.map((element) => (
         <MindMapNode
           key={element.id}
@@ -207,59 +207,16 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
   );
 }
 
-// Radial/Circular Diagram View with Professional Design
+// Clean Mind Map Style like Traditional Mind Maps
 function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
-  const centerX = 800;
-  const centerY = 450;
-  const baseRadius = 280;
+  const centerX = 600;
+  const centerY = 400;
+  const baseRadius = 200;
 
   return (
-    <div className="relative min-h-[900px] w-full overflow-auto bg-gradient-to-br from-slate-50 to-blue-50" style={{ minWidth: '1600px' }}>
+    <div className="relative min-h-[800px] w-full overflow-auto bg-white" style={{ minWidth: '1200px' }}>
       <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
-        <defs>
-          {/* Professional gradient definitions */}
-          <linearGradient id="elementGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: '#1d4ed8', stopOpacity: 0.9 }} />
-          </linearGradient>
-          <linearGradient id="processGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#10b981', stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: '#059669', stopOpacity: 0.9 }} />
-          </linearGradient>
-          <linearGradient id="stepGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#8b5cf6', stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: '#7c3aed', stopOpacity: 0.9 }} />
-          </linearGradient>
-          
-          {/* Enhanced arrow markers */}
-          <marker id="elementArrow" markerWidth="12" markerHeight="8" 
-            refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,8 L12,4 z" fill="url(#elementGradient)" />
-          </marker>
-          <marker id="processArrow" markerWidth="10" markerHeight="6" 
-            refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L10,3 z" fill="url(#processGradient)" />
-          </marker>
-          <marker id="stepArrow" markerWidth="8" markerHeight="5" 
-            refX="6" refY="2.5" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,5 L8,2.5 z" fill="url(#stepGradient)" />
-          </marker>
-
-          {/* Professional drop shadow filter */}
-          <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.3"/>
-          </filter>
-        </defs>
-        
-        {/* Central orbital rings */}
-        <circle cx={centerX} cy={centerY} r={baseRadius * 0.3} 
-          fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="5,5" opacity="0.4" />
-        <circle cx={centerX} cy={centerY} r={baseRadius * 0.6} 
-          fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="5,5" opacity="0.3" />
-        <circle cx={centerX} cy={centerY} r={baseRadius} 
-          fill="none" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="5,5" opacity="0.2" />
-        
-        {/* Connection lines */}
+        {/* Simple connection lines */}
         {elements.map((element, elementIndex) => {
           const elementAngle = (elementIndex * 2 * Math.PI) / elements.length - Math.PI / 2;
           const elementX = centerX + baseRadius * Math.cos(elementAngle);
@@ -267,70 +224,60 @@ function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
           
           return (
             <g key={element.id}>
-              {/* Smooth curved line from center to element */}
-              <path
-                d={`M ${centerX} ${centerY} 
-                    C ${centerX + (elementX - centerX) * 0.3} ${centerY + (elementY - centerY) * 0.3},
-                      ${centerX + (elementX - centerX) * 0.7} ${centerY + (elementY - centerY) * 0.7},
-                      ${elementX} ${elementY}`}
-                stroke="url(#elementGradient)"
-                strokeWidth="4"
-                fill="none"
-                markerEnd="url(#elementArrow)"
-                opacity="0.8"
-                filter="url(#dropshadow)"
+              {/* Simple line from center to element */}
+              <line
+                x1={centerX}
+                y1={centerY}
+                x2={elementX}
+                y2={elementY}
+                stroke="#333"
+                strokeWidth="2"
               />
               
-              {/* Process connections with improved curves */}
+              {/* Process connections */}
               {element.processes?.map((process, processIndex) => {
                 if (!expandedNodes.has(element.id)) return null;
                 
                 const totalProcesses = element.processes?.length || 1;
-                const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * Math.PI) / (totalProcesses + 1);
+                const processAngleSpread = Math.PI / 3; // 60 degrees spread
+                const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * processAngleSpread) / Math.max(totalProcesses - 1, 1);
                 const processAngle = elementAngle + processAngleOffset;
-                const processRadius = 160;
+                const processRadius = 120;
                 const processX = elementX + processRadius * Math.cos(processAngle);
                 const processY = elementY + processRadius * Math.sin(processAngle);
                 
                 return (
                   <g key={process.id}>
-                    <path
-                      d={`M ${elementX} ${elementY} 
-                          C ${elementX + (processX - elementX) * 0.4} ${elementY + (processY - elementY) * 0.1},
-                            ${elementX + (processX - elementX) * 0.6} ${elementY + (processY - elementY) * 0.9},
-                            ${processX} ${processY}`}
-                      stroke="url(#processGradient)"
-                      strokeWidth="3"
-                      fill="none"
-                      markerEnd="url(#processArrow)"
-                      opacity="0.7"
-                      filter="url(#dropshadow)"
+                    <line
+                      x1={elementX}
+                      y1={elementY}
+                      x2={processX}
+                      y2={processY}
+                      stroke="#333"
+                      strokeWidth="1.5"
                     />
                     
-                    {/* Step connections with elegant curves */}
+                    {/* Step connections */}
                     {(process as any).steps?.map((step: any, stepIndex: number) => {
                       if (!expandedNodes.has(process.id)) return null;
                       
                       const totalSteps = (process as any).steps?.length || 1;
-                      const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * Math.PI) / (totalSteps + 2);
+                      const stepAngleSpread = Math.PI / 4; // 45 degrees spread
+                      const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * stepAngleSpread) / Math.max(totalSteps - 1, 1);
                       const stepAngle = processAngle + stepAngleOffset;
-                      const stepRadius = 120;
+                      const stepRadius = 80;
                       const stepX = processX + stepRadius * Math.cos(stepAngle);
                       const stepY = processY + stepRadius * Math.sin(stepAngle);
                       
                       return (
-                        <path
+                        <line
                           key={step.id}
-                          d={`M ${processX} ${processY} 
-                              C ${processX + (stepX - processX) * 0.3} ${processY + (stepY - processY) * 0.1},
-                                ${processX + (stepX - processX) * 0.7} ${processY + (stepY - processY) * 0.9},
-                                ${stepX} ${stepY}`}
-                          stroke="url(#stepGradient)"
-                          strokeWidth="2"
-                          fill="none"
-                          markerEnd="url(#stepArrow)"
-                          opacity="0.6"
-                          filter="url(#dropshadow)"
+                          x1={processX}
+                          y1={processY}
+                          x2={stepX}
+                          y2={stepY}
+                          stroke="#333"
+                          strokeWidth="1"
                         />
                       );
                     })}
@@ -342,84 +289,112 @@ function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
         })}
       </svg>
       
-      {/* Enhanced center node */}
-      <div className="absolute" style={{ left: `${centerX - 35}px`, top: `${centerY - 35}px`, zIndex: 20 }}>
-        <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white font-bold shadow-2xl border-4 border-white">
-          <div className="text-center">
-            <div className="text-lg font-bold">OE</div>
-            <div className="text-xs opacity-80">Framework</div>
-          </div>
+      {/* Center node */}
+      <div className="absolute" style={{ left: `${centerX - 30}px`, top: `${centerY - 15}px`, zIndex: 20 }}>
+        <div 
+          className="bg-white border-2 border-gray-800 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50"
+          onClick={() => {
+            // Expand all elements
+            const allNodes = new Set(expandedNodes);
+            elements.forEach(el => allNodes.add(el.id));
+            // This would need to be handled by parent component
+          }}
+        >
+          <span className="text-sm font-bold text-gray-800">OE Framework</span>
         </div>
       </div>
       
-      {/* Professional element nodes */}
+      {/* Element nodes with clean text labels */}
       {elements.map((element, elementIndex) => {
         const elementAngle = (elementIndex * 2 * Math.PI) / elements.length - Math.PI / 2;
-        const elementX = centerX + baseRadius * Math.cos(elementAngle) - 80;
-        const elementY = centerY + baseRadius * Math.sin(elementAngle) - 45;
+        const elementX = centerX + baseRadius * Math.cos(elementAngle);
+        const elementY = centerY + baseRadius * Math.sin(elementAngle);
+        
+        // Position text based on angle to avoid overlap
+        const isRight = Math.cos(elementAngle) > 0;
+        const labelX = elementX + (isRight ? 10 : -10);
+        const labelY = elementY;
         
         return (
-          <div key={element.id} className="absolute" style={{ left: `${elementX}px`, top: `${elementY}px`, zIndex: 15 }}>
+          <div key={element.id}>
+            {/* Element label */}
             <div 
-              className="bg-gradient-to-br from-blue-100 to-blue-200 border-3 border-blue-400 rounded-xl p-4 cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:scale-105 max-w-40 text-center shadow-lg"
+              className="absolute cursor-pointer hover:bg-gray-100 rounded px-2 py-1"
+              style={{ 
+                left: `${labelX - (isRight ? 0 : 120)}px`, 
+                top: `${labelY - 12}px`, 
+                zIndex: 15,
+                textAlign: isRight ? 'left' : 'right',
+                minWidth: '120px'
+              }}
               onClick={() => toggleNode(element.id)}
             >
-              <div className="flex items-center justify-center mb-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
-                  {element.elementNumber}
-                </div>
-              </div>
-              <h3 className="text-sm font-bold text-blue-900 mb-1 leading-tight">{element.title}</h3>
-              <Badge variant="secondary" className="text-xs bg-blue-500 text-white">
-                {element.processes?.length || 0} Processes
-              </Badge>
+              <span className="text-xs font-semibold text-blue-800">
+                Element {element.elementNumber}: {element.title}
+              </span>
             </div>
             
-            {/* Enhanced process nodes */}
+            {/* Process nodes */}
             {expandedNodes.has(element.id) && element.processes?.map((process, processIndex) => {
               const totalProcesses = element.processes?.length || 1;
-              const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * Math.PI) / (totalProcesses + 1);
+              const processAngleSpread = Math.PI / 3;
+              const processAngleOffset = ((processIndex - (totalProcesses - 1) / 2) * processAngleSpread) / Math.max(totalProcesses - 1, 1);
               const processAngle = elementAngle + processAngleOffset;
-              const processRadius = 160;
-              const processX = processRadius * Math.cos(processAngle) - 65;
-              const processY = processRadius * Math.sin(processAngle) - 35;
+              const processRadius = 120;
+              const processX = elementX + processRadius * Math.cos(processAngle);
+              const processY = elementY + processRadius * Math.sin(processAngle);
+              
+              const processIsRight = Math.cos(processAngle) > 0;
+              const processLabelX = processX + (processIsRight ? 10 : -10);
               
               return (
-                <div key={process.id} className="absolute" style={{ left: `${processX}px`, top: `${processY}px` }}>
+                <div key={process.id}>
+                  {/* Process label */}
                   <div 
-                    className="bg-gradient-to-br from-green-100 to-green-200 border-3 border-green-400 rounded-xl p-3 cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 max-w-32 text-center shadow-md"
+                    className="absolute cursor-pointer hover:bg-gray-100 rounded px-2 py-1"
+                    style={{ 
+                      left: `${processLabelX - (processIsRight ? 0 : 100)}px`, 
+                      top: `${processY - 10}px`, 
+                      zIndex: 15,
+                      textAlign: processIsRight ? 'left' : 'right',
+                      minWidth: '100px'
+                    }}
                     onClick={() => toggleNode(process.id)}
                   >
-                    <div className="flex items-center justify-center mb-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                        <Activity className="w-3 h-3" />
-                      </div>
-                    </div>
-                    <p className="text-xs font-bold text-green-900 mb-1 leading-tight">{process.processNumber}</p>
-                    <p className="text-xs text-green-800 mb-2 leading-tight">{process.name}</p>
-                    <Badge variant="secondary" className="text-xs bg-green-500 text-white">
-                      {(process as any).steps?.length || 0} Steps
-                    </Badge>
+                    <span className="text-xs font-medium text-green-700">
+                      {process.processNumber}: {process.name}
+                    </span>
                   </div>
                   
-                  {/* Premium step nodes */}
+                  {/* Step nodes */}
                   {expandedNodes.has(process.id) && (process as any).steps?.map((step: any, stepIndex: number) => {
                     const totalSteps = (process as any).steps?.length || 1;
-                    const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * Math.PI) / (totalSteps + 2);
+                    const stepAngleSpread = Math.PI / 4;
+                    const stepAngleOffset = ((stepIndex - (totalSteps - 1) / 2) * stepAngleSpread) / Math.max(totalSteps - 1, 1);
                     const stepAngle = processAngle + stepAngleOffset;
-                    const stepRadius = 120;
-                    const stepX = stepRadius * Math.cos(stepAngle) - 50;
-                    const stepY = stepRadius * Math.sin(stepAngle) - 30;
+                    const stepRadius = 80;
+                    const stepX = processX + stepRadius * Math.cos(stepAngle);
+                    const stepY = processY + stepRadius * Math.sin(stepAngle);
+                    
+                    const stepIsRight = Math.cos(stepAngle) > 0;
+                    const stepLabelX = stepX + (stepIsRight ? 10 : -10);
                     
                     return (
-                      <div key={step.id} className="absolute" style={{ left: `${stepX}px`, top: `${stepY}px` }}>
-                        <div className="bg-gradient-to-br from-purple-100 to-purple-200 border-2 border-purple-400 rounded-lg p-2 max-w-24 text-center shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
-                          <div className="flex items-center justify-center mb-1">
-                            <div className="w-5 h-5 bg-gradient-to-br from-purple-500 to-purple-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                              {step.stepNumber}
-                            </div>
-                          </div>
-                          <p className="text-xs font-semibold text-purple-900 leading-tight">{step.stepName}</p>
+                      <div key={step.id}>
+                        {/* Step label */}
+                        <div 
+                          className="absolute hover:bg-gray-100 rounded px-1 py-1"
+                          style={{ 
+                            left: `${stepLabelX - (stepIsRight ? 0 : 80)}px`, 
+                            top: `${stepY - 8}px`, 
+                            zIndex: 15,
+                            textAlign: stepIsRight ? 'left' : 'right',
+                            minWidth: '80px'
+                          }}
+                        >
+                          <span className="text-xs text-purple-700">
+                            {step.stepNumber}: {step.stepName}
+                          </span>
                         </div>
                       </div>
                     );
@@ -434,24 +409,24 @@ function RadialView({ elements, expandedNodes, toggleNode }: ViewProps) {
   );
 }
 
-// Grid Layout View
+// Grid Layout View with Smaller Fonts
 function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       {elements.map((element) => (
         <Card key={element.id} className="border-2 border-blue-200">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle 
-              className="text-base cursor-pointer flex items-center justify-between hover:text-blue-600"
+              className="text-sm cursor-pointer flex items-center justify-between hover:text-blue-600"
               onClick={() => toggleNode(element.id)}
             >
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
                   {element.elementNumber}
                 </div>
-                <span className="text-sm">{element.title}</span>
+                <span className="text-xs">{element.title}</span>
               </div>
-              {expandedNodes.has(element.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              {expandedNodes.has(element.id) ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </CardTitle>
             {element.description && (
               <p className="text-xs text-muted-foreground">{element.description}</p>
