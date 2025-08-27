@@ -20,6 +20,7 @@ import {
   Filter,
   FileText
 } from "lucide-react";
+import MiniProcessFlow from "@/components/mini-process-flow";
 import type { OeProcessWithDetails } from "@shared/schema";
 
 export default function AllProcesses() {
@@ -211,7 +212,7 @@ export default function AllProcesses() {
                                   {process.description}
                                 </p>
                               )}
-                              <div className="flex items-center space-x-6 text-xs text-muted-foreground">
+                              <div className="flex items-center space-x-6 text-xs text-muted-foreground mb-3">
                                 {process.processOwner && (
                                   <div className="flex items-center space-x-1">
                                     <User className="w-3 h-3" />
@@ -228,6 +229,15 @@ export default function AllProcesses() {
                                   <Activity className="w-3 h-3" />
                                   <span>{process.steps?.length || 0} steps</span>
                                 </div>
+                              </div>
+                              
+                              {/* Mini Process Flow */}
+                              <div className="mt-3 pt-3 border-t border-border/50">
+                                <MiniProcessFlow 
+                                  processNumber={process.processNumber}
+                                  steps={process.steps || []}
+                                  compact={true}
+                                />
                               </div>
                             </div>
                           </div>

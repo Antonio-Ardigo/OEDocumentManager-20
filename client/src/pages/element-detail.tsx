@@ -19,6 +19,7 @@ import {
   User,
   Activity
 } from "lucide-react";
+import MiniProcessFlow from "@/components/mini-process-flow";
 import type { OeElementWithProcesses } from "@shared/schema";
 
 export default function ElementDetail() {
@@ -257,7 +258,7 @@ export default function ElementDetail() {
                                 </p>
                               )}
                               
-                              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
                                 <div className="flex items-center space-x-4">
                                   {process.processOwner && (
                                     <div className="flex items-center space-x-1">
@@ -279,6 +280,15 @@ export default function ElementDetail() {
                                     <span className="text-xs font-medium">Mandatory</span>
                                   </div>
                                 )}
+                              </div>
+                              
+                              {/* Mini Process Flow */}
+                              <div className="mt-3 pt-3 border-t border-border/50">
+                                <MiniProcessFlow 
+                                  processNumber={process.processNumber}
+                                  steps={[]}
+                                  compact={true}
+                                />
                               </div>
                             </CardContent>
                           </Link>

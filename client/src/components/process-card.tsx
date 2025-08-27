@@ -13,6 +13,7 @@ import {
   MoreVertical,
   Star 
 } from "lucide-react";
+import MiniProcessFlow from "@/components/mini-process-flow";
 import type { OeElementWithProcesses } from "@shared/schema";
 
 interface ProcessCardProps {
@@ -125,6 +126,31 @@ export default function ProcessCard({ element }: ProcessCardProps) {
               }
             </span>
           </div>
+          
+          {/* Process Flow Preview */}
+          {element.processes && element.processes.length > 0 && (
+            <div className="mb-4 p-3 bg-muted/30 rounded-lg">
+              <div className="text-xs font-medium text-muted-foreground mb-2">
+                Process Overview
+              </div>
+              <div className="space-y-2">
+                {element.processes.slice(0, 2).map((process) => (
+                  <div key={process.id} className="text-xs">
+                    <MiniProcessFlow 
+                      processNumber={process.processNumber}
+                      steps={[]}
+                      compact={true}
+                    />
+                  </div>
+                ))}
+                {element.processes.length > 2 && (
+                  <div className="text-xs text-muted-foreground text-center pt-1">
+                    +{element.processes.length - 2} more processes
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           <div>
             <div className="flex justify-between items-center mb-2">
