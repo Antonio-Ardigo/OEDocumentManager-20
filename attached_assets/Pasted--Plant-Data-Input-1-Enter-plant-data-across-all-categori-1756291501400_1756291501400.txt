@@ -1,0 +1,78 @@
+________________________________________
+Plant Data Input 
+1.	Enter plant data across all categories
+2.	Upload maps, plans, and P&IDs
+3.	Submit data to database
+________________________________________Plants Under Design
+1.	Register plant under design
+2.	Add design notes & documentation
+3.	View plant details
+4.	Review distance & cluster analysis
+________________________________________ Plants Under Construction
+1.	Register construction plant
+2.	Track construction progress
+3.	Upload construction documentation
+4.	View plant details & assessment
+________________________________________Operating Model Selection
+1.	Review Data Input
+2.	Review Decision Tree
+3.	Define Critical Asset, Decommissioning, Risk Assessment. Efficiency Assessment
+4.	Select Operating Model according to decision Tree
+________________________________________
+Plant Database
+1.	List all submitted plants
+2.	View, edit, or delete plant data
+3.	Access plant reports
+4.	View plants on map
+________________________________________
+
+Plant Upgrades Management
+1.	List plants with upgrade needs
+2.	Score & prioritize CAPEX investment
+3.	Evaluate risk & efficiency opportunities
+4.	View plant upgrade details
+________________________________________
+Budget & Actual Production Data
+1.	Record budgeted production & costs
+2.	Record actual production & costs
+3.	Compare variances
+4.	View/edit plant budget data
+________________________________________
+Clustering Management
+1.	Identify clustering opportunities
+2.	Group plants for synergy
+3.	Calculate potential cost savings
+4.	Recommend optimized clusters
+________________________________________
+Decommissioning Analysis
+1.	Identify plants for closure
+2.	Estimate closure costs & asset recovery
+3.	Assign decommissioning status
+4.	Define decommissioning phases
+________________________________________
+Operational Excellence Program
+1.	Assess portfolio performance metrics
+2.	Benchmark efficiency & uptime
+3.	Rate plant excellence level
+4.	Apply best practices library
+________________________________________
+Water Purchase Agreement Management
+1.	Register WPA contracts
+2.	Record pricing (fixed, CCR, variable)
+3.	Track status (complete, partial, missing)
+4.	Manage supporting documents
+________________________________________
+Mobile Units Management
+1.	Track repository of mobile units
+2.	Monitor deployed & under-maintenance units
+3.	Record unit capacity, technology & location
+4.	Manage deployment status
+________________________________________
+Plant Profit & Loss Statements
+1.	Select plant for P/L analysis
+2.	Calculate revenue (fixed + variable)
+3.	Calculate costs (energy, chemicals, labour, maintenance)
+4.	Compute net profit & margin
+5.	Compare budget vs actual variances
+________________________________________
+
