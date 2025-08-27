@@ -25,6 +25,25 @@ import {
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
+// Numerical comparison function for version numbers
+function compareVersionNumbers(a: string, b: string): number {
+  const aParts = a.split('.').map(part => parseInt(part) || 0);
+  const bParts = b.split('.').map(part => parseInt(part) || 0);
+  
+  const maxLength = Math.max(aParts.length, bParts.length);
+  
+  for (let i = 0; i < maxLength; i++) {
+    const aPart = aParts[i] || 0;
+    const bPart = bParts[i] || 0;
+    
+    if (aPart !== bPart) {
+      return aPart - bPart;
+    }
+  }
+  
+  return 0;
+}
+
 interface MindMapNodeProps {
   title: string;
   subtitle?: string;
@@ -179,7 +198,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
           nodeType="element"
           badge={`${element.processes?.length || 0} Processes`}
         >
-          {element.processes?.sort((a, b) => a.processNumber.localeCompare(b.processNumber)).map((process) => (
+          {element.processes?.sort((a, b) => compareVersionNumbers(a.processNumber, b.processNumber)).map((process) => (
             <MindMapNode
               key={process.id}
               title={`${process.processNumber}: ${process.name}`}
@@ -193,7 +212,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
               {(process as any).steps?.sort((a: any, b: any) => {
                 const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
                 const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
-                return aNum.localeCompare(bNum);
+                return compareVersionNumbers(aNum, bNum);
               }).map((step: any, index: number) => (
                 <MindMapNode
                   key={step.id}
@@ -241,7 +260,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
           {expandedNodes.has(element.id) && (
             <CardContent className="pt-0">
               <div className="space-y-3">
-                {element.processes?.sort((a, b) => a.processNumber.localeCompare(b.processNumber)).map((process) => (
+                {element.processes?.sort((a, b) => compareVersionNumbers(a.processNumber, b.processNumber)).map((process) => (
                   <Card key={process.id} className="border border-green-200 bg-green-50">
                     <CardContent className="p-3">
                       <div 
@@ -263,7 +282,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
                           {(process as any).steps?.sort((a: any, b: any) => {
                             const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
                             const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
-                            return aNum.localeCompare(bNum);
+                            return compareVersionNumbers(aNum, bNum);
                           }).map((step: any) => (
                             <div key={step.id} className="bg-white border border-purple-200 rounded p-2">
                               <div className="flex items-center space-x-2 mb-1">
@@ -433,7 +452,7 @@ export default function MindMap() {
         // Processes
         if (element.processes && element.processes.length > 0) {
           const sortedProcesses = [...element.processes].sort((a, b) => 
-            a.processNumber.localeCompare(b.processNumber)
+            compareVersionNumbers(a.processNumber, b.processNumber)
           );
 
           for (const process of sortedProcesses) {
@@ -461,7 +480,7 @@ export default function MindMap() {
               const sortedSteps = [...(process as any).steps].sort((a: any, b: any) => {
                 const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
                 const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
-                return aNum.localeCompare(bNum);
+                return compareVersionNumbers(aNum, bNum);
               });
 
               for (const step of sortedSteps) {
