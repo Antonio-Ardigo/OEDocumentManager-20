@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { Link } from "wouter";
+import type { OeElement } from "@shared/schema";
 
 interface ElementFormData {
   elementNumber: number;
@@ -69,7 +70,7 @@ export default function ElementEditor() {
   });
 
   // Load existing element data for edit mode
-  const { data: existingElement, isLoading: elementLoading } = useQuery({
+  const { data: existingElement, isLoading: elementLoading } = useQuery<OeElement>({
     queryKey: ["/api/oe-elements", id],
     enabled: isEditMode && !!id,
   });
