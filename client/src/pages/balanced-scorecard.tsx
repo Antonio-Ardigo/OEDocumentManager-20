@@ -4,6 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import Sidebar from "@/components/sidebar";
+import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -268,8 +270,13 @@ export default function BalancedScorecard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-8">
+    <div className="min-h-screen flex bg-background">
+      <Sidebar />
+      
+      <main className="flex-1 overflow-auto">
+        <Header />
+        
+        <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
@@ -718,7 +725,8 @@ export default function BalancedScorecard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
