@@ -19,7 +19,8 @@ import {
   User,
   Activity,
   Edit,
-  Download
+  Download,
+  BarChart3
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
 import { MindMapTree } from "@/components/mind-map-tree";
@@ -656,6 +657,87 @@ export default function ElementDetail() {
                           Create First Process
                         </Link>
                       </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Performance Measurements Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5" />
+                    <span>Performance Measurements</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {element.processes && element.processes.length > 0 ? (
+                    <div className="space-y-6">
+                      {element.processes.map((process) => (
+                        <div key={process.id} className="border-l-4 border-primary/20 pl-4">
+                          <div className="mb-3">
+                            <h3 className="font-semibold text-sm flex items-center space-x-2">
+                              <Activity className="w-4 h-4 text-primary" />
+                              <span>{process.processNumber}: {process.name}</span>
+                            </h3>
+                          </div>
+                          
+                          {(process as any).performanceMeasures && (process as any).performanceMeasures.length > 0 ? (
+                            <div className="space-y-3">
+                              {(process as any).performanceMeasures.map((measure: any, index: number) => (
+                                <Card key={measure.id} className="bg-muted/50">
+                                  <CardContent className="p-4">
+                                    <div className="flex items-start justify-between mb-2">
+                                      <h4 className="font-medium text-sm text-primary">
+                                        {index + 1}. {measure.measureName}
+                                      </h4>
+                                      {measure.target && (
+                                        <Badge variant="outline" className="text-xs">
+                                          Target: {measure.target}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                                      {measure.formula && (
+                                        <div>
+                                          <span className="font-medium">Formula:</span>
+                                          <p className="mt-1">{measure.formula}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {measure.frequency && (
+                                        <div>
+                                          <span className="font-medium">Frequency:</span>
+                                          <p className="mt-1">{measure.frequency}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {measure.source && (
+                                        <div className="col-span-2">
+                                          <span className="font-medium">Source:</span>
+                                          <p className="mt-1">{measure.source}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-4 text-muted-foreground bg-muted/30 rounded-lg">
+                              <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">No performance measures defined</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-medium mb-2">No Performance Data</h3>
+                      <p>Performance measurements will be available once processes are created.</p>
                     </div>
                   )}
                 </CardContent>

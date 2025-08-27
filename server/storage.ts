@@ -115,6 +115,9 @@ export class DatabaseStorage implements IStorage {
             steps: {
               orderBy: [processSteps.stepNumber],
             },
+            performanceMeasures: {
+              orderBy: [performanceMeasures.measureName],
+            },
           },
         },
       },
