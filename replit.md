@@ -1,6 +1,6 @@
 # Overview
 
-This is a full-stack web application for managing Operational Excellence (OE) processes within an organization, specifically designed for ARAMCO's OE framework. The system provides comprehensive process management capabilities including creation, editing, and tracking of OE elements, processes, steps, performance measures, and document versions with full audit trails.
+This is a full-stack web application for managing Operational Excellence (OE) processes within an organization, specifically designed for WSM's OE framework. The system provides comprehensive process management capabilities including creation, editing, and tracking of OE elements, processes, steps, performance measures, and document versions with full audit trails.
 
 The application follows the 8-element OE framework structure and enables users to create detailed process documentation with hierarchical organization, version control, and performance tracking capabilities.
 

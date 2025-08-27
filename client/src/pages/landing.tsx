@@ -16,7 +16,7 @@ export default function Landing() {
           </div>
           
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            ARAMCO OE Manager
+            WSM OE Manager
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
@@ -136,9 +136,9 @@ export default function Landing() {
               <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Cog className="w-6 h-6 text-red-600" />
               </div>
-              <CardTitle>ARAMCO Compliance</CardTitle>
+              <CardTitle>WSM Compliance</CardTitle>
               <CardDescription>
-                Designed specifically for ARAMCO OE requirements
+                Designed specifically for WSM OE requirements
                 with full compliance to company standards
               </CardDescription>
             </CardHeader>
@@ -169,7 +169,7 @@ export default function Landing() {
       <footer className="bg-card border-t py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground">
-            © 2024 ARAMCO OE Manager. Enterprise Operational Excellence Management Platform.
+            © 2024 WSM OE Manager. Enterprise Operational Excellence Management Platform.
           </p>
         </div>
       </footer>
