@@ -544,37 +544,97 @@ export default function MindMap() {
         throw new Error('Mind map content not found. Please make sure the mind map is visible.');
       }
 
-      // Remove any transforms and ensure visibility
-      const originalStyle = mindMapContainer.style.cssText;
-      mindMapContainer.style.transform = 'none';
+      // Store original styles and prepare for capture
+      const originalStyles = new Map();
+      
+      // Force visibility and remove problematic styles
+      const allElements = mindMapContainer.querySelectorAll('*');
+      allElements.forEach((el: Element) => {
+        const htmlEl = el as HTMLElement;
+        originalStyles.set(htmlEl, htmlEl.style.cssText);
+        
+        // Ensure visibility
+        htmlEl.style.opacity = '1';
+        htmlEl.style.visibility = 'visible';
+        htmlEl.style.display = htmlEl.style.display === 'none' ? 'block' : htmlEl.style.display;
+        
+        // Remove transforms that might cause issues
+        htmlEl.style.transform = 'none';
+        htmlEl.style.filter = 'none';
+      });
+
+      // Prepare container
+      const containerOriginalStyle = mindMapContainer.style.cssText;
+      mindMapContainer.style.position = 'static';
       mindMapContainer.style.overflow = 'visible';
       mindMapContainer.style.height = 'auto';
+      mindMapContainer.style.width = 'auto';
+      mindMapContainer.style.transform = 'none';
       
-      // Wait for render
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Wait for layout to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const options = {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 1,
         useCORS: true,
         allowTaint: true,
-        foreignObjectRendering: true,
-        logging: false,
+        foreignObjectRendering: false, // Disable for better compatibility
+        logging: true, // Enable logging to debug
         removeContainer: false,
-        async: true,
-        width: mindMapContainer.scrollWidth || mindMapContainer.offsetWidth,
-        height: mindMapContainer.scrollHeight || mindMapContainer.offsetHeight,
+        imageTimeout: 15000,
+        onclone: (clonedDoc: Document) => {
+          // Ensure all text and elements are visible in the clone
+          const clonedElements = clonedDoc.querySelectorAll('*');
+          clonedElements.forEach((el: Element) => {
+            const htmlEl = el as HTMLElement;
+            htmlEl.style.opacity = '1';
+            htmlEl.style.visibility = 'visible';
+            htmlEl.style.color = htmlEl.style.color || '#000000';
+            htmlEl.style.backgroundColor = htmlEl.style.backgroundColor || 'transparent';
+          });
+        }
       };
 
-      console.log('Capturing element with dimensions:', options.width + 'x' + options.height);
+      console.log('Starting canvas capture with options:', options);
 
       const canvas = await html2canvas(mindMapContainer, options);
       
-      // Restore original style
-      mindMapContainer.style.cssText = originalStyle;
+      // Restore all original styles
+      mindMapContainer.style.cssText = containerOriginalStyle;
+      allElements.forEach((el: Element) => {
+        const htmlEl = el as HTMLElement;
+        const originalStyle = originalStyles.get(htmlEl);
+        if (originalStyle !== undefined) {
+          htmlEl.style.cssText = originalStyle;
+        }
+      });
+
+      console.log('Canvas created with dimensions:', canvas.width + 'x' + canvas.height);
 
       if (!canvas || canvas.width === 0 || canvas.height === 0) {
-        throw new Error('Canvas capture failed - empty result');
+        throw new Error('Canvas capture failed - no dimensions');
+      }
+
+      // Check if canvas has content by examining pixel data
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx?.getImageData(0, 0, Math.min(canvas.width, 100), Math.min(canvas.height, 100));
+      const data = imageData?.data;
+      
+      let hasContent = false;
+      if (data) {
+        for (let i = 0; i < data.length; i += 4) {
+          // Check if pixel is not white (255,255,255) or transparent
+          if (data[i] !== 255 || data[i + 1] !== 255 || data[i + 2] !== 255 || data[i + 3] !== 0) {
+            hasContent = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasContent) {
+        console.warn('Canvas appears to be blank');
+        // Continue anyway, might still have content elsewhere
       }
 
       // Create PDF with proper sizing
