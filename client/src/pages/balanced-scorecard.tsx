@@ -295,12 +295,18 @@ export default function BalancedScorecard() {
         {/* Strategic Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].map((category) => {
-            const categoryGoals = goals.filter(goal => goal.category === category);
-            const categoryProcessMeasures = processPerformanceMeasures.filter(measure => measure.scorecardCategory === category);
-            const totalGoals = categoryGoals.length;
-            const totalMeasures = categoryProcessMeasures.length;
-            const achievedGoals = categoryGoals.filter(goal => goal.currentValue >= goal.targetValue).length;
-            const percentage = totalGoals > 0 ? Math.round((achievedGoals / totalGoals) * 100) : 0;
+            // Count unique processes per OE element that have measures in this category
+            const processesInCategory = processPerformanceMeasures
+              .filter(measure => measure.scorecardCategory === category)
+              .reduce((acc, measure) => {
+                const key = `${measure.elementId}-${measure.processId}`;
+                if (!acc.includes(key)) {
+                  acc.push(key);
+                }
+                return acc;
+              }, [] as string[]);
+            
+            const processCount = processesInCategory.length;
             
             return (
               <Card key={category} className="border-2">
@@ -309,8 +315,11 @@ export default function BalancedScorecard() {
                   <CardDescription>Performance Overview</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center text-muted-foreground">
-                    Strategic performance overview
+                  <div className="text-center">
+                    <span className="text-2xl font-bold text-foreground">{processCount}</span>
+                    <div className="text-sm text-muted-foreground">
+                      {processCount === 1 ? 'Process' : 'Processes'}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
