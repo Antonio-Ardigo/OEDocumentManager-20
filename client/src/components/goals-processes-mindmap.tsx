@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,7 +86,7 @@ const getScorecardStyle = (category: string) => {
   }
 };
 
-export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
+export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>(({ goals }, ref) => {
   // Initialize with all goals expanded by default
   const [expandedGoals, setExpandedGoals] = useState<Set<string>>(() => {
     return new Set(goals?.map(goal => goal.id) || []);
@@ -116,6 +116,28 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
       return newSet;
     });
   };
+
+  // Expose expand/collapse methods via ref
+  useImperativeHandle(ref, () => ({
+    expandAll: () => {
+      // Expand all goals
+      const allGoalIds = new Set(goals?.map(goal => goal.id) || []);
+      setExpandedGoals(allGoalIds);
+      
+      // Expand all processes
+      const allProcessIds = new Set<string>();
+      goals?.forEach(goal => {
+        goal.processes?.forEach(process => {
+          allProcessIds.add(process.id);
+        });
+      });
+      setExpandedProcesses(allProcessIds);
+    },
+    collapseAll: () => {
+      // Keep goals expanded but collapse all processes
+      setExpandedProcesses(new Set());
+    }
+  }), [goals]);
 
   if (!goals || goals.length === 0) {
     return (
@@ -338,4 +360,4 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
       })}
     </div>
   );
-}
+});

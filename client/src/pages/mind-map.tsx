@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -328,6 +328,9 @@ export default function MindMap() {
   const [isExporting, setIsExporting] = useState(false);
   const [isCapturingCanvas, setIsCapturingCanvas] = useState(false);
   const [hideText, setHideText] = useState(false);
+  
+  // Reference to the goals mind map component to call its methods
+  const goalsMindMapRef = useRef<any>(null);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -391,19 +394,36 @@ export default function MindMap() {
   };
 
   const expandAll = () => {
-    if (!elements) return;
-    const allIds = new Set<string>();
-    elements.forEach(element => {
-      allIds.add(element.id);
-      element.processes?.forEach(process => {
-        allIds.add(process.id);
+    if (mindMapType === 'elements-processes') {
+      if (!elements) return;
+      const allIds = new Set<string>();
+      elements.forEach(element => {
+        allIds.add(element.id);
+        element.processes?.forEach(process => {
+          allIds.add(process.id);
+        });
       });
-    });
-    setExpandedNodes(allIds);
+      setExpandedNodes(allIds);
+    } else {
+      // Goals-to-processes mind map
+      if (!goalsWithProcesses) return;
+      
+      // Trigger expand all for goals mind map via ref
+      if (goalsMindMapRef.current) {
+        goalsMindMapRef.current.expandAll();
+      }
+    }
   };
 
   const collapseAll = () => {
-    setExpandedNodes(new Set());
+    if (mindMapType === 'elements-processes') {
+      setExpandedNodes(new Set());
+    } else {
+      // Goals-to-processes mind map
+      if (goalsMindMapRef.current) {
+        goalsMindMapRef.current.collapseAll();
+      }
+    }
   };
 
   const exportToPDF = async () => {
@@ -1000,7 +1020,7 @@ export default function MindMap() {
               ) : (
                 // Goals to Processes Mind Map
                 goalsWithProcesses && goalsWithProcesses.length > 0 ? (
-                  <GoalsProcessesMindMap goals={goalsWithProcesses} />
+                  <GoalsProcessesMindMap ref={goalsMindMapRef} goals={goalsWithProcesses} />
                 ) : (
                   <div className="text-center py-12">
                     <Target className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
