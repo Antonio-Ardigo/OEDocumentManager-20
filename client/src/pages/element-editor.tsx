@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Save, X, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import type { OeElement } from "@shared/schema";
 
@@ -144,6 +144,41 @@ export default function ElementEditor() {
     },
   });
 
+  const deleteElementMutation = useMutation({
+    mutationFn: async () => {
+      if (!id) throw new Error("No element ID provided");
+      return await apiRequest("DELETE", `/api/oe-elements/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "OE Element deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/oe-elements"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activity-log"] });
+      setLocation("/");
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete OE element",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
@@ -159,6 +194,18 @@ export default function ElementEditor() {
 
   const handleCancel = () => {
     setLocation(isEditMode ? `/element/${id}` : "/");
+  };
+
+  const handleDelete = () => {
+    if (!isEditMode || !existingElement) return;
+    
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${existingElement.title}"?\n\nThis action cannot be undone and will remove all associated processes and data.`
+    );
+    
+    if (confirmDelete) {
+      deleteElementMutation.mutate();
+    }
   };
 
   if (isLoading || (!isAuthenticated && !isLoading) || (isEditMode && elementLoading)) {
@@ -291,27 +338,44 @@ export default function ElementEditor() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleCancel}
-                      data-testid="button-cancel"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={saveElementMutation.isPending}
-                      data-testid="button-save"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      {saveElementMutation.isPending 
-                        ? (isEditMode ? "Updating..." : "Creating...") 
-                        : (isEditMode ? "Update Element" : "Create Element")
-                      }
-                    </Button>
+                  <div className="flex items-center justify-between pt-6 border-t">
+                    {/* Delete button - only show in edit mode */}
+                    {isEditMode && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={deleteElementMutation.isPending}
+                        data-testid="button-delete"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {deleteElementMutation.isPending ? "Deleting..." : "Delete Element"}
+                      </Button>
+                    )}
+                    
+                    {/* Cancel and Save buttons */}
+                    <div className="flex items-center space-x-4 ml-auto">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancel}
+                        data-testid="button-cancel"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={saveElementMutation.isPending}
+                        data-testid="button-save"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {saveElementMutation.isPending 
+                          ? (isEditMode ? "Updating..." : "Creating...") 
+                          : (isEditMode ? "Update Element" : "Create Element")
+                        }
+                      </Button>
+                    </div>
                   </div>
                 </form>
               </CardContent>
