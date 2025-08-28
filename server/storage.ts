@@ -82,6 +82,9 @@ export interface IStorage {
   // Activity tracking operations
   getRecentActivity(limit?: number): Promise<(ActivityLog & { user?: User })[]>;
   logActivity(activity: InsertActivityLog): Promise<ActivityLog>;
+
+  // Goals-to-Processes mind map operations
+  getGoalsToProcessesMindMap(): Promise<any[]>;
 }
 
 // Helper function for natural alphanumeric sorting
@@ -588,6 +591,88 @@ export class DatabaseStorage implements IStorage {
       .values(activity)
       .returning();
     return newActivity;
+  }
+
+  // Goals-to-Processes mind map operations
+  async getGoalsToProcessesMindMap(): Promise<any[]> {
+    // Query to get strategic goals with their linked processes via performance measures
+    const goalsWithProcesses = await db
+      .select({
+        goalId: strategicGoals.id,
+        goalTitle: strategicGoals.title,
+        goalDescription: strategicGoals.description,
+        goalCategory: strategicGoals.category,
+        goalPriority: strategicGoals.priority,
+        goalTargetValue: strategicGoals.targetValue,
+        goalCurrentValue: strategicGoals.currentValue,
+        goalUnit: strategicGoals.unit,
+        processId: oeProcesses.id,
+        processName: oeProcesses.name,
+        processNumber: oeProcesses.processNumber,
+        processDescription: oeProcesses.description,
+        processStatus: oeProcesses.status,
+        measureId: performanceMeasures.id,
+        measureName: performanceMeasures.measureName,
+        elementId: oeElements.id,
+        elementTitle: oeElements.title,
+        elementNumber: oeElements.elementNumber
+      })
+      .from(strategicGoals)
+      .leftJoin(performanceMeasures, eq(strategicGoals.id, performanceMeasures.strategicGoalId))
+      .leftJoin(oeProcesses, eq(performanceMeasures.processId, oeProcesses.id))
+      .leftJoin(oeElements, eq(strategicGoals.elementId, oeElements.id))
+      .orderBy(strategicGoals.category, strategicGoals.priority, oeProcesses.processNumber);
+
+    // Group the results by strategic goal
+    const goalsMap = new Map();
+    
+    for (const row of goalsWithProcesses) {
+      if (!goalsMap.has(row.goalId)) {
+        goalsMap.set(row.goalId, {
+          id: row.goalId,
+          title: row.goalTitle,
+          description: row.goalDescription,
+          category: row.goalCategory, // This is the scorecard flag
+          priority: row.goalPriority,
+          targetValue: row.goalTargetValue,
+          currentValue: row.goalCurrentValue,
+          unit: row.goalUnit,
+          element: row.elementId ? {
+            id: row.elementId,
+            title: row.elementTitle,
+            elementNumber: row.elementNumber
+          } : null,
+          processes: []
+        });
+      }
+      
+      const goal = goalsMap.get(row.goalId);
+      
+      // Add process if it exists and isn't already added
+      if (row.processId && !goal.processes.find((p: any) => p.id === row.processId)) {
+        goal.processes.push({
+          id: row.processId,
+          name: row.processName,
+          processNumber: row.processNumber,
+          description: row.processDescription,
+          status: row.processStatus,
+          measures: []
+        });
+      }
+      
+      // Add measure to the process if it exists
+      if (row.measureId && row.processId) {
+        const process = goal.processes.find((p: any) => p.id === row.processId);
+        if (process && !process.measures.find((m: any) => m.id === row.measureId)) {
+          process.measures.push({
+            id: row.measureId,
+            name: row.measureName
+          });
+        }
+      }
+    }
+    
+    return Array.from(goalsMap.values());
   }
 }
 

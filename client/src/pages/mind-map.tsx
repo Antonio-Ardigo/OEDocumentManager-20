@@ -21,9 +21,11 @@ import {
   Workflow,
   Grid3X3,
   Download,
-  Camera
+  Camera,
+  Flag
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
+import { GoalsProcessesMindMap } from "@/components/goals-processes-mindmap";
 
 // Numerical comparison function for version numbers
 function compareVersionNumbers(a: string, b: string): number {
@@ -178,6 +180,7 @@ function MindMapNode({
 }
 
 type VisualizationType = 'hierarchical' | 'grid';
+type MindMapType = 'elements-processes' | 'goals-processes';
 
 interface ViewProps {
   elements: OeElementWithProcesses[];
@@ -321,6 +324,7 @@ export default function MindMap() {
   const { isAuthenticated, isLoading } = useAuth();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('hierarchical');
+  const [mindMapType, setMindMapType] = useState<MindMapType>('elements-processes');
   const [isExporting, setIsExporting] = useState(false);
   const [isCapturingCanvas, setIsCapturingCanvas] = useState(false);
   const [hideText, setHideText] = useState(false);
@@ -340,13 +344,19 @@ export default function MindMap() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: elements, isLoading: elementsLoading, error } = useQuery<OeElementWithProcesses[]>({
+  const { data: elements, isLoading: elementsLoading, error: elementsError } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/mindmap/elements"],
     enabled: isAuthenticated,
   });
 
-  // Handle error
+  const { data: goalsWithProcesses, isLoading: goalsLoading, error: goalsError } = useQuery<any[]>({
+    queryKey: ["/api/mindmap/goals-processes"],
+    enabled: isAuthenticated,
+  });
+
+  // Handle errors
   useEffect(() => {
+    const error = elementsError || goalsError;
     if (error) {
       if (isUnauthorizedError(error as Error)) {
         toast({
@@ -362,11 +372,11 @@ export default function MindMap() {
       
       toast({
         title: "Error",
-        description: "Failed to load OE elements",
+        description: "Failed to load mind map data",
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [elementsError, goalsError, toast]);
 
   const toggleNode = (nodeId: string) => {
     setExpandedNodes(prev => {
@@ -397,10 +407,11 @@ export default function MindMap() {
   };
 
   const exportToPDF = async () => {
-    if (!elements || elements.length === 0) {
+    const currentData = mindMapType === 'elements-processes' ? elements : goalsWithProcesses;
+    if (!currentData || currentData.length === 0) {
       toast({
         title: "No data to export",
-        description: "Please ensure there are elements to export",
+        description: "Please ensure there is data to export",
         variant: "destructive",
       });
       return;
@@ -423,7 +434,10 @@ export default function MindMap() {
       // Title
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
-      pdf.text("OE Framework Mind Map", margin, currentY);
+      const title = mindMapType === 'elements-processes' 
+        ? "OE Framework Mind Map - Elements to Processes" 
+        : "OE Framework Mind Map - Goals to Processes";
+      pdf.text(title, margin, currentY);
       currentY += 15;
 
       // Date
@@ -432,10 +446,11 @@ export default function MindMap() {
       pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, currentY);
       currentY += 20;
 
-      // Process elements in order
-      const sortedElements = [...elements].sort((a, b) => a.elementNumber - b.elementNumber);
+      if (mindMapType === 'elements-processes') {
+        // Process elements in order
+        const sortedElements = [...(elements || [])].sort((a, b) => a.elementNumber - b.elementNumber);
 
-      for (const element of sortedElements) {
+        for (const element of sortedElements) {
         // Check for page break
         if (currentY > pageHeight - 40) {
           pdf.addPage();
@@ -517,9 +532,77 @@ export default function MindMap() {
         }
         currentY += 10;
       }
+      } else {
+        // Process goals grouped by category
+        const groupedGoals = (goalsWithProcesses || []).reduce((acc: any, goal: any) => {
+          const category = goal.category || 'Other';
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(goal);
+          return acc;
+        }, {});
+
+        for (const [category, categoryGoals] of Object.entries(groupedGoals)) {
+          // Category header
+          pdf.setFontSize(14);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(`${category} Scorecard`, margin, currentY);
+          currentY += 12;
+
+          for (const goal of categoryGoals as any[]) {
+            // Check for page break
+            if (currentY > pageHeight - 40) {
+              pdf.addPage();
+              currentY = 20;
+            }
+
+            // Goal header
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(`Goal: ${goal.title}`, margin + 10, currentY);
+            currentY += 10;
+
+            if (goal.description) {
+              pdf.setFontSize(9);
+              pdf.setFont("helvetica", "normal");
+              const descLines = pdf.splitTextToSize(goal.description, maxWidth - 20);
+              pdf.text(descLines, margin + 15, currentY);
+              currentY += (descLines.length * 4) + 5;
+            }
+
+            // Progress
+            pdf.setFontSize(9);
+            pdf.text(`Progress: ${goal.currentValue}/${goal.targetValue} ${goal.unit || ''}`, margin + 15, currentY);
+            currentY += 8;
+
+            // Linked processes
+            if (goal.processes && goal.processes.length > 0) {
+              for (const process of goal.processes) {
+                pdf.setFontSize(10);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(`  → ${process.processNumber}: ${process.name}`, margin + 20, currentY);
+                currentY += 8;
+
+                if (process.measures && process.measures.length > 0) {
+                  pdf.setFontSize(8);
+                  pdf.setFont("helvetica", "normal");
+                  pdf.text(`    Measures: ${process.measures.map((m: any) => m.name).join(', ')}`, margin + 25, currentY);
+                  currentY += 6;
+                }
+              }
+            }
+            currentY += 5;
+          }
+          currentY += 10;
+        }
+      }
 
       // Save the PDF
-      pdf.save('oe-framework-mindmap.pdf');
+      const filename = mindMapType === 'elements-processes' 
+        ? 'oe-framework-elements-processes.pdf' 
+        : 'oe-framework-goals-processes.pdf';
+      pdf.save(filename);
       
       toast({
         title: "Export Successful",
@@ -538,10 +621,11 @@ export default function MindMap() {
   };
 
   const exportCanvasToPDF = async () => {
-    if (!elements || elements.length === 0) {
+    const currentData = mindMapType === 'elements-processes' ? elements : goalsWithProcesses;
+    if (!currentData || currentData.length === 0) {
       toast({
         title: "No data to export",
-        description: "Please ensure there are elements to export",
+        description: "Please ensure there is data to export",
         variant: "destructive",
       });
       return;
@@ -563,7 +647,7 @@ export default function MindMap() {
       
       if (!mindMapContainer) {
         // Try the card content
-        mindMapContainer = document.querySelector('[data-testid="mind-map-card"] .space-y-4, [data-testid="mind-map-card"] .grid') as HTMLElement;
+        mindMapContainer = document.querySelector('[data-testid="mind-map-card"] .space-y-4, [data-testid="mind-map-card"] .grid, [data-mindmap-content="goals-processes"]') as HTMLElement;
       }
       
       if (!mindMapContainer) {
@@ -711,9 +795,13 @@ export default function MindMap() {
       // Add header
       pdf.setFontSize(10);
       pdf.setTextColor(100);
-      pdf.text('OE Framework Mind Map - ' + new Date().toLocaleDateString(), margin, margin);
+      const title = mindMapType === 'elements-processes' 
+        ? 'OE Framework Mind Map - Elements to Processes' 
+        : 'OE Framework Mind Map - Goals to Processes';
+      pdf.text(title + ' - ' + new Date().toLocaleDateString(), margin, margin);
       
-      pdf.save('oe-framework-mindmap-visual.pdf');
+      const mapType = mindMapType === 'elements-processes' ? 'elements-processes' : 'goals-processes';
+      pdf.save(`oe-framework-mindmap-visual-${mapType}.pdf`);
       
       toast({
         title: "Visual Export Successful",
@@ -733,7 +821,10 @@ export default function MindMap() {
     }
   };
 
-  if (isLoading || elementsLoading) {
+  const isLoadingData = isLoading || elementsLoading || goalsLoading;
+  const currentData = mindMapType === 'elements-processes' ? elements : goalsWithProcesses;
+
+  if (isLoadingData) {
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar />
@@ -763,34 +854,61 @@ export default function MindMap() {
               <div>
                 <h1 className="text-3xl font-bold text-foreground flex items-center space-x-3">
                   <Network className="w-8 h-8 text-primary" />
-                  <span>OE Process Mind Map</span>
+                  <span>OE Framework Mind Maps</span>
                 </h1>
                 <p className="text-muted-foreground mt-2">
-                  Interactive visualization of all Operational Excellence Elements, Processes, and Steps
+                  Interactive visualization of OE relationships and strategic alignment
                 </p>
               </div>
               
               <div className="flex space-x-2">
+                {/* Mind Map Type Toggle */}
                 <div className="flex space-x-1 border rounded-lg p-1">
                   <Button 
-                    onClick={() => setVisualizationType('hierarchical')}
-                    variant={visualizationType === 'hierarchical' ? 'default' : 'ghost'}
+                    onClick={() => setMindMapType('elements-processes')}
+                    variant={mindMapType === 'elements-processes' ? 'default' : 'ghost'}
                     size="sm"
                     className="h-8"
+                    data-testid="tab-elements-processes"
                   >
-                    <TreePine className="w-4 h-4 mr-1" />
-                    Tree
+                    <Workflow className="w-4 h-4 mr-1" />
+                    Elements → Processes
                   </Button>
                   <Button 
-                    onClick={() => setVisualizationType('grid')}
-                    variant={visualizationType === 'grid' ? 'default' : 'ghost'}
+                    onClick={() => setMindMapType('goals-processes')}
+                    variant={mindMapType === 'goals-processes' ? 'default' : 'ghost'}
                     size="sm"
                     className="h-8"
+                    data-testid="tab-goals-processes"
                   >
-                    <Grid3X3 className="w-4 h-4 mr-1" />
-                    Grid
+                    <Flag className="w-4 h-4 mr-1" />
+                    Goals → Processes
                   </Button>
                 </div>
+                
+                {/* View Type Toggle (only for elements-processes) */}
+                {mindMapType === 'elements-processes' && (
+                  <div className="flex space-x-1 border rounded-lg p-1">
+                    <Button 
+                      onClick={() => setVisualizationType('hierarchical')}
+                      variant={visualizationType === 'hierarchical' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="h-8"
+                    >
+                      <TreePine className="w-4 h-4 mr-1" />
+                      Tree
+                    </Button>
+                    <Button 
+                      onClick={() => setVisualizationType('grid')}
+                      variant={visualizationType === 'grid' ? 'default' : 'ghost'}
+                      size="sm"
+                      className="h-8"
+                    >
+                      <Grid3X3 className="w-4 h-4 mr-1" />
+                      Grid
+                    </Button>
+                  </div>
+                )}
                 <Button onClick={expandAll} variant="outline" size="sm">
                   Expand All
                 </Button>
@@ -826,44 +944,72 @@ export default function MindMap() {
             </div>
           </div>
 
-          <Card>
+          <Card data-testid="mind-map-card">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Settings className="w-5 h-5" />
-                <span>WSM Operational Excellence Framework</span>
-                <Badge variant="secondary">
-                  {elements?.length || 0} Elements
-                </Badge>
+                {mindMapType === 'elements-processes' ? (
+                  <>
+                    <Settings className="w-5 h-5" />
+                    <span>Elements to Processes Mind Map</span>
+                    <Badge variant="secondary">
+                      {elements?.length || 0} Elements
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <Target className="w-5 h-5" />
+                    <span>Goals to Processes Mind Map</span>
+                    <Badge variant="secondary">
+                      {goalsWithProcesses?.length || 0} Strategic Goals
+                    </Badge>
+                  </>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {elements && elements.length > 0 ? (
-                <div className="overflow-x-auto pb-4" data-mindmap-content>
-                  {visualizationType === 'hierarchical' && (
-                    <HierarchicalView 
-                      elements={elements} 
-                      expandedNodes={expandedNodes} 
-                      toggleNode={toggleNode} 
-                      hideText={hideText}
-                    />
-                  )}
-                  {visualizationType === 'grid' && (
-                    <GridView 
-                      elements={elements} 
-                      expandedNodes={expandedNodes} 
-                      toggleNode={toggleNode} 
-                      hideText={hideText}
-                    />
-                  )}
-                </div>
+              {mindMapType === 'elements-processes' ? (
+                // Elements to Processes Mind Map
+                elements && elements.length > 0 ? (
+                  <div className="overflow-x-auto pb-4" data-mindmap-content>
+                    {visualizationType === 'hierarchical' && (
+                      <HierarchicalView 
+                        elements={elements} 
+                        expandedNodes={expandedNodes} 
+                        toggleNode={toggleNode} 
+                        hideText={hideText}
+                      />
+                    )}
+                    {visualizationType === 'grid' && (
+                      <GridView 
+                        elements={elements} 
+                        expandedNodes={expandedNodes} 
+                        toggleNode={toggleNode} 
+                        hideText={hideText}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Network className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No Elements Available</h3>
+                    <p className="text-muted-foreground">
+                      No OE elements found. Create elements and processes to see the mind map.
+                    </p>
+                  </div>
+                )
               ) : (
-                <div className="text-center py-12">
-                  <Network className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">No Data Available</h3>
-                  <p className="text-muted-foreground">
-                    No OE elements found. Create elements and processes to see the mind map.
-                  </p>
-                </div>
+                // Goals to Processes Mind Map
+                goalsWithProcesses && goalsWithProcesses.length > 0 ? (
+                  <GoalsProcessesMindMap goals={goalsWithProcesses} />
+                ) : (
+                  <div className="text-center py-12">
+                    <Target className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No Strategic Goals Available</h3>
+                    <p className="text-muted-foreground">
+                      No strategic goals with linked processes found. Create goals and link them to processes via performance measures.
+                    </p>
+                  </div>
+                )
               )}
             </CardContent>
           </Card>

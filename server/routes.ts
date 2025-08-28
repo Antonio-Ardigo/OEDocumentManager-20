@@ -82,6 +82,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get strategic goals with linked processes for Goals-to-Processes mind map
+  app.get('/api/mindmap/goals-processes', isAuthenticated, async (req, res) => {
+    try {
+      const goalsWithProcesses = await storage.getGoalsToProcessesMindMap();
+      res.json(goalsWithProcesses);
+    } catch (error) {
+      console.error("Error fetching Goals-to-Processes mind map:", error);
+      res.status(500).json({ message: "Failed to fetch Goals-to-Processes mind map" });
+    }
+  });
+
   app.get('/api/oe-elements/:id', isAuthenticated, async (req, res) => {
     try {
       const element = await storage.getOeElement(req.params.id);
