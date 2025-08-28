@@ -159,25 +159,30 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                             </div>
                           </div>
 
-                          {/* Compact Performance Measures */}
+                          {/* Enhanced Performance Measures Display */}
                           {process.measures && process.measures.length > 0 && (
-                            <div className="space-y-1">
-                              <div className="flex items-center space-x-1 mb-1">
-                                <BarChart3 className="w-3 h-3 text-blue-500" />
-                                <span className="text-xs font-medium text-blue-600">
-                                  {process.measures.length} KPIs
+                            <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-2 space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <BarChart3 className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                                  {process.measures.length} Performance Measures
                                 </span>
                               </div>
-                              <div className="flex flex-wrap gap-1">
-                                {process.measures.slice(0, 4).map((measure, idx) => (
-                                  <Badge key={measure.id} variant="secondary" className="text-xs px-1 py-0">
-                                    {measure.name.length > 20 ? `${measure.name.substring(0, 17)}...` : measure.name}
-                                  </Badge>
+                              <div className="grid grid-cols-1 gap-1">
+                                {process.measures.slice(0, 6).map((measure) => (
+                                  <div key={measure.id} className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded px-2 py-1 border border-blue-200 dark:border-blue-800">
+                                    <Circle className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                      {measure.name.length > 35 ? `${measure.name.substring(0, 32)}...` : measure.name}
+                                    </span>
+                                  </div>
                                 ))}
-                                {process.measures.length > 4 && (
-                                  <Badge variant="outline" className="text-xs px-1 py-0">
-                                    +{process.measures.length - 4} more
-                                  </Badge>
+                                {process.measures.length > 6 && (
+                                  <div className="text-center py-1">
+                                    <Badge variant="outline" className="text-xs font-medium bg-blue-100 text-blue-700 border-blue-300">
+                                      +{process.measures.length - 6} additional measures
+                                    </Badge>
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -185,9 +190,11 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
 
                           {/* No measures indicator */}
                           {(!process.measures || process.measures.length === 0) && (
-                            <div className="text-xs text-muted-foreground flex items-center space-x-1">
-                              <Circle className="w-3 h-3 opacity-30" />
-                              <span>No KPIs</span>
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 text-center">
+                              <div className="flex items-center justify-center space-x-2 text-gray-500">
+                                <Circle className="w-4 h-4 opacity-50" />
+                                <span className="text-sm font-medium">No Performance Measures</span>
+                              </div>
                             </div>
                           )}
                         </CardContent>
