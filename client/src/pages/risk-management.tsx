@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, Shield, TrendingUp, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import Sidebar from "@/components/sidebar";
+import Header from "@/components/header";
 
 interface ProcessRisk {
   id: string;
@@ -76,145 +78,155 @@ export default function RiskManagement() {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
-            <Shield className="w-8 h-8 mr-3 text-blue-600" />
-            Risk Management
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Assess and manage process risks across your OE framework
-          </p>
+    <div className="min-h-screen flex bg-background">
+      <Sidebar />
+      
+      <main className="flex-1 overflow-auto">
+        <Header />
+        
+        <div className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                  <Shield className="w-8 h-8 mr-3 text-blue-600" />
+                  Risk Management
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                  Assess and manage process risks across your OE framework
+                </p>
+              </div>
+            </div>
+
+            {/* Risk Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-red-600 text-sm font-medium">High Risk</p>
+                      <p className="text-2xl font-bold text-red-700">{highRiskProcesses.length}</p>
+                    </div>
+                    <AlertTriangle className="w-8 h-8 text-red-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-yellow-600 text-sm font-medium">Medium Risk</p>
+                      <p className="text-2xl font-bold text-yellow-700">{mediumRiskProcesses.length}</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-yellow-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-600 text-sm font-medium">Low Risk</p>
+                      <p className="text-2xl font-bold text-green-700">{lowRiskProcesses.length}</p>
+                    </div>
+                    <Shield className="w-8 h-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200 bg-gray-50 dark:bg-gray-950/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-600 text-sm font-medium">Not Assessed</p>
+                      <p className="text-2xl font-bold text-gray-700">{unassessedProcesses.length}</p>
+                    </div>
+                    <Eye className="w-8 h-8 text-gray-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* High Risk Processes */}
+            {highRiskProcesses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-red-700 flex items-center">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    High Risk Processes - Immediate Attention Required
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {highRiskProcesses.map((process) => (
+                      <ProcessRiskCard key={process.id} process={process} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Medium Risk Processes */}
+            {mediumRiskProcesses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-yellow-700 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2" />
+                    Medium Risk Processes - Monitor and Mitigate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {mediumRiskProcesses.map((process) => (
+                      <ProcessRiskCard key={process.id} process={process} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Low Risk Processes */}
+            {lowRiskProcesses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-green-700 flex items-center">
+                    <Shield className="w-5 h-5 mr-2" />
+                    Low Risk Processes - Well Controlled
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {lowRiskProcesses.map((process) => (
+                      <ProcessRiskCard key={process.id} process={process} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Unassessed Processes */}
+            {unassessedProcesses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-gray-700 flex items-center">
+                    <Eye className="w-5 h-5 mr-2" />
+                    Processes Requiring Risk Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {unassessedProcesses.map((process) => (
+                      <ProcessRiskCard key={process.id} process={process} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Risk Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-red-600 text-sm font-medium">High Risk</p>
-                <p className="text-2xl font-bold text-red-700">{highRiskProcesses.length}</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-yellow-600 text-sm font-medium">Medium Risk</p>
-                <p className="text-2xl font-bold text-yellow-700">{mediumRiskProcesses.length}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-600 text-sm font-medium">Low Risk</p>
-                <p className="text-2xl font-bold text-green-700">{lowRiskProcesses.length}</p>
-              </div>
-              <Shield className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-gray-200 bg-gray-50 dark:bg-gray-950/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Not Assessed</p>
-                <p className="text-2xl font-bold text-gray-700">{unassessedProcesses.length}</p>
-              </div>
-              <Eye className="w-8 h-8 text-gray-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* High Risk Processes */}
-      {highRiskProcesses.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-700 flex items-center">
-              <AlertTriangle className="w-5 h-5 mr-2" />
-              High Risk Processes - Immediate Attention Required
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {highRiskProcesses.map((process) => (
-                <ProcessRiskCard key={process.id} process={process} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Medium Risk Processes */}
-      {mediumRiskProcesses.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-yellow-700 flex items-center">
-              <TrendingUp className="w-5 h-5 mr-2" />
-              Medium Risk Processes - Monitor and Mitigate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mediumRiskProcesses.map((process) => (
-                <ProcessRiskCard key={process.id} process={process} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Low Risk Processes */}
-      {lowRiskProcesses.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-green-700 flex items-center">
-              <Shield className="w-5 h-5 mr-2" />
-              Low Risk Processes - Well Controlled
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {lowRiskProcesses.map((process) => (
-                <ProcessRiskCard key={process.id} process={process} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Unassessed Processes */}
-      {unassessedProcesses.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-gray-700 flex items-center">
-              <Eye className="w-5 h-5 mr-2" />
-              Processes Requiring Risk Assessment
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {unassessedProcesses.map((process) => (
-                <ProcessRiskCard key={process.id} process={process} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      </main>
     </div>
   );
 }
