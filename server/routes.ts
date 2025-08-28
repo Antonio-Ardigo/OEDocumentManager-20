@@ -206,6 +206,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/oe-processes', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // Convert issueDate string to Date object if provided
+      if (req.body.issueDate && typeof req.body.issueDate === 'string') {
+        req.body.issueDate = new Date(req.body.issueDate);
+      }
+      
       const validatedData = insertOeProcessSchema.parse({
         ...req.body,
         createdBy: userId,
@@ -235,6 +241,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
     try {
       console.log("PUT request body:", JSON.stringify(req.body, null, 2));
+      
+      // Convert issueDate string to Date object if provided
+      if (req.body.issueDate && typeof req.body.issueDate === 'string') {
+        req.body.issueDate = new Date(req.body.issueDate);
+      }
+      
       const validatedData = insertOeProcessSchema.partial().parse(req.body);
       const process = await storage.updateOeProcess(req.params.id, validatedData);
       res.json(process);
@@ -250,6 +262,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
     try {
+      // Convert issueDate string to Date object if provided
+      if (req.body.issueDate && typeof req.body.issueDate === 'string') {
+        req.body.issueDate = new Date(req.body.issueDate);
+      }
+      
       const validatedData = insertOeProcessSchema.partial().parse(req.body);
       const process = await storage.updateOeProcess(req.params.id, validatedData);
       res.json(process);
