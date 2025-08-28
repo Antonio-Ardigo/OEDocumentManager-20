@@ -343,38 +343,15 @@ export default function Dashboard() {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Recent Activity</CardTitle>
-                <Button variant="ghost" size="sm" data-testid="button-view-all-activity">
-                  View All
-                </Button>
-              </div>
+              <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="text-green-600 text-sm" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm" data-testid="activity-item-1">
-                      <span className="font-medium">System</span> initialized OE management system
-                    </p>
-                    <p className="text-xs text-muted-foreground">Just now</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="text-blue-600 text-sm" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm" data-testid="activity-item-2">
-                      Welcome to the OE Management System! Start by creating your first process.
-                    </p>
-                    <p className="text-xs text-muted-foreground">Just now</p>
-                  </div>
-                </div>
+              <div className="text-center py-8">
+                <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h4 className="text-lg font-medium mb-2">Activity Tracking</h4>
+                <p className="text-muted-foreground">
+                  Activity tracking will be available soon. Your actions and system changes will appear here.
+                </p>
               </div>
             </CardContent>
           </Card>
