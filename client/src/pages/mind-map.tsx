@@ -1109,16 +1109,7 @@ This alignment ensures that operational activities directly support strategic ob
         <Header />
         <div className="p-6">
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground flex items-center space-x-3">
-                  <Network className="w-8 h-8 text-primary" />
-                  <span>OE Framework Mind Maps</span>
-                </h1>
-                <p className="text-muted-foreground mt-2">
-                  Interactive visualization of OE relationships and strategic alignment
-                </p>
-              </div>
+            <div className="flex items-center justify-end mb-4">
               
               <div className="flex space-x-2">
                 {/* Mind Map Type Toggle */}
@@ -1189,15 +1180,6 @@ This alignment ensures that operational activities directly support strategic ob
                 >
                   <Download className="w-4 h-4 mr-1" />
                   {isExporting ? 'Exporting...' : 'Export PDF'}
-                </Button>
-                <Button 
-                  onClick={exportCanvasToPDF} 
-                  variant="outline" 
-                  size="sm"
-                  disabled={isExporting || isCapturingCanvas}
-                >
-                  <Camera className="w-4 h-4 mr-1" />
-                  {isCapturingCanvas ? 'Capturing...' : 'Export Visual PDF'}
                 </Button>
               </div>
             </div>
