@@ -134,7 +134,8 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
       setExpandedProcesses(allProcessIds);
     },
     collapseAll: () => {
-      // Keep goals expanded but collapse all processes
+      // Hide all processes by collapsing goals completely
+      setExpandedGoals(new Set());
       setExpandedProcesses(new Set());
     }
   }), [goals]);
@@ -284,6 +285,16 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                                           {measure.name}
                                         </span>
                                         <div className="flex flex-wrap gap-1 mt-1">
+                                          {measure.scorecardCategory && (
+                                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                              {getScorecardStyle(measure.scorecardCategory).flag} {measure.scorecardCategory}
+                                            </Badge>
+                                          )}
+                                          {measure.formula && (
+                                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                                              Formula: {measure.formula}
+                                            </Badge>
+                                          )}
                                           {measure.target && (
                                             <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                                               Target: {measure.target}
