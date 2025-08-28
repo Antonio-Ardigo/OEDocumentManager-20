@@ -832,10 +832,27 @@ export default function ProcessForm({
         {/* Risk Management */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Shield className="w-5 h-5" />
-              <span>Risk Management</span>
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="w-5 h-5" />
+                <span>Risk Management</span>
+              </CardTitle>
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // Auto-populate risk assessment template
+                  form.setValue("riskFrequency", "Medium");
+                  form.setValue("riskImpact", "Medium");
+                  form.setValue("riskMitigation", "Risk mitigation strategy to be defined...");
+                }}
+                data-testid="button-add-risk"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Risk
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
