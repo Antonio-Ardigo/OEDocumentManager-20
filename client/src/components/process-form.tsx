@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,7 @@ import {
   Target,
   BarChart3
 } from "lucide-react";
-import type { OeProcessWithDetails, OeElementWithProcesses } from "@shared/schema";
+import type { OeProcessWithDetails, OeElementWithProcesses, StrategicGoal } from "@shared/schema";
 
 // Form validation schema
 const processFormSchema = z.object({
@@ -53,6 +54,7 @@ const processFormSchema = z.object({
     frequency: z.string().optional(),
     target: z.string().optional(),
     scorecardCategory: z.string().optional(),
+    strategicGoalId: z.string().optional(),
   })).default([]),
 });
 
@@ -74,6 +76,11 @@ export default function ProcessForm({
   onCancel 
 }: ProcessFormProps) {
   const [selectedElementId, setSelectedElementId] = useState<string>(process?.elementId || "");
+
+  // Load strategic goals for the dropdown
+  const { data: strategicGoals = [] } = useQuery<StrategicGoal[]>({
+    queryKey: ["/api/strategic-goals"],
+  });
 
   const form = useForm<ProcessFormData>({
     resolver: zodResolver(processFormSchema),
@@ -100,6 +107,8 @@ export default function ProcessForm({
         source: measure.source || "",
         frequency: measure.frequency || "",
         target: measure.target || "",
+        scorecardCategory: measure.scorecardCategory || "",
+        strategicGoalId: (measure as any).strategicGoalId || "",
       })) || [],
     },
   });
@@ -744,6 +753,34 @@ export default function ProcessForm({
                               <SelectItem value="Customer">Customer</SelectItem>
                               <SelectItem value="Internal Process">Internal Process</SelectItem>
                               <SelectItem value="Learning & Growth">Learning & Growth</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <FormField
+                      control={form.control}
+                      name={`performanceMeasures.${index}.strategicGoalId`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Link to Strategic Goal (Optional)</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid={`select-strategic-goal-${index}`}>
+                                <SelectValue placeholder="Select a strategic goal" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">No linked goal</SelectItem>
+                              {strategicGoals.map((goal) => (
+                                <SelectItem key={goal.id} value={goal.id}>
+                                  {goal.title} ({goal.category})
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
