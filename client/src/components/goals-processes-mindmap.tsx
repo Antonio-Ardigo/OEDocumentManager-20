@@ -87,7 +87,10 @@ const getScorecardStyle = (category: string) => {
 };
 
 export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
-  const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set());
+  // Initialize with all goals expanded by default
+  const [expandedGoals, setExpandedGoals] = useState<Set<string>>(() => {
+    return new Set(goals?.map(goal => goal.id) || []);
+  });
   const [expandedProcesses, setExpandedProcesses] = useState<Set<string>>(new Set());
 
   const toggleGoal = (goalId: string) => {
@@ -140,8 +143,13 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-8 h-8 p-0 rounded-full"
-                      onClick={() => toggleGoal(goal.id)}
+                      className="w-8 h-8 p-0 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleGoal(goal.id);
+                      }}
+                      data-testid={`toggle-goal-${goal.id}`}
                     >
                       {expandedGoals.has(goal.id) ? (
                         <ChevronDown className="w-4 h-4" />
@@ -200,8 +208,13 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="w-6 h-6 p-0 rounded-full"
-                                onClick={() => toggleProcess(process.id)}
+                                className="w-6 h-6 p-0 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  toggleProcess(process.id);
+                                }}
+                                data-testid={`toggle-process-${process.id}`}
                               >
                                 {expandedProcesses.has(process.id) ? (
                                   <ChevronDown className="w-3 h-3" />
@@ -275,12 +288,20 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
 
                           {/* Collapsed KPI Summary */}
                           {process.measures && process.measures.length > 0 && !expandedProcesses.has(process.id) && (
-                            <div className="bg-blue-50 dark:bg-blue-950/20 rounded p-2">
+                            <div 
+                              className="bg-blue-50 dark:bg-blue-950/20 rounded p-2 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleProcess(process.id);
+                              }}
+                            >
                               <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-300">
                                 <BarChart3 className="w-3 h-3" />
                                 <span className="text-xs font-medium">
                                   {process.measures.length} KPIs - Click to expand
                                 </span>
+                                <ChevronRight className="w-3 h-3 ml-auto" />
                               </div>
                             </div>
                           )}
