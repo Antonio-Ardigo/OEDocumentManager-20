@@ -9,6 +9,7 @@ import Dashboard from "@/pages/dashboard";
 import AllProcesses from "@/pages/all-processes";
 import MindMap from "@/pages/mind-map";
 import BalancedScorecard from "@/pages/balanced-scorecard";
+import RiskManagement from "@/pages/risk-management";
 import ElementDetail from "@/pages/element-detail";
 import ProcessDetail from "@/pages/process-detail";
 import ProcessEditor from "@/pages/process-editor";
@@ -28,6 +29,7 @@ function Router() {
           <Route path="/processes" component={AllProcesses} />
           <Route path="/mindmap" component={MindMap} />
           <Route path="/scorecard" component={BalancedScorecard} />
+          <Route path="/risk-management" component={RiskManagement} />
           <Route path="/element/:id" component={ElementDetail} />
           <Route path="/process/:id" component={ProcessDetail} />
           <Route path="/process/:id/edit" component={ProcessEditor} />

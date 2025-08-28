@@ -40,6 +40,10 @@ const processFormSchema = z.object({
   isMandatory: z.boolean().default(false),
   expectations: z.string().optional(),
   issueDate: z.string().optional(),
+  // Risk Management fields
+  riskFrequency: z.string().optional(),
+  riskImpact: z.string().optional(), 
+  riskMitigation: z.string().optional(),
   steps: z.array(z.object({
     stepNumber: z.number().min(1),
     stepName: z.string().min(1, "Step name is required"),
@@ -99,6 +103,10 @@ export default function ProcessForm({
       isMandatory: process?.isMandatory || false,
       expectations: process?.expectations || "",
       issueDate: process?.issueDate ? new Date(process.issueDate).toISOString().split('T')[0] : "",
+      // Risk Management fields
+      riskFrequency: process?.riskFrequency || "",
+      riskImpact: process?.riskImpact || "",
+      riskMitigation: process?.riskMitigation || "",
       steps: process?.steps?.map(step => ({
         stepNumber: step.stepNumber,
         stepName: step.stepName,
@@ -818,6 +826,84 @@ export default function ProcessForm({
                 </div>
               ))
             )}
+          </CardContent>
+        </Card>
+
+        {/* Risk Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Shield className="w-5 h-5" />
+              <span>Risk Management</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="riskFrequency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Risk Frequency</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-risk-frequency">
+                          <SelectValue placeholder="Select frequency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="riskImpact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Risk Impact</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-risk-impact">
+                          <SelectValue placeholder="Select impact" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="riskMitigation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Risk Mitigation Strategy</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe the strategy to mitigate this risk..."
+                      className="min-h-[100px]"
+                      {...field}
+                      data-testid="textarea-risk-mitigation"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 

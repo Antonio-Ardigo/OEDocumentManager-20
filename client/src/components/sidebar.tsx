@@ -8,7 +8,8 @@ import {
   Cog,
   LogOut,
   Network,
-  BarChart3
+  BarChart3,
+  Shield
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -20,6 +21,7 @@ export default function Sidebar() {
     { name: "All Processes", href: "/processes", icon: Folder },
     { name: "Mind Map", href: "/mindmap", icon: Network },
     { name: "Balanced Scorecard", href: "/scorecard", icon: BarChart3 },
+    { name: "Risk Management", href: "/risk-management", icon: Shield },
   ];
 
   const isActive = (href: string) => {

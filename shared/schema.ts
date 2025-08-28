@@ -65,6 +65,10 @@ export const oeProcesses = pgTable("oe_processes", {
   responsibilities: text("responsibilities"),
   processStepsContent: text("process_steps_content"),
   performanceMeasureContent: text("performance_measure_content"),
+  // Risk Management fields
+  riskFrequency: varchar("risk_frequency", { length: 20 }), // Low, Medium, High
+  riskImpact: varchar("risk_impact", { length: 20 }), // Low, Medium, High
+  riskMitigation: text("risk_mitigation"),
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
