@@ -52,6 +52,7 @@ export const oeElements = pgTable("oe_elements", {
 export const oeProcesses = pgTable("oe_processes", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   elementId: uuid("element_id").references(() => oeElements.id),
+  strategicGoalId: uuid("strategic_goal_id").references(() => strategicGoals.id, { onDelete: 'set null' }),
   processNumber: varchar("process_number", { length: 50 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
@@ -163,6 +164,10 @@ export const oeProcessesRelations = relations(oeProcesses, ({ one, many }) => ({
   element: one(oeElements, {
     fields: [oeProcesses.elementId],
     references: [oeElements.id],
+  }),
+  strategicGoal: one(strategicGoals, {
+    fields: [oeProcesses.strategicGoalId],
+    references: [strategicGoals.id],
   }),
   steps: many(processSteps),
   performanceMeasures: many(performanceMeasures),
