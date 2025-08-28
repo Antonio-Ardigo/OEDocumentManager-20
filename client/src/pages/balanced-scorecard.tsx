@@ -218,7 +218,7 @@ export default function BalancedScorecard() {
 
   const deleteGoalMutation = useMutation({
     mutationFn: async (goalId: string) => {
-      await apiRequest(`/api/strategic-goals/${goalId}`, 'DELETE');
+      await apiRequest('DELETE', `/api/strategic-goals/${goalId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/strategic-goals"] });
