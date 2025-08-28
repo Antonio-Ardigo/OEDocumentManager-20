@@ -613,9 +613,11 @@ export class DatabaseStorage implements IStorage {
         processStatus: oeProcesses.status,
         measureId: performanceMeasures.id,
         measureName: performanceMeasures.measureName,
+        measureFormula: performanceMeasures.formula,
         measureTarget: performanceMeasures.target,
         measureFrequency: performanceMeasures.frequency,
         measureSource: performanceMeasures.source,
+        measureScorecardCategory: performanceMeasures.scorecardCategory,
         elementId: oeElements.id,
         elementTitle: oeElements.title,
         elementNumber: oeElements.elementNumber
@@ -670,9 +672,11 @@ export class DatabaseStorage implements IStorage {
           process.measures.push({
             id: row.measureId,
             name: row.measureName,
+            formula: row.measureFormula,
             target: row.measureTarget,
             frequency: row.measureFrequency,
-            source: row.measureSource
+            source: row.measureSource,
+            scorecardCategory: row.measureScorecardCategory
           });
         }
       }
