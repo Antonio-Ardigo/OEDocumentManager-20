@@ -443,190 +443,429 @@ export default function MindMap() {
       const { jsPDF } = await import('jspdf');
       const pdf = new jsPDF();
       
-      // Set up fonts and styling
-      pdf.setFont("helvetica");
-      let currentY = 20;
+      // Set up page dimensions and margins
       const pageHeight = pdf.internal.pageSize.height;
       const pageWidth = pdf.internal.pageSize.width;
-      const margin = 20;
-      const maxWidth = pageWidth - (margin * 2);
+      const leftMargin = 25;
+      const rightMargin = 25;
+      const topMargin = 25;
+      const bottomMargin = 25;
+      const maxWidth = pageWidth - (leftMargin + rightMargin);
+      
+      // Helper function to add justified text
+      const addJustifiedText = (text: string, x: number, y: number, maxWidth: number, fontSize: number) => {
+        pdf.setFontSize(fontSize);
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        for (let i = 0; i < lines.length; i++) {
+          if (i === lines.length - 1) {
+            // Last line - don't justify
+            pdf.text(lines[i], x, y + (i * (fontSize * 0.35)));
+          } else {
+            // Justify line by adding spaces
+            const words = lines[i].split(' ');
+            if (words.length > 1) {
+              const lineWidth = pdf.getTextWidth(lines[i]);
+              const spaceWidth = (maxWidth - lineWidth) / (words.length - 1);
+              let currentX = x;
+              
+              for (let j = 0; j < words.length; j++) {
+                pdf.text(words[j], currentX, y + (i * (fontSize * 0.35)));
+                if (j < words.length - 1) {
+                  currentX += pdf.getTextWidth(words[j]) + pdf.getTextWidth(' ') + spaceWidth;
+                }
+              }
+            } else {
+              pdf.text(lines[i], x, y + (i * (fontSize * 0.35)));
+            }
+          }
+        }
+        return lines.length * (fontSize * 0.35);
+      };
 
-      // Title
+      // Helper function to check for page break and add header
+      const checkPageBreak = (neededSpace: number) => {
+        if (currentY + neededSpace > pageHeight - bottomMargin) {
+          pdf.addPage();
+          currentY = topMargin;
+          
+          // Add page header (except for cover page)
+          if (pdf.internal.getNumberOfPages() > 1) {
+            pdf.setFontSize(8);
+            pdf.setFont("helvetica", "normal");
+            pdf.text("WSM Operational Excellence Framework", leftMargin, 15);
+            pdf.text(`Page ${pdf.internal.getNumberOfPages()}`, pageWidth - rightMargin - 15, 15);
+            pdf.line(leftMargin, 18, pageWidth - rightMargin, 18);
+            currentY = topMargin + 5;
+          }
+        }
+      };
+
+      let currentY = topMargin;
+
+      // COVER PAGE
+      pdf.setFont("helvetica");
+      
+      // Company Logo/Header section
+      currentY = 60;
+      pdf.setFontSize(24);
+      pdf.setFont("helvetica", "bold");
+      const mainTitle = "WSM Operational Excellence";
+      pdf.text(mainTitle, pageWidth/2, currentY, { align: 'center' });
+      
+      currentY += 20;
+      pdf.setFontSize(20);
+      pdf.setFont("helvetica", "normal");
+      const subTitle = "Framework Documentation";
+      pdf.text(subTitle, pageWidth/2, currentY, { align: 'center' });
+
+      // Document title
+      currentY = 140;
+      pdf.setFontSize(18);
+      pdf.setFont("helvetica", "bold");
+      const docTitle = mindMapType === 'elements-processes' 
+        ? "Mind Map Report: Elements to Processes" 
+        : "Mind Map Report: Goals to Processes";
+      const titleLines = pdf.splitTextToSize(docTitle, maxWidth - 40);
+      for (let i = 0; i < titleLines.length; i++) {
+        pdf.text(titleLines[i], pageWidth/2, currentY + (i * 24), { align: 'center' });
+      }
+
+      // Date and metadata
+      currentY = 200;
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "normal");
+      const generatedDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      pdf.text(`Generated on: ${generatedDate}`, pageWidth/2, currentY, { align: 'center' });
+      
+      currentY += 15;
+      pdf.text(`Report Type: ${mindMapType === 'elements-processes' ? 'Elements Structure' : 'Strategic Goals Alignment'}`, pageWidth/2, currentY, { align: 'center' });
+
+      // Footer on cover page
+      currentY = pageHeight - 40;
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "italic");
+      pdf.text("This document contains confidential and proprietary information", pageWidth/2, currentY, { align: 'center' });
+
+      // Start new page for content
+      pdf.addPage();
+      currentY = topMargin;
+
+      // TABLE OF CONTENTS
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
-      const title = mindMapType === 'elements-processes' 
-        ? "OE Framework Mind Map - Elements to Processes" 
-        : "OE Framework Mind Map - Goals to Processes";
-      pdf.text(title, margin, currentY);
-      currentY += 15;
-
-      // Date
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, currentY);
+      pdf.text("TABLE OF CONTENTS", leftMargin, currentY);
       currentY += 20;
 
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      
       if (mindMapType === 'elements-processes') {
-        // Process elements in order
         const sortedElements = [...(elements || [])].sort((a, b) => a.elementNumber - b.elementNumber);
-
         for (const element of sortedElements) {
-        // Check for page break
-        if (currentY > pageHeight - 40) {
-          pdf.addPage();
-          currentY = 20;
-        }
-
-        // Element header
-        pdf.setFontSize(12);
-        pdf.setFont("helvetica", "bold");
-        pdf.text(`OE Element ${element.elementNumber}: ${element.title}`, margin, currentY);
-        currentY += 10;
-
-        if (element.description) {
-          pdf.setFontSize(9);
-          pdf.setFont("helvetica", "normal");
-          const descLines = pdf.splitTextToSize(element.description, maxWidth);
-          pdf.text(descLines, margin, currentY);
-          currentY += (descLines.length * 4) + 5;
-        }
-
-        // Processes
-        if (element.processes && element.processes.length > 0) {
-          const sortedProcesses = [...element.processes].sort((a, b) => 
-            compareVersionNumbers(a.processNumber, b.processNumber)
-          );
-
-          for (const process of sortedProcesses) {
-            // Check for page break
-            if (currentY > pageHeight - 30) {
-              pdf.addPage();
-              currentY = 20;
+          checkPageBreak(15);
+          pdf.text(`${element.elementNumber}. OE Element: ${element.title}`, leftMargin + 10, currentY);
+          currentY += 12;
+          
+          if (element.processes && element.processes.length > 0) {
+            const sortedProcesses = [...element.processes].sort((a, b) => 
+              compareVersionNumbers(a.processNumber, b.processNumber)
+            );
+            for (const process of sortedProcesses.slice(0, 3)) { // Show first 3 processes
+              pdf.text(`    ${process.processNumber}: ${process.name}`, leftMargin + 20, currentY);
+              currentY += 10;
             }
-
-            pdf.setFontSize(10);
-            pdf.setFont("helvetica", "bold");
-            pdf.text(`  ${process.processNumber}: ${process.name}`, margin + 10, currentY);
-            currentY += 8;
-
-            if (process.description) {
-              pdf.setFontSize(8);
-              pdf.setFont("helvetica", "normal");
-              const procDescLines = pdf.splitTextToSize(process.description, maxWidth - 20);
-              pdf.text(procDescLines, margin + 15, currentY);
-              currentY += (procDescLines.length * 3) + 3;
+            if (sortedProcesses.length > 3) {
+              pdf.text(`    ... and ${sortedProcesses.length - 3} more processes`, leftMargin + 20, currentY);
+              currentY += 10;
             }
-
-            // Steps
-            if ((process as any).steps && (process as any).steps.length > 0) {
-              const sortedSteps = [...(process as any).steps].sort((a: any, b: any) => {
-                const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
-                const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
-                return compareVersionNumbers(aNum, bNum);
-              });
-
-              for (const step of sortedSteps) {
-                // Check for page break
-                if (currentY > pageHeight - 20) {
-                  pdf.addPage();
-                  currentY = 20;
-                }
-
-                pdf.setFontSize(9);
-                pdf.setFont("helvetica", "bold");
-                pdf.text(`    Step ${step.stepNumber}: ${step.stepName}`, margin + 20, currentY);
-                currentY += 6;
-
-                if (step.stepDetails) {
-                  pdf.setFontSize(8);
-                  pdf.setFont("helvetica", "normal");
-                  const stepDetailLines = pdf.splitTextToSize(step.stepDetails, maxWidth - 30);
-                  pdf.text(stepDetailLines, margin + 25, currentY);
-                  currentY += (stepDetailLines.length * 3) + 2;
-                }
-                currentY += 2;
-              }
-            }
-            currentY += 5;
           }
+          currentY += 5;
         }
-        currentY += 10;
-      }
       } else {
-        // Process goals grouped by category
         const groupedGoals = (goalsWithProcesses || []).reduce((acc: any, goal: any) => {
           const category = goal.category || 'Other';
-          if (!acc[category]) {
-            acc[category] = [];
-          }
+          if (!acc[category]) acc[category] = [];
           acc[category].push(goal);
           return acc;
         }, {});
 
         for (const [category, categoryGoals] of Object.entries(groupedGoals)) {
-          // Category header
-          pdf.setFontSize(14);
-          pdf.setFont("helvetica", "bold");
-          pdf.text(`${category} Scorecard`, margin, currentY);
+          checkPageBreak(15);
+          pdf.text(`${category} Scorecard`, leftMargin + 10, currentY);
           currentY += 12;
-
-          for (const goal of categoryGoals as any[]) {
-            // Check for page break
-            if (currentY > pageHeight - 40) {
-              pdf.addPage();
-              currentY = 20;
-            }
-
-            // Goal header
-            pdf.setFontSize(12);
-            pdf.setFont("helvetica", "bold");
-            pdf.text(`Goal: ${goal.title}`, margin + 10, currentY);
+          
+          for (const goal of (categoryGoals as any[]).slice(0, 2)) {
+            pdf.text(`    ${goal.title}`, leftMargin + 20, currentY);
             currentY += 10;
-
-            if (goal.description) {
-              pdf.setFontSize(9);
-              pdf.setFont("helvetica", "normal");
-              const descLines = pdf.splitTextToSize(goal.description, maxWidth - 20);
-              pdf.text(descLines, margin + 15, currentY);
-              currentY += (descLines.length * 4) + 5;
-            }
-
-            // Progress
-            pdf.setFontSize(9);
-            pdf.text(`Progress: ${goal.currentValue}/${goal.targetValue} ${goal.unit || ''}`, margin + 15, currentY);
-            currentY += 8;
-
-            // Linked processes
-            if (goal.processes && goal.processes.length > 0) {
-              for (const process of goal.processes) {
-                pdf.setFontSize(10);
-                pdf.setFont("helvetica", "bold");
-                pdf.text(`  → ${process.processNumber}: ${process.name}`, margin + 20, currentY);
-                currentY += 8;
-
-                if (process.measures && process.measures.length > 0) {
-                  pdf.setFontSize(8);
-                  pdf.setFont("helvetica", "normal");
-                  pdf.text(`    Measures: ${process.measures.map((m: any) => m.name).join(', ')}`, margin + 25, currentY);
-                  currentY += 6;
-                }
-              }
-            }
-            currentY += 5;
           }
-          currentY += 10;
+          if ((categoryGoals as any[]).length > 2) {
+            pdf.text(`    ... and ${(categoryGoals as any[]).length - 2} more goals`, leftMargin + 20, currentY);
+            currentY += 10;
+          }
+          currentY += 5;
         }
       }
 
+      // Start new page for main content
+      pdf.addPage();
+      currentY = topMargin;
+
+      if (mindMapType === 'elements-processes') {
+        // ELEMENTS TO PROCESSES CONTENT
+        pdf.setFontSize(18);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("OPERATIONAL EXCELLENCE FRAMEWORK", leftMargin, currentY);
+        pdf.text("ELEMENTS TO PROCESSES MAPPING", leftMargin, currentY + 25);
+        currentY += 50;
+
+        const sortedElements = [...(elements || [])].sort((a, b) => a.elementNumber - b.elementNumber);
+
+        for (const element of sortedElements) {
+          checkPageBreak(60);
+
+          // Chapter separator line
+          pdf.setDrawColor(0, 0, 0);
+          pdf.setLineWidth(0.5);
+          pdf.line(leftMargin, currentY - 5, pageWidth - rightMargin, currentY - 5);
+          currentY += 5;
+
+          // Element header with enhanced formatting
+          pdf.setFontSize(16);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(`CHAPTER ${element.elementNumber}`, leftMargin, currentY);
+          currentY += 20;
+          
+          pdf.setFontSize(14);
+          pdf.text(`OE ELEMENT: ${element.title.toUpperCase()}`, leftMargin, currentY);
+          currentY += 20;
+
+          // Element description with justified text
+          if (element.description) {
+            pdf.setFontSize(11);
+            pdf.setFont("helvetica", "normal");
+            const descHeight = addJustifiedText(element.description, leftMargin, currentY, maxWidth, 11);
+            currentY += descHeight + 15;
+          }
+
+          // Processes section
+          if (element.processes && element.processes.length > 0) {
+            checkPageBreak(30);
+            
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "bold");
+            pdf.text("ASSOCIATED PROCESSES", leftMargin, currentY);
+            currentY += 15;
+
+            const sortedProcesses = [...element.processes].sort((a, b) => 
+              compareVersionNumbers(a.processNumber, b.processNumber)
+            );
+
+            for (const process of sortedProcesses) {
+              checkPageBreak(40);
+
+              // Process header with indentation
+              pdf.setFontSize(11);
+              pdf.setFont("helvetica", "bold");
+              pdf.text(`${process.processNumber}: ${process.name}`, leftMargin + 15, currentY);
+              currentY += 12;
+
+              // Process description
+              if (process.description) {
+                pdf.setFontSize(10);
+                pdf.setFont("helvetica", "normal");
+                const procDescHeight = addJustifiedText(process.description, leftMargin + 20, currentY, maxWidth - 25, 10);
+                currentY += procDescHeight + 10;
+              }
+
+              // Process steps with enhanced indentation
+              if ((process as any).steps && (process as any).steps.length > 0) {
+                checkPageBreak(30);
+                
+                pdf.setFontSize(10);
+                pdf.setFont("helvetica", "bold");
+                pdf.text("Process Steps:", leftMargin + 20, currentY);
+                currentY += 12;
+
+                const sortedSteps = [...(process as any).steps].sort((a: any, b: any) => {
+                  const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
+                  const bNum = typeof b.stepNumber === 'string' ? b.stepNumber : String(b.stepNumber);
+                  return compareVersionNumbers(aNum, bNum);
+                });
+
+                for (const step of sortedSteps) {
+                  checkPageBreak(25);
+
+                  pdf.setFontSize(9);
+                  pdf.setFont("helvetica", "bold");
+                  pdf.text(`${step.stepNumber}. ${step.stepName}`, leftMargin + 30, currentY);
+                  currentY += 10;
+
+                  if (step.stepDetails) {
+                    pdf.setFontSize(9);
+                    pdf.setFont("helvetica", "normal");
+                    const stepDetailHeight = addJustifiedText(step.stepDetails, leftMargin + 35, currentY, maxWidth - 40, 9);
+                    currentY += stepDetailHeight + 8;
+                  }
+                }
+              }
+              currentY += 10;
+            }
+          }
+          currentY += 20;
+        }
+
+      } else {
+        // GOALS TO PROCESSES CONTENT
+        pdf.setFontSize(18);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("STRATEGIC GOALS FRAMEWORK", leftMargin, currentY);
+        pdf.text("GOALS TO PROCESSES ALIGNMENT", leftMargin, currentY + 25);
+        currentY += 50;
+
+        const groupedGoals = (goalsWithProcesses || []).reduce((acc: any, goal: any) => {
+          const category = goal.category || 'Other';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(goal);
+          return acc;
+        }, {});
+
+        for (const [category, categoryGoals] of Object.entries(groupedGoals)) {
+          checkPageBreak(60);
+
+          // Chapter separator line
+          pdf.setDrawColor(0, 0, 0);
+          pdf.setLineWidth(0.5);
+          pdf.line(leftMargin, currentY - 5, pageWidth - rightMargin, currentY - 5);
+          currentY += 5;
+
+          // Scorecard category header
+          pdf.setFontSize(16);
+          pdf.setFont("helvetica", "bold");
+          pdf.text(`${category.toUpperCase()} SCORECARD`, leftMargin, currentY);
+          currentY += 25;
+
+          for (const goal of categoryGoals as any[]) {
+            checkPageBreak(50);
+
+            // Goal header
+            pdf.setFontSize(14);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(`STRATEGIC GOAL: ${goal.title.toUpperCase()}`, leftMargin + 10, currentY);
+            currentY += 18;
+
+            // Goal description
+            if (goal.description) {
+              pdf.setFontSize(11);
+              pdf.setFont("helvetica", "normal");
+              const descHeight = addJustifiedText(goal.description, leftMargin + 15, currentY, maxWidth - 20, 11);
+              currentY += descHeight + 12;
+            }
+
+            // Performance metrics
+            pdf.setFontSize(10);
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Performance Metrics:", leftMargin + 15, currentY);
+            currentY += 10;
+            
+            pdf.setFont("helvetica", "normal");
+            pdf.text(`Current Progress: ${goal.currentValue}/${goal.targetValue} ${goal.unit || ''}`, leftMargin + 20, currentY);
+            currentY += 8;
+            
+            const percentage = goal.targetValue > 0 ? Math.round((goal.currentValue / goal.targetValue) * 100) : 0;
+            pdf.text(`Achievement Rate: ${percentage}%`, leftMargin + 20, currentY);
+            currentY += 15;
+
+            // Linked processes
+            if (goal.processes && goal.processes.length > 0) {
+              pdf.setFontSize(11);
+              pdf.setFont("helvetica", "bold");
+              pdf.text("LINKED OPERATIONAL PROCESSES", leftMargin + 15, currentY);
+              currentY += 15;
+
+              for (const process of goal.processes) {
+                checkPageBreak(30);
+
+                pdf.setFontSize(10);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(`→ Process ${process.processNumber}: ${process.name}`, leftMargin + 25, currentY);
+                currentY += 12;
+
+                // Performance measures with formulas
+                if (process.measures && process.measures.length > 0) {
+                  pdf.setFontSize(9);
+                  pdf.setFont("helvetica", "bold");
+                  pdf.text("Performance Measures:", leftMargin + 30, currentY);
+                  currentY += 10;
+
+                  for (const measure of process.measures) {
+                    pdf.setFont("helvetica", "normal");
+                    pdf.text(`• ${measure.name}`, leftMargin + 35, currentY);
+                    currentY += 8;
+                    
+                    if (measure.formula) {
+                      pdf.setFontSize(8);
+                      pdf.setFont("helvetica", "italic");
+                      pdf.text(`Formula: ${measure.formula}`, leftMargin + 40, currentY);
+                      currentY += 8;
+                    }
+                  }
+                  currentY += 5;
+                }
+              }
+            }
+            currentY += 15;
+          }
+          currentY += 20;
+        }
+      }
+
+      // Add final page with summary
+      pdf.addPage();
+      currentY = topMargin;
+      
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("DOCUMENT SUMMARY", leftMargin, currentY);
+      currentY += 25;
+
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "normal");
+      const summaryText = mindMapType === 'elements-processes' 
+        ? `This document provides a comprehensive overview of the WSM Operational Excellence Framework, detailing the relationships between the 8 core OE elements and their associated operational processes. Each element is presented with its constituent processes, steps, and implementation guidelines to ensure systematic operational excellence across the organization.
+
+The framework ensures alignment between strategic objectives and operational execution, providing clear pathways for continuous improvement and performance optimization. This structured approach enables organizations to maintain high standards of operational excellence while adapting to changing business requirements.
+
+For questions or clarifications regarding this framework, please contact the Operational Excellence team.`
+        : `This document presents the strategic alignment between organizational goals and operational processes within the WSM Operational Excellence Framework. The report demonstrates how strategic objectives are systematically connected to operational processes, ensuring that every process contributes meaningfully to achieving organizational goals.
+
+The scorecard approach provides visibility into performance metrics and achievement rates, enabling data-driven decision making and continuous improvement. Each goal is linked to specific processes with measurable outcomes, creating accountability and transparency in organizational performance.
+
+This alignment ensures that operational activities directly support strategic objectives, maximizing organizational effectiveness and competitive advantage.`;
+
+      const summaryHeight = addJustifiedText(summaryText, leftMargin, currentY, maxWidth, 11);
+      currentY += summaryHeight + 20;
+
+      // Document metadata
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "italic");
+      pdf.text(`Document generated: ${new Date().toLocaleString()}`, leftMargin, currentY);
+      currentY += 10;
+      pdf.text(`Total pages: ${pdf.internal.getNumberOfPages()}`, leftMargin, currentY);
+      pdf.text(`Document type: ${mindMapType === 'elements-processes' ? 'Elements-Processes Mapping' : 'Goals-Processes Alignment'}`, leftMargin, currentY + 10);
+
       // Save the PDF
       const filename = mindMapType === 'elements-processes' 
-        ? 'oe-framework-elements-processes.pdf' 
-        : 'oe-framework-goals-processes.pdf';
+        ? 'WSM-OE-Framework-Elements-Processes.pdf' 
+        : 'WSM-OE-Framework-Goals-Processes.pdf';
       pdf.save(filename);
       
       toast({
         title: "Export Successful",
-        description: "Mind map exported to PDF successfully",
+        description: "Professional PDF report generated successfully",
       });
     } catch (error) {
       console.error("Error exporting PDF:", error);
