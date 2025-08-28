@@ -135,9 +135,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/oe-elements/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/oe-elements/:id', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
+      
+      // Get element details before deletion for logging
+      const element = await storage.getOeElement(req.params.id);
+      
       await storage.deleteOeElement(req.params.id);
+      
+      // Log activity if element existed
+      if (element) {
+        await storage.logActivity({
+          userId,
+          action: 'deleted',
+          entityType: 'element',
+          entityId: element.id,
+          entityName: element.title,
+          description: `Deleted OE element "${element.title}"`,
+        });
+      }
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting OE element:", error);
