@@ -5,7 +5,6 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Home, 
   Folder, 
-  Settings, 
   Cog,
   LogOut,
   Network,
@@ -21,7 +20,6 @@ export default function Sidebar() {
     { name: "All Processes", href: "/processes", icon: Folder },
     { name: "Mind Map", href: "/mindmap", icon: Network },
     { name: "Balanced Scorecard", href: "/scorecard", icon: BarChart3 },
-    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   const isActive = (href: string) => {
