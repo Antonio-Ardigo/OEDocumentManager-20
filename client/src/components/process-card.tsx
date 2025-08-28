@@ -78,16 +78,12 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
   const statusColor = getStatusColor(processCount);
   const statusText = getStatusText(processCount);
 
-  // Find if this is a featured element (e.g., Asset Management)
-  const isFeatured = element.elementNumber === 4;
 
   if (viewMode === "list") {
     return (
       <Link href={`/element/${element.id}`}>
         <Card 
-          className={`process-card cursor-pointer transition-all duration-200 hover:shadow-md ${
-            isFeatured ? 'border-l-4 border-l-primary' : ''
-          }`}
+          className="process-card cursor-pointer transition-all duration-200 hover:shadow-md"
           data-testid={`process-card-${element.elementNumber}`}
         >
           <CardContent className="p-4">
@@ -107,9 +103,6 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                     <h3 className="text-lg font-semibold" data-testid="element-title">
                       OE Element No. {element.elementNumber}
                     </h3>
-                    {isFeatured && (
-                      <Star className="w-4 h-4 text-primary fill-current" />
-                    )}
                   </div>
                   <h4 className="text-primary font-medium mb-1" data-testid="element-name">
                     {element.title}
@@ -150,16 +143,9 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
   return (
     <Link href={`/element/${element.id}`}>
       <Card 
-        className={`process-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
-          isFeatured ? 'border-2 border-primary relative' : ''
-        }`}
+        className="process-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1"
         data-testid={`process-card-${element.elementNumber}`}
       >
-        {isFeatured && (
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-            <Star className="text-primary-foreground text-sm fill-current" />
-          </div>
-        )}
         
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
