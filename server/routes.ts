@@ -234,11 +234,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
     try {
+      console.log("PUT request body:", JSON.stringify(req.body, null, 2));
       const validatedData = insertOeProcessSchema.partial().parse(req.body);
       const process = await storage.updateOeProcess(req.params.id, validatedData);
       res.json(process);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Zod validation errors:", error.errors);
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       console.error("Error updating OE process:", error);
