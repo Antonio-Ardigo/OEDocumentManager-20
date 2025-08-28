@@ -154,7 +154,7 @@ export default function Dashboard() {
         
         <div className="p-6">
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-6 mb-8">
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -171,53 +171,6 @@ export default function Dashboard() {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Active Elements</p>
-                    <p className="text-3xl font-bold text-accent" data-testid="stat-active-elements">
-                      {statsLoading ? '...' : stats?.activeElements || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                    <Activity className="text-accent text-xl" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Pending Reviews</p>
-                    <p className="text-3xl font-bold text-destructive" data-testid="stat-pending-reviews">
-                      {statsLoading ? '...' : stats?.pendingReviews || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-destructive/10 rounded-lg flex items-center justify-center">
-                    <Clock className="text-destructive text-xl" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Completion Rate</p>
-                    <p className="text-3xl font-bold text-green-600" data-testid="stat-completion-rate">
-                      {statsLoading ? '...' : `${stats?.completionRate || 0}%`}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle2 className="text-green-600 text-xl" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Quick Actions */}
