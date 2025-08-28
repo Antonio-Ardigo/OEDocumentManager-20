@@ -327,6 +327,253 @@ export default function BalancedScorecard() {
           })}
         </div>
 
+        {/* Strategic Goals Section */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Target className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Strategic Goals</h2>
+              <p className="text-muted-foreground">Goals across all OE elements with element and scorecard relationships</p>
+            </div>
+          </div>
+          
+          {goals.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {goals.map((goal) => {
+                const goalElement = elements?.find(e => e.id === goal.elementId);
+                return (
+                  <Card key={goal.id} className="border-2">
+                    <CardContent className="p-6">
+                      {editingGoal === goal.id ? (
+                        // Edit form
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor={`goal-title-${goal.id}`}>Title</Label>
+                            <Input
+                              id={`goal-title-${goal.id}`}
+                              value={editingGoalData.title || goal.title}
+                              onChange={(e) => setEditingGoalData({
+                                ...editingGoalData,
+                                title: e.target.value
+                              })}
+                              data-testid={`input-goal-title-${goal.id}`}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`goal-element-${goal.id}`}>OE Element</Label>
+                            <select
+                              id={`goal-element-${goal.id}`}
+                              value={editingGoalData.elementId || goal.elementId}
+                              onChange={(e) => setEditingGoalData({
+                                ...editingGoalData,
+                                elementId: e.target.value
+                              })}
+                              className="w-full p-2 border rounded-md"
+                              data-testid={`select-goal-element-${goal.id}`}
+                            >
+                              {elements?.map((element) => (
+                                <option key={element.id} value={element.id}>
+                                  OE {element.elementNumber}: {element.title}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <Label htmlFor={`goal-category-${goal.id}`}>Scorecard Category</Label>
+                            <select
+                              id={`goal-category-${goal.id}`}
+                              value={editingGoalData.category || goal.category}
+                              onChange={(e) => setEditingGoalData({
+                                ...editingGoalData,
+                                category: e.target.value as StrategicGoal['category']
+                              })}
+                              className="w-full p-2 border rounded-md"
+                              data-testid={`select-goal-category-${goal.id}`}
+                            >
+                              <option value="Financial">Financial</option>
+                              <option value="Customer">Customer</option>
+                              <option value="Internal Process">Internal Process</option>
+                              <option value="Learning & Growth">Learning & Growth</option>
+                            </select>
+                          </div>
+                          <div>
+                            <Label htmlFor={`goal-description-${goal.id}`}>Description</Label>
+                            <Textarea
+                              id={`goal-description-${goal.id}`}
+                              value={editingGoalData.description || goal.description}
+                              onChange={(e) => setEditingGoalData({
+                                ...editingGoalData,
+                                description: e.target.value
+                              })}
+                              className="min-h-[60px]"
+                              data-testid={`textarea-goal-description-${goal.id}`}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor={`goal-current-${goal.id}`}>Current Value</Label>
+                              <Input
+                                id={`goal-current-${goal.id}`}
+                                type="number"
+                                value={editingGoalData.currentValue ?? goal.currentValue}
+                                onChange={(e) => setEditingGoalData({
+                                  ...editingGoalData,
+                                  currentValue: parseFloat(e.target.value) || 0
+                                })}
+                                data-testid={`input-goal-current-${goal.id}`}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`goal-target-${goal.id}`}>Target Value</Label>
+                              <Input
+                                id={`goal-target-${goal.id}`}
+                                type="number"
+                                value={editingGoalData.targetValue ?? goal.targetValue}
+                                onChange={(e) => setEditingGoalData({
+                                  ...editingGoalData,
+                                  targetValue: parseFloat(e.target.value) || 0
+                                })}
+                                data-testid={`input-goal-target-${goal.id}`}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor={`goal-unit-${goal.id}`}>Unit</Label>
+                              <Input
+                                id={`goal-unit-${goal.id}`}
+                                value={editingGoalData.unit || goal.unit}
+                                onChange={(e) => setEditingGoalData({
+                                  ...editingGoalData,
+                                  unit: e.target.value
+                                })}
+                                data-testid={`input-goal-unit-${goal.id}`}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`goal-priority-${goal.id}`}>Priority</Label>
+                              <select
+                                id={`goal-priority-${goal.id}`}
+                                value={editingGoalData.priority || goal.priority}
+                                onChange={(e) => setEditingGoalData({
+                                  ...editingGoalData,
+                                  priority: e.target.value as StrategicGoal['priority']
+                                })}
+                                className="w-full p-2 border rounded-md"
+                                data-testid={`select-goal-priority-${goal.id}`}
+                              >
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingGoal(null);
+                                setEditingGoalData({});
+                              }}
+                              data-testid={`button-cancel-goal-${goal.id}`}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                updateGoalMutation.mutate({
+                                  id: goal.id,
+                                  data: editingGoalData
+                                });
+                              }}
+                              disabled={updateGoalMutation.isPending}
+                              data-testid={`button-save-goal-${goal.id}`}
+                            >
+                              {updateGoalMutation.isPending ? 'Saving...' : 'Save'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Display view
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-lg">{goal.title}</h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingGoal(goal.id);
+                                setEditingGoalData({});
+                              }}
+                              data-testid={`button-edit-goal-${goal.id}`}
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          {/* Element and Scorecard Relationship Flags */}
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <Badge variant="outline" className="text-xs">
+                              OE {goalElement?.elementNumber}: {goalElement?.title}
+                            </Badge>
+                            <Badge className={getCategoryColor(goal.category)}>
+                              {goal.category}
+                            </Badge>
+                            <Badge variant={goal.priority === 'High' ? 'destructive' : goal.priority === 'Medium' ? 'default' : 'secondary'}>
+                              {goal.priority}
+                            </Badge>
+                          </div>
+                          
+                          <p className="text-sm text-muted-foreground mb-4">{goal.description}</p>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Current: </span>
+                              <span className="font-medium">{goal.currentValue}{goal.unit}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Target: </span>
+                              <span className="font-medium">{goal.targetValue}{goal.unit}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Progress indicator */}
+                          <div className="mt-3">
+                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                              <span>Progress</span>
+                              <span>{goal.targetValue > 0 ? Math.round((goal.currentValue / goal.targetValue) * 100) : 0}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: `${goal.targetValue > 0 ? Math.min((goal.currentValue / goal.targetValue) * 100, 100) : 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="border-dashed border-2">
+              <CardContent className="p-8 text-center">
+                <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h4 className="text-lg font-medium mb-2">No Strategic Goals</h4>
+                <p className="text-muted-foreground mb-4">
+                  Add strategic goals to track performance across your OE elements.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
         {/* Elements and Their Scorecards */}
         <div className="space-y-8">
           {elements?.map((element) => {
@@ -561,208 +808,6 @@ export default function BalancedScorecard() {
                     </div>
                   )}
 
-                  {/* Strategic Goals */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Target className="w-5 h-5 mr-2" />
-                      Strategic Goals
-                    </h3>
-                    
-                    {elementGoals.length > 0 ? (
-                      <div className="space-y-4">
-                        {elementGoals.map((goal) => (
-                          <Card key={goal.id} className="border">
-                            <CardContent className="p-4">
-                              {editingGoal === goal.id ? (
-                                // Edit form
-                                <div className="space-y-4">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                      <Label htmlFor={`goal-title-${goal.id}`}>Title</Label>
-                                      <Input
-                                        id={`goal-title-${goal.id}`}
-                                        value={editingGoalData.title || goal.title}
-                                        onChange={(e) => setEditingGoalData({
-                                          ...editingGoalData,
-                                          title: e.target.value
-                                        })}
-                                        data-testid={`input-goal-title-${goal.id}`}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`goal-category-${goal.id}`}>Category</Label>
-                                      <select
-                                        id={`goal-category-${goal.id}`}
-                                        value={editingGoalData.category || goal.category}
-                                        onChange={(e) => setEditingGoalData({
-                                          ...editingGoalData,
-                                          category: e.target.value as StrategicGoal['category']
-                                        })}
-                                        className="w-full p-2 border rounded-md"
-                                        data-testid={`select-goal-category-${goal.id}`}
-                                      >
-                                        <option value="Financial">Financial</option>
-                                        <option value="Customer">Customer</option>
-                                        <option value="Internal Process">Internal Process</option>
-                                        <option value="Learning & Growth">Learning & Growth</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <Label htmlFor={`goal-description-${goal.id}`}>Description</Label>
-                                    <Textarea
-                                      id={`goal-description-${goal.id}`}
-                                      value={editingGoalData.description || goal.description}
-                                      onChange={(e) => setEditingGoalData({
-                                        ...editingGoalData,
-                                        description: e.target.value
-                                      })}
-                                      className="min-h-[60px]"
-                                      data-testid={`textarea-goal-description-${goal.id}`}
-                                    />
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                      <Label htmlFor={`goal-current-${goal.id}`}>Current Value</Label>
-                                      <Input
-                                        id={`goal-current-${goal.id}`}
-                                        type="number"
-                                        value={editingGoalData.currentValue ?? goal.currentValue}
-                                        onChange={(e) => setEditingGoalData({
-                                          ...editingGoalData,
-                                          currentValue: parseFloat(e.target.value) || 0
-                                        })}
-                                        data-testid={`input-goal-current-${goal.id}`}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`goal-target-${goal.id}`}>Target Value</Label>
-                                      <Input
-                                        id={`goal-target-${goal.id}`}
-                                        type="number"
-                                        value={editingGoalData.targetValue ?? goal.targetValue}
-                                        onChange={(e) => setEditingGoalData({
-                                          ...editingGoalData,
-                                          targetValue: parseFloat(e.target.value) || 0
-                                        })}
-                                        data-testid={`input-goal-target-${goal.id}`}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`goal-unit-${goal.id}`}>Unit</Label>
-                                      <Input
-                                        id={`goal-unit-${goal.id}`}
-                                        value={editingGoalData.unit || goal.unit}
-                                        onChange={(e) => setEditingGoalData({
-                                          ...editingGoalData,
-                                          unit: e.target.value
-                                        })}
-                                        data-testid={`input-goal-unit-${goal.id}`}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <Label htmlFor={`goal-priority-${goal.id}`}>Priority</Label>
-                                    <select
-                                      id={`goal-priority-${goal.id}`}
-                                      value={editingGoalData.priority || goal.priority}
-                                      onChange={(e) => setEditingGoalData({
-                                        ...editingGoalData,
-                                        priority: e.target.value as StrategicGoal['priority']
-                                      })}
-                                      className="w-full p-2 border rounded-md"
-                                      data-testid={`select-goal-priority-${goal.id}`}
-                                    >
-                                      <option value="High">High</option>
-                                      <option value="Medium">Medium</option>
-                                      <option value="Low">Low</option>
-                                    </select>
-                                  </div>
-                                  <div className="flex justify-end space-x-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        setEditingGoal(null);
-                                        setEditingGoalData({});
-                                      }}
-                                      data-testid={`button-cancel-goal-${goal.id}`}
-                                    >
-                                      Cancel
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        updateGoalMutation.mutate({
-                                          id: goal.id,
-                                          data: editingGoalData
-                                        });
-                                      }}
-                                      disabled={updateGoalMutation.isPending}
-                                      data-testid={`button-save-goal-${goal.id}`}
-                                    >
-                                      {updateGoalMutation.isPending ? 'Saving...' : 'Save'}
-                                    </Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                // Display view
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      <h4 className="font-semibold">{goal.title}</h4>
-                                      <Badge className={getCategoryColor(goal.category)}>
-                                        {goal.category}
-                                      </Badge>
-                                      <Badge variant={goal.priority === 'High' ? 'destructive' : goal.priority === 'Medium' ? 'default' : 'secondary'}>
-                                        {goal.priority}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground mb-3">{goal.description}</p>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                      <div>
-                                        <span className="text-muted-foreground">Current: </span>
-                                        <span className="font-medium">{goal.currentValue}{goal.unit}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-muted-foreground">Target: </span>
-                                        <span className="font-medium">{goal.targetValue}{goal.unit}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      setEditingGoal(goal.id);
-                                      setEditingGoalData({});
-                                    }}
-                                    data-testid={`button-edit-goal-${goal.id}`}
-                                  >
-                                    <Edit3 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <Card className="border-dashed border-2">
-                        <CardContent className="p-8 text-center">
-                          <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                          <h4 className="text-lg font-medium mb-2">No Strategic Goals</h4>
-                          <p className="text-muted-foreground mb-4">
-                            Add strategic goals to track performance for this OE element.
-                          </p>
-                          <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Strategic Goal
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             );

@@ -225,7 +225,26 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                className="h-auto p-6 justify-start"
+                asChild
+                data-testid="button-view-homepage"
+              >
+                <a href="/">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="text-blue-600 text-xl" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold">View Homepage</h3>
+                      <p className="text-sm text-muted-foreground">Go to the main landing page</p>
+                    </div>
+                  </div>
+                </a>
+              </Button>
+              
               <Button
                 variant="outline"
                 className="h-auto p-6 justify-start"
