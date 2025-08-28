@@ -19,17 +19,21 @@ import {
   Clock, 
   CheckCircle2,
   Edit3,
-  User,
+  User as UserIcon,
   Grid3X3,
   List
 } from "lucide-react";
-import type { OeElementWithProcesses } from "@shared/schema";
+import type { OeElementWithProcesses, ActivityLog, User } from "@shared/schema";
 
 interface DashboardStats {
   totalProcesses: number;
   activeElements: number;
   pendingReviews: number;
   completionRate: number;
+}
+
+interface ActivityWithUser extends ActivityLog {
+  user?: User;
 }
 
 export default function Dashboard() {
@@ -85,6 +89,11 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
+  const { data: activities, isLoading: activitiesLoading, error: activitiesError } = useQuery<ActivityWithUser[]>({
+    queryKey: ["/api/activity-log"],
+    enabled: isAuthenticated,
+  });
+
   // Handle elements error
   useEffect(() => {
     if (elementsError) {
@@ -106,6 +115,28 @@ export default function Dashboard() {
       });
     }
   }, [elementsError, toast]);
+
+  // Handle activities error
+  useEffect(() => {
+    if (activitiesError) {
+      if (isUnauthorizedError(activitiesError)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to load activity log",
+        variant: "destructive",
+      });
+    }
+  }, [activitiesError, toast]);
 
   if (isLoading || (!isAuthenticated && !isLoading)) {
     return (
@@ -299,13 +330,49 @@ export default function Dashboard() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h4 className="text-lg font-medium mb-2">Activity Tracking</h4>
-                <p className="text-muted-foreground">
-                  Activity tracking will be available soon. Your actions and system changes will appear here.
-                </p>
-              </div>
+              {activitiesLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading activity...</p>
+                </div>
+              ) : activities && activities.length > 0 ? (
+                <div className="space-y-4">
+                  {activities.map((activity) => (
+                    <div key={activity.id} className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        {activity.action === 'created' && <Plus className="w-4 h-4 text-green-600" />}
+                        {activity.action === 'updated' && <Edit3 className="w-4 h-4 text-blue-600" />}
+                        {activity.action === 'deleted' && <Activity className="w-4 h-4 text-red-600" />}
+                        {activity.action === 'viewed' && <FileText className="w-4 h-4 text-gray-600" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium truncate">
+                            {activity.description || `${activity.action} ${activity.entityType}`}
+                          </p>
+                          <span className="text-xs text-muted-foreground">
+                            {activity.createdAt ? new Date(activity.createdAt).toLocaleDateString() : 'Recent'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.user ? 
+                            `${activity.user.firstName || activity.user.email}` : 
+                            'System'
+                          } • {activity.entityName || activity.entityType}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h4 className="text-lg font-medium mb-2">No Recent Activity</h4>
+                  <p className="text-muted-foreground">
+                    Start creating and managing processes to see activity here.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

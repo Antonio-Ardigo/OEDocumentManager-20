@@ -23,8 +23,11 @@ import {
   type InsertStrategicGoal,
   type ElementPerformanceMetric,
   type InsertElementPerformanceMetric,
+  type ActivityLog,
+  type InsertActivityLog,
   type OeProcessWithDetails,
   type OeElementWithProcesses,
+  activityLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, ilike, or, sql, asc, isNotNull } from "drizzle-orm";
@@ -75,6 +78,10 @@ export interface IStorage {
     pendingReviews: number;
     completionRate: number;
   }>;
+
+  // Activity tracking operations
+  getRecentActivity(limit?: number): Promise<(ActivityLog & { user?: User })[]>;
+  logActivity(activity: InsertActivityLog): Promise<ActivityLog>;
 }
 
 // Helper function for natural alphanumeric sorting
@@ -532,6 +539,55 @@ export class DatabaseStorage implements IStorage {
       pendingReviews: pendingReviewsResult?.count || 0,
       completionRate,
     };
+  }
+
+  // Activity tracking operations
+  async getRecentActivity(limit: number = 10): Promise<(ActivityLog & { user?: User })[]> {
+    const activities = await db
+      .select({
+        id: activityLog.id,
+        userId: activityLog.userId,
+        action: activityLog.action,
+        entityType: activityLog.entityType,
+        entityId: activityLog.entityId,
+        entityName: activityLog.entityName,
+        description: activityLog.description,
+        metadata: activityLog.metadata,
+        createdAt: activityLog.createdAt,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userEmail: users.email,
+      })
+      .from(activityLog)
+      .leftJoin(users, eq(activityLog.userId, users.id))
+      .orderBy(desc(activityLog.createdAt))
+      .limit(limit);
+
+    return activities.map(activity => ({
+      id: activity.id,
+      userId: activity.userId,
+      action: activity.action,
+      entityType: activity.entityType,
+      entityId: activity.entityId,
+      entityName: activity.entityName,
+      description: activity.description,
+      metadata: activity.metadata,
+      createdAt: activity.createdAt,
+      user: activity.userId ? {
+        id: activity.userId,
+        firstName: activity.userFirstName,
+        lastName: activity.userLastName,
+        email: activity.userEmail,
+      } as User : undefined,
+    }));
+  }
+
+  async logActivity(activity: InsertActivityLog): Promise<ActivityLog> {
+    const [newActivity] = await db
+      .insert(activityLog)
+      .values(activity)
+      .returning();
+    return newActivity;
   }
 }
 

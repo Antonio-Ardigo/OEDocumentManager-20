@@ -10,6 +10,7 @@ import {
   insertDocumentVersionSchema,
   insertStrategicGoalSchema,
   insertElementPerformanceMetricSchema,
+  insertActivityLogSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -44,6 +45,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Activity log routes
+  app.get('/api/activity-log', isAuthenticated, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const activities = await storage.getRecentActivity(limit);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching activity log:", error);
+      res.status(500).json({ message: "Failed to fetch activity log" });
     }
   });
 
@@ -157,6 +170,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
       });
       const process = await storage.createOeProcess(validatedData);
+      
+      // Log activity
+      await storage.logActivity({
+        userId,
+        action: 'created',
+        entityType: 'process',
+        entityId: process.id,
+        entityName: process.name,
+        description: `Created process "${process.name}"`,
+      });
+      
       res.status(201).json(process);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -268,13 +292,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-processes/:processId/measures', isAuthenticated, async (req, res) => {
+  app.post('/api/oe-processes/:processId/measures', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const validatedData = insertPerformanceMeasureSchema.parse({
         ...req.body,
         processId: req.params.processId,
       });
       const measure = await storage.createPerformanceMeasure(validatedData);
+      
+      // Log activity
+      await storage.logActivity({
+        userId,
+        action: 'created',
+        entityType: 'performance_measure',
+        entityId: measure.id,
+        entityName: measure.name,
+        description: `Created performance measure "${measure.name}"`,
+      });
+      
       res.status(201).json(measure);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -360,10 +396,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/strategic-goals', isAuthenticated, async (req, res) => {
+  app.post('/api/strategic-goals', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const goalData = insertStrategicGoalSchema.parse(req.body);
       const goal = await storage.createStrategicGoal(goalData);
+      
+      // Log activity
+      await storage.logActivity({
+        userId,
+        action: 'created',
+        entityType: 'strategic_goal',
+        entityId: goal.id,
+        entityName: goal.title,
+        description: `Created strategic goal "${goal.title}"`,
+      });
+      
       res.status(201).json(goal);
     } catch (error) {
       if (error instanceof z.ZodError) {

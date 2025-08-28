@@ -139,6 +139,19 @@ export const elementPerformanceMetrics = pgTable("element_performance_metrics", 
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Activity Log table for tracking user actions
+export const activityLog = pgTable("activity_log", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  action: varchar("action", { length: 100 }).notNull(), // created, updated, deleted, viewed
+  entityType: varchar("entity_type", { length: 50 }).notNull(), // process, element, strategic_goal
+  entityId: uuid("entity_id"),
+  entityName: varchar("entity_name", { length: 255 }),
+  description: text("description"),
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const oeElementsRelations = relations(oeElements, ({ many }) => ({
   processes: many(oeProcesses),
@@ -208,6 +221,13 @@ export const elementPerformanceMetricsRelations = relations(elementPerformanceMe
   }),
 }));
 
+export const activityLogRelations = relations(activityLog, ({ one }) => ({
+  user: one(users, {
+    fields: [activityLog.userId],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertOeElementSchema = createInsertSchema(oeElements).omit({
   id: true,
@@ -250,6 +270,11 @@ export const insertElementPerformanceMetricSchema = createInsertSchema(elementPe
   updatedAt: true,
 });
 
+export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -267,6 +292,8 @@ export type StrategicGoal = typeof strategicGoals.$inferSelect;
 export type InsertStrategicGoal = z.infer<typeof insertStrategicGoalSchema>;
 export type ElementPerformanceMetric = typeof elementPerformanceMetrics.$inferSelect;
 export type InsertElementPerformanceMetric = z.infer<typeof insertElementPerformanceMetricSchema>;
+export type ActivityLog = typeof activityLog.$inferSelect;
+export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 
 // Extended types for API responses
 export type OeProcessWithDetails = OeProcess & {
