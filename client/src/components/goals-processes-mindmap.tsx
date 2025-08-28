@@ -92,142 +92,166 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
     );
   }
 
-  // Group goals by scorecard category
-  const groupedGoals = goals.reduce((acc, goal) => {
-    const category = goal.category || 'Other';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(goal);
-    return acc;
-  }, {} as Record<string, GoalWithProcesses[]>);
-
   return (
-    <div className="w-full space-y-8" data-mindmap-content="goals-processes">
-      {Object.entries(groupedGoals).map(([category, categoryGoals]) => {
-        const style = getScorecardStyle(category);
+    <div className="w-full space-y-6" data-mindmap-content="goals-processes">
+      {goals.map((goal) => {
+        const goalStyle = getScorecardStyle(goal.category);
         
         return (
-          <div key={category} className="space-y-4">
-            {/* Category Header */}
-            <div className="flex items-center space-x-3 mb-6">
-              <div className={`w-10 h-10 ${style.accent} rounded-lg flex items-center justify-center text-white text-lg`}>
-                {style.flag}
-              </div>
-              <div>
-                <h2 className="text-xl font-bold flex items-center space-x-2">
-                  <Flag className="w-5 h-5" />
-                  <span>{category} Scorecard</span>
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {categoryGoals.length} strategic goal{categoryGoals.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-            </div>
+          <div key={goal.id} className="relative">
+            {/* Goal Card - Root Node */}
+            <Card className={`${goalStyle.bg} ${goalStyle.border} shadow-lg border-2`}>
+              <CardContent className="p-6">
+                {/* Goal Header */}
+                <div className="flex items-start space-x-4 mb-4">
+                  <div className={`w-16 h-16 ${goalStyle.accent} rounded-lg flex items-center justify-center flex-shrink-0 text-2xl`}>
+                    {goalStyle.flag}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <h2 className={`text-xl font-bold ${goalStyle.text}`}>
+                        {goal.title}
+                      </h2>
+                      <Badge variant="outline" className="text-sm">
+                        {goal.category} Scorecard
+                      </Badge>
+                    </div>
+                    {goal.description && (
+                      <p className="text-muted-foreground mb-3">
+                        {goal.description}
+                      </p>
+                    )}
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Badge variant="secondary" className="text-sm">
+                        Priority: {goal.priority}
+                      </Badge>
+                      {goal.element && (
+                        <Badge variant="outline" className="text-sm">
+                          Element {goal.element.elementNumber}: {goal.element.title}
+                        </Badge>
+                      )}
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span className="font-medium">
+                          {goal.currentValue}/{goal.targetValue} {goal.unit}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div 
+                          className={`h-3 rounded-full ${goalStyle.accent}`}
+                          style={{ 
+                            width: `${Math.min(100, (goal.currentValue / goal.targetValue) * 100)}%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Goals in this category */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {categoryGoals.map((goal) => (
-                <div key={goal.id} className="relative">
-                  {/* Goal Card */}
-                  <Card className={`${style.bg} ${style.border} shadow-md`}>
-                    <CardContent className="p-6">
-                      {/* Goal Header */}
-                      <div className="flex items-start space-x-4 mb-4">
-                        <div className={`w-12 h-12 ${style.accent} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <Target className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className={`font-semibold ${style.text} mb-1`}>
-                            {goal.title}
-                          </h3>
-                          {goal.description && (
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {goal.description}
-                            </p>
-                          )}
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              Priority: {goal.priority}
-                            </Badge>
-                            {goal.element && (
-                              <Badge variant="secondary" className="text-xs">
-                                Element {goal.element.elementNumber}
-                              </Badge>
-                            )}
-                          </div>
-                          {/* Progress */}
-                          <div className="text-xs text-muted-foreground">
-                            Progress: {goal.currentValue}/{goal.targetValue} {goal.unit}
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                              <div 
-                                className={`h-2 rounded-full ${style.accent}`}
-                                style={{ 
-                                  width: `${Math.min(100, (goal.currentValue / goal.targetValue) * 100)}%` 
-                                }}
-                              ></div>
+            {/* Connected Processes */}
+            {goal.processes && goal.processes.length > 0 && (
+              <div className="ml-8 mt-4 space-y-4">
+                {/* Connection Line */}
+                <div className="flex items-center space-x-2 text-muted-foreground">
+                  <div className="w-8 h-0.5 bg-border"></div>
+                  <ChevronRight className="w-4 h-4" />
+                  <span className="text-sm font-medium">Linked Processes ({goal.processes.length})</span>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {goal.processes.map((process) => {
+                    const processStyle = getScorecardStyle(goal.category);
+                    
+                    return (
+                      <Card key={process.id} className="bg-white dark:bg-gray-800 border border-gray-200 shadow-md">
+                        <CardContent className="p-4">
+                          {/* Process Header with Scorecard Flag */}
+                          <div className="flex items-start space-x-3 mb-3">
+                            <div className={`w-12 h-12 ${processStyle.accent} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                              <Activity className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className="font-semibold text-sm">
+                                  {process.processNumber}
+                                </span>
+                                <Badge 
+                                  variant={process.status === 'active' ? 'default' : 'secondary'}
+                                  className="text-xs"
+                                >
+                                  {process.status}
+                                </Badge>
+                                {/* Scorecard Flag for Process */}
+                                <Badge variant="outline" className="text-xs flex items-center space-x-1">
+                                  <span>{processStyle.flag}</span>
+                                  <span>{goal.category}</span>
+                                </Badge>
+                              </div>
+                              <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 mb-2">
+                                {process.name}
+                              </h4>
+                              {process.description && (
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  {process.description}
+                                </p>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      </div>
 
-                      {/* Connected Processes */}
-                      {goal.processes && goal.processes.length > 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
-                            <ChevronRight className="w-4 h-4" />
-                            <span>Linked Processes ({goal.processes.length})</span>
-                          </div>
-                          <div className="space-y-2">
-                            {goal.processes.map((process) => (
-                              <Card key={process.id} className="bg-white/80 border border-gray-200">
-                                <CardContent className="p-3">
-                                  <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center flex-shrink-0">
-                                      <Activity className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center space-x-2">
-                                        <span className="text-sm font-medium text-blue-900">
-                                          {process.processNumber}
-                                        </span>
-                                        <Badge 
-                                          variant={process.status === 'active' ? 'default' : 'secondary'}
-                                          className="text-xs"
-                                        >
-                                          {process.status}
-                                        </Badge>
-                                      </div>
-                                      <p className="text-xs text-blue-700 truncate">{process.name}</p>
-                                      {process.measures && process.measures.length > 0 && (
-                                        <div className="flex items-center space-x-1 mt-1">
-                                          <Circle className="w-2 h-2 text-blue-400 fill-current" />
-                                          <span className="text-xs text-blue-600">
-                                            {process.measures.length} measure{process.measures.length !== 1 ? 's' : ''}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </div>
+                          {/* Metrics Section */}
+                          {process.measures && process.measures.length > 0 && (
+                            <div className="border-t pt-3">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Circle className="w-3 h-3 text-blue-500 fill-current" />
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  Performance Measures ({process.measures.length})
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {process.measures.map((measure) => (
+                                  <div key={measure.id} className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                                    <span className="text-xs text-gray-700 dark:text-gray-300">
+                                      {measure.name}
+                                    </span>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
-                      {/* No processes linked */}
-                      {(!goal.processes || goal.processes.length === 0) && (
-                        <div className="text-center py-4 text-muted-foreground">
-                          <Activity className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                          <p className="text-xs">No processes linked</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                          {/* No measures indicator */}
+                          {(!process.measures || process.measures.length === 0) && (
+                            <div className="border-t pt-3">
+                              <div className="flex items-center space-x-2 text-muted-foreground">
+                                <Circle className="w-3 h-3 opacity-30" />
+                                <span className="text-xs">No performance measures defined</span>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* No processes linked indicator */}
+            {(!goal.processes || goal.processes.length === 0) && (
+              <div className="ml-8 mt-4">
+                <div className="flex items-center space-x-2 text-muted-foreground">
+                  <div className="w-8 h-0.5 bg-border"></div>
+                  <ChevronRight className="w-4 h-4" />
+                  <span className="text-sm">No processes linked to this goal</span>
+                </div>
+              </div>
+            )}
           </div>
         );
       })}
