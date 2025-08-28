@@ -613,6 +613,9 @@ export class DatabaseStorage implements IStorage {
         processStatus: oeProcesses.status,
         measureId: performanceMeasures.id,
         measureName: performanceMeasures.measureName,
+        measureTarget: performanceMeasures.target,
+        measureFrequency: performanceMeasures.frequency,
+        measureSource: performanceMeasures.source,
         elementId: oeElements.id,
         elementTitle: oeElements.title,
         elementNumber: oeElements.elementNumber
@@ -666,7 +669,10 @@ export class DatabaseStorage implements IStorage {
         if (process && !process.measures.find((m: any) => m.id === row.measureId)) {
           process.measures.push({
             id: row.measureId,
-            name: row.measureName
+            name: row.measureName,
+            target: row.measureTarget,
+            frequency: row.measureFrequency,
+            source: row.measureSource
           });
         }
       }

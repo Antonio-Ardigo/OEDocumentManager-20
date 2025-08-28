@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, ChevronRight, Activity, Circle, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Target, ChevronRight, ChevronDown, Activity, Circle, BarChart3 } from "lucide-react";
 
 interface ProcessWithMeasures {
   id: string;
@@ -12,6 +13,9 @@ interface ProcessWithMeasures {
   measures?: {
     id: string;
     name: string;
+    target?: string;
+    frequency?: string;
+    source?: string;
   }[];
 }
 
@@ -83,6 +87,33 @@ const getScorecardStyle = (category: string) => {
 };
 
 export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
+  const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set());
+  const [expandedProcesses, setExpandedProcesses] = useState<Set<string>>(new Set());
+
+  const toggleGoal = (goalId: string) => {
+    setExpandedGoals(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(goalId)) {
+        newSet.delete(goalId);
+      } else {
+        newSet.add(goalId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleProcess = (processId: string) => {
+    setExpandedProcesses(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(processId)) {
+        newSet.delete(processId);
+      } else {
+        newSet.add(processId);
+      }
+      return newSet;
+    });
+  };
+
   if (!goals || goals.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -101,10 +132,26 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
           <div key={goal.id} className="relative">
             {/* Goal Card - Root Node */}
             <Card className={`${goalStyle.bg} ${goalStyle.border} shadow-lg border-2`}>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 {/* Goal Header */}
-                <div className="flex items-start space-x-4 mb-4">
-                  <div className={`w-16 h-16 ${goalStyle.accent} rounded-lg flex items-center justify-center flex-shrink-0 text-2xl`}>
+                <div className="flex items-center space-x-3">
+                  {/* Expand/Collapse Button */}
+                  {goal.processes && goal.processes.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-8 h-8 p-0 rounded-full"
+                      onClick={() => toggleGoal(goal.id)}
+                    >
+                      {expandedGoals.has(goal.id) ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4" />
+                      )}
+                    </Button>
+                  )}
+                  
+                  <div className={`w-12 h-12 ${goalStyle.accent} rounded-lg flex items-center justify-center flex-shrink-0 text-xl`}>
                     {goalStyle.flag}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -118,6 +165,11 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                       <Badge variant="secondary" className="text-xs">
                         {goal.priority}
                       </Badge>
+                      {goal.processes && (
+                        <Badge variant="outline" className="text-xs">
+                          {goal.processes.length} processes
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -125,7 +177,7 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
             </Card>
 
             {/* Connected Processes */}
-            {goal.processes && goal.processes.length > 0 && (
+            {goal.processes && goal.processes.length > 0 && expandedGoals.has(goal.id) && (
               <div className="ml-8 mt-4 space-y-4">
                 {/* Connection Line */}
                 <div className="flex items-center space-x-2 text-muted-foreground">
@@ -143,6 +195,22 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                         <CardContent className="p-3">
                           {/* Compact Process Header */}
                           <div className="flex items-center space-x-2 mb-2">
+                            {/* Process Expand/Collapse */}
+                            {process.measures && process.measures.length > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-6 h-6 p-0 rounded-full"
+                                onClick={() => toggleProcess(process.id)}
+                              >
+                                {expandedProcesses.has(process.id) ? (
+                                  <ChevronDown className="w-3 h-3" />
+                                ) : (
+                                  <ChevronRight className="w-3 h-3" />
+                                )}
+                              </Button>
+                            )}
+                            
                             <div className={`w-8 h-8 ${processStyle.accent} rounded flex items-center justify-center flex-shrink-0`}>
                               <Activity className="w-4 h-4 text-white" />
                             </div>
@@ -152,6 +220,9 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                                 <Badge variant="outline" className="text-xs">
                                   {processStyle.flag}
                                 </Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {process.measures?.length || 0} KPIs
+                                </Badge>
                               </div>
                               <h4 className="font-medium text-xs text-gray-900 dark:text-gray-100 truncate">
                                 {process.name}
@@ -160,7 +231,7 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                           </div>
 
                           {/* Enhanced Performance Measures Display */}
-                          {process.measures && process.measures.length > 0 && (
+                          {process.measures && process.measures.length > 0 && expandedProcesses.has(process.id) && (
                             <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-2 space-y-2">
                               <div className="flex items-center space-x-2">
                                 <BarChart3 className="w-4 h-4 text-blue-600" />
@@ -168,22 +239,48 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                                   {process.measures.length} Performance Measures
                                 </span>
                               </div>
-                              <div className="grid grid-cols-1 gap-1">
-                                {process.measures.slice(0, 6).map((measure) => (
-                                  <div key={measure.id} className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded px-2 py-1 border border-blue-200 dark:border-blue-800">
-                                    <Circle className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
-                                    <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                      {measure.name.length > 35 ? `${measure.name.substring(0, 32)}...` : measure.name}
-                                    </span>
+                              <div className="grid grid-cols-1 gap-2">
+                                {process.measures.map((measure) => (
+                                  <div key={measure.id} className="bg-white dark:bg-gray-800 rounded p-2 border border-blue-200 dark:border-blue-800">
+                                    <div className="flex items-start space-x-2">
+                                      <Circle className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
+                                      <div className="flex-1">
+                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100 block">
+                                          {measure.name}
+                                        </span>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                          {measure.target && (
+                                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                              Target: {measure.target}
+                                            </Badge>
+                                          )}
+                                          {measure.frequency && (
+                                            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                              {measure.frequency}
+                                            </Badge>
+                                          )}
+                                          {measure.source && (
+                                            <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                              {measure.source}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 ))}
-                                {process.measures.length > 6 && (
-                                  <div className="text-center py-1">
-                                    <Badge variant="outline" className="text-xs font-medium bg-blue-100 text-blue-700 border-blue-300">
-                                      +{process.measures.length - 6} additional measures
-                                    </Badge>
-                                  </div>
-                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Collapsed KPI Summary */}
+                          {process.measures && process.measures.length > 0 && !expandedProcesses.has(process.id) && (
+                            <div className="bg-blue-50 dark:bg-blue-950/20 rounded p-2">
+                              <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-300">
+                                <BarChart3 className="w-3 h-3" />
+                                <span className="text-xs font-medium">
+                                  {process.measures.length} KPIs - Click to expand
+                                </span>
                               </div>
                             </div>
                           )}
