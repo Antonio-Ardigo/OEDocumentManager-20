@@ -17,7 +17,7 @@ export default function Sidebar() {
   const { user } = useAuth();
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Home", href: "/", icon: Home },
     { name: "All Processes", href: "/processes", icon: Folder },
     { name: "Mind Map", href: "/mindmap", icon: Network },
     { name: "Balanced Scorecard", href: "/scorecard", icon: BarChart3 },
