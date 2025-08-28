@@ -576,20 +576,6 @@ export default function BalancedScorecard() {
                               <span className="font-medium">{goal.targetValue}{goal.unit}</span>
                             </div>
                           </div>
-                          
-                          {/* Progress indicator */}
-                          <div className="mt-3">
-                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                              <span>Progress</span>
-                              <span>{goal.targetValue > 0 ? Math.round((goal.currentValue / goal.targetValue) * 100) : 0}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-primary h-2 rounded-full transition-all"
-                                style={{ width: `${goal.targetValue > 0 ? Math.min((goal.currentValue / goal.targetValue) * 100, 100) : 0}%` }}
-                              ></div>
-                            </div>
-                          </div>
                         </div>
                       )}
                     </CardContent>
