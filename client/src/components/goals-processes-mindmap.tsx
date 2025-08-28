@@ -40,7 +40,6 @@ interface GoalWithProcesses {
 
 interface GoalsProcessesMindMapProps {
   goals: GoalWithProcesses[];
-  hideText?: boolean;
 }
 
 // Scorecard category colors and icons
@@ -89,7 +88,7 @@ const getScorecardStyle = (category: string) => {
   }
 };
 
-export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>(({ goals, hideText = false }, ref) => {
+export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>(({ goals }, ref) => {
   // Initialize with all goals expanded by default
   const [expandedGoals, setExpandedGoals] = useState<Set<string>>(() => {
     return new Set(goals?.map(goal => goal.id) || []);
@@ -190,11 +189,9 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      {!hideText && (
-                        <h2 className={`text-lg font-bold ${goalStyle.text}`}>
-                          {goal.title}
-                        </h2>
-                      )}
+                      <h2 className={`text-lg font-bold ${goalStyle.text}`}>
+                        {goal.title}
+                      </h2>
                       <Badge variant="outline" className="text-xs">
                         {goal.category}
                       </Badge>
@@ -219,7 +216,7 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                 <div className="flex items-center space-x-2 text-muted-foreground">
                   <div className="w-8 h-0.5 bg-border"></div>
                   <ChevronRight className="w-4 h-4" />
-                  {!hideText && <span className="text-sm font-medium">Linked Processes ({goal.processes.length})</span>}
+                  <span className="text-sm font-medium">Linked Processes ({goal.processes.length})</span>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -265,11 +262,9 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                                   {process.measures?.length || 0} KPIs
                                 </Badge>
                               </div>
-                              {!hideText && (
-                                <h4 className="font-medium text-xs text-gray-900 dark:text-gray-100 truncate">
-                                  {process.name}
-                                </h4>
-                              )}
+                              <h4 className="font-medium text-xs text-gray-900 dark:text-gray-100 truncate">
+                                {process.name}
+                              </h4>
                             </div>
                           </div>
 
@@ -278,11 +273,9 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                             <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-2 space-y-2">
                               <div className="flex items-center space-x-2">
                                 <BarChart3 className="w-4 h-4 text-blue-600" />
-                                {!hideText && (
-                                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                                    {process.measures.length} Performance Measures
-                                  </span>
-                                )}
+                                <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                                  {process.measures.length} Performance Measures
+                                </span>
                               </div>
                               <div className="grid grid-cols-1 gap-2">
                                 {process.measures.map((measure) => (
@@ -290,11 +283,9 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                                     <div className="flex items-start space-x-2">
                                       <Circle className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
                                       <div className="flex-1">
-                                        {!hideText && (
-                                          <span className="text-xs font-medium text-gray-900 dark:text-gray-100 block">
-                                            {measure.name}
-                                          </span>
-                                        )}
+                                        <span className="text-xs font-medium text-gray-900 dark:text-gray-100 block">
+                                          {measure.name}
+                                        </span>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                           {measure.scorecardCategory && (
                                             <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
@@ -342,11 +333,9 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                             >
                               <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-300">
                                 <BarChart3 className="w-3 h-3" />
-                                {!hideText && (
-                                  <span className="text-xs font-medium">
-                                    {process.measures.length} KPIs - Click to expand
-                                  </span>
-                                )}
+                                <span className="text-xs font-medium">
+                                  {process.measures.length} KPIs - Click to expand
+                                </span>
                                 <ChevronRight className="w-3 h-3 ml-auto" />
                               </div>
                             </div>
@@ -357,7 +346,7 @@ export const GoalsProcessesMindMap = forwardRef<any, GoalsProcessesMindMapProps>
                             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 text-center">
                               <div className="flex items-center justify-center space-x-2 text-gray-500">
                                 <Circle className="w-4 h-4 opacity-50" />
-                                {!hideText && <span className="text-sm font-medium">No Performance Measures</span>}
+                                <span className="text-sm font-medium">No Performance Measures</span>
                               </div>
                             </div>
                           )}

@@ -55,7 +55,6 @@ interface MindMapNodeProps {
   level: number;
   nodeType: 'element' | 'process' | 'step';
   badge?: string;
-  hideText?: boolean;
 }
 
 function MindMapNode({ 
@@ -67,7 +66,6 @@ function MindMapNode({
   level, 
   nodeType,
   badge,
-  hideText = false
 }: MindMapNodeProps) {
   const getNodeStyle = () => {
     switch (nodeType) {
@@ -162,7 +160,7 @@ function MindMapNode({
                 </Badge>
               )}
             </div>
-            {subtitle && !hideText && (
+            {subtitle && (
               <p className="text-xs text-gray-600 leading-tight">{subtitle}</p>
             )}
           </div>
@@ -186,11 +184,10 @@ interface ViewProps {
   elements: OeElementWithProcesses[];
   expandedNodes: Set<string>;
   toggleNode: (nodeId: string) => void;
-  hideText: boolean;
 }
 
 // Hierarchical Tree View with Smaller Fonts
-function HierarchicalView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) {
+function HierarchicalView({ elements, expandedNodes, toggleNode }: ViewProps) {
   return (
     <div className="space-y-4">
       {elements.map((element) => (
@@ -203,7 +200,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode, hideText }: Vie
           level={0}
           nodeType="element"
           badge={`${element.processes?.length || 0} Processes`}
-          hideText={hideText}
+
         >
           {element.processes?.sort((a, b) => compareVersionNumbers(a.processNumber, b.processNumber)).map((process) => (
             <MindMapNode
@@ -215,7 +212,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode, hideText }: Vie
               level={1}
               nodeType="process"
               badge={`${(process as any).steps?.length || 0} Steps`}
-              hideText={hideText}
+    
             >
               {(process as any).steps?.sort((a: any, b: any) => {
                 const aNum = typeof a.stepNumber === 'string' ? a.stepNumber : String(a.stepNumber);
@@ -230,7 +227,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode, hideText }: Vie
                   onToggle={() => {}}
                   level={2}
                   nodeType="step"
-                  hideText={hideText}
+        
                 />
               ))}
             </MindMapNode>
@@ -243,7 +240,7 @@ function HierarchicalView({ elements, expandedNodes, toggleNode, hideText }: Vie
 
 
 // Grid Layout View with Smaller Fonts
-function GridView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) {
+function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       {elements.map((element) => (
@@ -261,7 +258,7 @@ function GridView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) 
               </div>
               {expandedNodes.has(element.id) ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </CardTitle>
-            {element.description && !hideText && (
+            {element.description && (
               <p className="text-xs text-muted-foreground">{element.description}</p>
             )}
           </CardHeader>
@@ -284,7 +281,7 @@ function GridView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) 
                         </div>
                         {expandedNodes.has(process.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </div>
-                      {!hideText && <p className="text-xs text-green-700 mb-2">{process.name}</p>}
+                      <p className="text-xs text-green-700 mb-2">{process.name}</p>
                       
                       {expandedNodes.has(process.id) && (
                         <div className="grid grid-cols-1 gap-2">
@@ -300,7 +297,7 @@ function GridView({ elements, expandedNodes, toggleNode, hideText }: ViewProps) 
                                 </div>
                                 <span className="text-xs font-medium text-purple-800">{step.stepName}</span>
                               </div>
-                              {step.stepDetails && !hideText && (
+                              {step.stepDetails && (
                                 <p className="text-xs text-purple-600 pl-7">{step.stepDetails}</p>
                               )}
                             </div>
@@ -327,7 +324,6 @@ export default function MindMap() {
   const [mindMapType, setMindMapType] = useState<MindMapType>('elements-processes');
   const [isExporting, setIsExporting] = useState(false);
   const [isCapturingCanvas, setIsCapturingCanvas] = useState(false);
-  const [hideText, setHideText] = useState(false);
   
   // Reference to the goals mind map component to call its methods
   const goalsMindMapRef = useRef<any>(null);
@@ -1166,13 +1162,6 @@ This alignment ensures that operational activities directly support strategic ob
                   Collapse All
                 </Button>
                 <Button 
-                  onClick={() => setHideText(!hideText)} 
-                  variant={hideText ? "default" : "outline"} 
-                  size="sm"
-                >
-                  Titles Only
-                </Button>
-                <Button 
                   onClick={exportToPDF} 
                   variant="outline" 
                   size="sm"
@@ -1216,16 +1205,14 @@ This alignment ensures that operational activities directly support strategic ob
                       <HierarchicalView 
                         elements={elements} 
                         expandedNodes={expandedNodes} 
-                        toggleNode={toggleNode} 
-                        hideText={hideText}
+                        toggleNode={toggleNode}
                       />
                     )}
                     {visualizationType === 'grid' && (
                       <GridView 
                         elements={elements} 
                         expandedNodes={expandedNodes} 
-                        toggleNode={toggleNode} 
-                        hideText={hideText}
+                        toggleNode={toggleNode}
                       />
                     )}
                   </div>
@@ -1241,7 +1228,7 @@ This alignment ensures that operational activities directly support strategic ob
               ) : (
                 // Goals to Processes Mind Map
                 goalsWithProcesses && goalsWithProcesses.length > 0 ? (
-                  <GoalsProcessesMindMap ref={goalsMindMapRef} goals={goalsWithProcesses} hideText={hideText} />
+                  <GoalsProcessesMindMap ref={goalsMindMapRef} goals={goalsWithProcesses} />
                 ) : (
                   <div className="text-center py-12">
                     <Target className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
