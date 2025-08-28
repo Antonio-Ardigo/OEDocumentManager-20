@@ -13,9 +13,11 @@ interface ProcessWithMeasures {
   measures?: {
     id: string;
     name: string;
+    formula?: string;
     target?: string;
     frequency?: string;
     source?: string;
+    scorecardCategory?: string;
   }[];
 }
 
