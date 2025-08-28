@@ -295,6 +295,15 @@ function ProcessRiskCard({ process }: { process: ProcessRisk }) {
         </div>
       )}
 
+      {process.riskDescription && (
+        <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-md">
+          <p className="text-sm">
+            <span className="font-medium text-orange-700 dark:text-orange-300">Risk Description:</span>
+            <span className="ml-2 text-gray-700 dark:text-gray-300">{process.riskDescription}</span>
+          </p>
+        </div>
+      )}
+
       {process.riskMitigation && (
         <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md">
           <p className="text-sm">

@@ -42,7 +42,8 @@ const processFormSchema = z.object({
   issueDate: z.string().optional(),
   // Risk Management fields
   riskFrequency: z.string().optional(),
-  riskImpact: z.string().optional(), 
+  riskImpact: z.string().optional(),
+  riskDescription: z.string().optional(),
   riskMitigation: z.string().optional(),
   steps: z.array(z.object({
     stepNumber: z.number().min(1),
@@ -106,6 +107,7 @@ export default function ProcessForm({
       // Risk Management fields
       riskFrequency: process?.riskFrequency || "",
       riskImpact: process?.riskImpact || "",
+      riskDescription: process?.riskDescription || "",
       riskMitigation: process?.riskMitigation || "",
       steps: process?.steps?.map(step => ({
         stepNumber: step.stepNumber,
@@ -848,44 +850,54 @@ export default function ProcessForm({
                   
                   let riskFrequency = "Medium";
                   let riskImpact = "Medium";
+                  let riskDescription = "";
                   let riskMitigation = "";
                   
                   // Determine risk profile based on process type
                   if (processType.includes("financial") || processType.includes("budget") || processType.includes("payment")) {
                     riskFrequency = "High";
                     riskImpact = "High";
+                    riskDescription = "Risk of financial fraud, errors in transactions, budget overruns, compliance violations, system failures affecting payments, and potential regulatory penalties.";
                     riskMitigation = "• Implement dual approval controls for all financial transactions\n• Conduct monthly financial audits and reconciliations\n• Establish segregation of duties between authorization and recording\n• Maintain backup financial systems and data recovery procedures\n• Train staff on financial compliance and fraud detection";
                   } else if (processType.includes("safety") || processType.includes("security") || processType.includes("emergency")) {
                     riskFrequency = "Medium";
                     riskImpact = "High";
+                    riskDescription = "Risk of workplace accidents, security breaches, emergency response failures, equipment malfunctions, and potential harm to personnel or property.";
                     riskMitigation = "• Conduct regular safety inspections and risk assessments\n• Implement comprehensive emergency response procedures\n• Provide ongoing safety training and certification programs\n• Maintain updated emergency contacts and communication systems\n• Establish clear escalation protocols for incidents";
                   } else if (processType.includes("customer") || processType.includes("service") || processType.includes("support")) {
                     riskFrequency = "Medium";
                     riskImpact = "Medium";
+                    riskDescription = "Risk of customer dissatisfaction, service delivery failures, communication breakdowns, response time delays, and potential reputation damage.";
                     riskMitigation = "• Implement customer feedback monitoring and response systems\n• Establish service level agreements with clear performance metrics\n• Provide regular customer service training to staff\n• Maintain backup communication channels for service delivery\n• Develop customer escalation and complaint resolution procedures";
                   } else if (processType.includes("technology") || processType.includes("IT") || processType.includes("system")) {
                     riskFrequency = "High";
                     riskImpact = "High";
+                    riskDescription = "Risk of system failures, cybersecurity breaches, data loss, software vulnerabilities, hardware malfunctions, and business continuity disruptions.";
                     riskMitigation = "• Implement robust cybersecurity measures and access controls\n• Conduct regular system backups and disaster recovery testing\n• Maintain updated software and security patches\n• Establish IT support protocols and vendor management\n• Monitor system performance and capacity planning";
                   } else if (processType.includes("compliance") || processType.includes("audit") || processType.includes("regulatory")) {
                     riskFrequency = "Medium";
                     riskImpact = "High";
+                    riskDescription = "Risk of regulatory non-compliance, audit failures, legal penalties, documentation gaps, and potential sanctions from regulatory bodies.";
                     riskMitigation = "• Stay updated on regulatory changes and compliance requirements\n• Conduct regular internal compliance audits and assessments\n• Maintain comprehensive documentation and record keeping\n• Provide ongoing compliance training to relevant staff\n• Establish relationships with regulatory bodies and advisors";
                   } else if (processType.includes("human") || processType.includes("HR") || processType.includes("personnel")) {
                     riskFrequency = "Medium";
                     riskImpact = "Medium";
+                    riskDescription = "Risk of employee disputes, hiring mistakes, performance issues, workplace conflicts, data privacy breaches, and potential legal claims.";
                     riskMitigation = "• Implement fair and consistent HR policies and procedures\n• Conduct thorough background checks and reference verification\n• Provide regular training on workplace policies and procedures\n• Maintain confidential employee records and data protection\n• Establish clear performance management and disciplinary procedures";
                   } else if (processType.includes("quality") || processType.includes("control") || processType.includes("assurance")) {
                     riskFrequency = "Medium";
                     riskImpact = "High";
+                    riskDescription = "Risk of quality defects, product failures, customer complaints, regulatory non-compliance, and potential recalls or liability issues.";
                     riskMitigation = "• Implement systematic quality control checkpoints and testing\n• Conduct regular quality audits and performance reviews\n• Maintain detailed quality documentation and traceability\n• Provide ongoing quality training and certification\n• Establish corrective and preventive action procedures";
                   } else {
-                    // Default generic risk mitigation
+                    // Default generic risk description and mitigation
+                    riskDescription = "Risk of process failures, resource constraints, communication gaps, performance issues, and potential operational disruptions.";
                     riskMitigation = "• Conduct regular process reviews and performance monitoring\n• Implement appropriate controls and approval mechanisms\n• Provide adequate training and resources to process owners\n• Maintain clear documentation and standard operating procedures\n• Establish contingency plans for process disruptions\n• Monitor key performance indicators and risk metrics\n• Ensure adequate communication and escalation procedures";
                   }
                   
                   form.setValue("riskFrequency", riskFrequency);
                   form.setValue("riskImpact", riskImpact);
+                  form.setValue("riskDescription", riskDescription);
                   form.setValue("riskMitigation", riskMitigation);
                 }}
                 data-testid="button-add-risk"
@@ -943,6 +955,25 @@ export default function ProcessForm({
                 )}
               />
             </div>
+            
+            <FormField
+              control={form.control}
+              name="riskDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Risk Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe the potential risks associated with this process..."
+                      className="min-h-[80px]"
+                      {...field}
+                      data-testid="textarea-risk-description"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}
