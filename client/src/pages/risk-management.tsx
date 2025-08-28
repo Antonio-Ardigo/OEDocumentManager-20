@@ -23,15 +23,15 @@ interface ProcessRisk {
 
 // Risk level calculation and styling
 const getRiskLevel = (frequency?: string, impact?: string) => {
-  if (!frequency || !impact) return { level: "Not Assessed", color: "gray" };
+  if (!frequency || !impact) return { level: "Not Assessed", color: "gray", score: 0 };
   
   const freqScore = frequency.toLowerCase() === "high" ? 3 : frequency.toLowerCase() === "medium" ? 2 : 1;
   const impactScore = impact.toLowerCase() === "high" ? 3 : impact.toLowerCase() === "medium" ? 2 : 1;
   const totalScore = freqScore * impactScore;
   
-  if (totalScore >= 6) return { level: "High Risk", color: "red" };
-  if (totalScore >= 4) return { level: "Medium Risk", color: "yellow" };
-  return { level: "Low Risk", color: "green" };
+  if (totalScore >= 7) return { level: "High Risk", color: "red", score: totalScore };
+  if (totalScore >= 3) return { level: "Medium Risk", color: "yellow", score: totalScore };
+  return { level: "Low Risk", color: "green", score: totalScore };
 };
 
 const getRiskBadgeClass = (color: string) => {
@@ -267,7 +267,7 @@ function ProcessRiskCard({ process }: { process: ProcessRisk }) {
       </div>
 
       {process.riskFrequency && process.riskImpact && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="font-medium text-gray-700 dark:text-gray-300">Frequency:</span>
             <Badge variant="outline" className="ml-2">
@@ -278,6 +278,12 @@ function ProcessRiskCard({ process }: { process: ProcessRisk }) {
             <span className="font-medium text-gray-700 dark:text-gray-300">Impact:</span>
             <Badge variant="outline" className="ml-2">
               {process.riskImpact}
+            </Badge>
+          </div>
+          <div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">Risk Score:</span>
+            <Badge variant="outline" className={`ml-2 ${getRiskBadgeClass(riskLevel.color)}`}>
+              {riskLevel.score}
             </Badge>
           </div>
           <div>
