@@ -120,12 +120,13 @@ class DesktopInstaller2Builder {
         postinstall: 'electron-builder install-app-deps'
       },
       dependencies: {
-        electron: '^28.0.0',
         'better-sqlite3': '^9.2.2',
         express: '^4.21.2',
-        'express-session': '^1.18.1',
-        'drizzle-orm': '^0.39.1',
-        '@neondatabase/serverless': '^0.9.0'
+        'express-session': '^1.18.1'
+      },
+      devDependencies: {
+        electron: '^28.0.0',
+        'electron-builder': '^26.0.12'
       },
       build: {
         appId: this.appId,
