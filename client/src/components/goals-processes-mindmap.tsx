@@ -131,23 +131,6 @@ export function GoalsProcessesMindMap({ goals }: GoalsProcessesMindMapProps) {
                         </Badge>
                       )}
                     </div>
-                    {/* Progress Bar */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>Progress</span>
-                        <span className="font-medium">
-                          {goal.currentValue}/{goal.targetValue} {goal.unit}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div 
-                          className={`h-3 rounded-full ${goalStyle.accent}`}
-                          style={{ 
-                            width: `${Math.min(100, (goal.currentValue / goal.targetValue) * 100)}%` 
-                          }}
-                        ></div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </CardContent>
