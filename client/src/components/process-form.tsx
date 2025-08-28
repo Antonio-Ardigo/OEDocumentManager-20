@@ -32,7 +32,6 @@ import type { OeProcessWithDetails, OeElementWithProcesses, StrategicGoal } from
 // Form validation schema
 const processFormSchema = z.object({
   elementId: z.string().min(1, "Please select an OE element"),
-  strategicGoalId: z.string().optional(),
   processNumber: z.string().min(1, "Process number is required"),
   name: z.string().min(1, "Process name is required"),
   description: z.string().optional(),
@@ -87,7 +86,6 @@ export default function ProcessForm({
     resolver: zodResolver(processFormSchema),
     defaultValues: {
       elementId: process?.elementId || "",
-      strategicGoalId: (process as any)?.strategicGoalId || "",
       processNumber: process?.processNumber || "",
       name: process?.name || "",
       description: process?.description || "",
@@ -318,41 +316,6 @@ export default function ProcessForm({
                         <SelectItem value="Process Manager">Process Manager</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="strategicGoalId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Strategic Goal</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-strategic-goal">
-                          <SelectValue placeholder="Select Strategic Goal (Optional)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {strategicGoals.map((goal) => (
-                          <SelectItem key={goal.id} value={goal.id}>
-                            <div className="flex items-center space-x-2">
-                              <Target className="w-4 h-4" />
-                              <span>{goal.title}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {goal.category}
-                              </Badge>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Link this process to a strategic goal for the mind map visualization
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

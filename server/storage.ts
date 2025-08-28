@@ -595,7 +595,7 @@ export class DatabaseStorage implements IStorage {
 
   // Goals-to-Processes mind map operations
   async getGoalsToProcessesMindMap(): Promise<any[]> {
-    // Query to get strategic goals with their directly linked processes and via performance measures
+    // Query to get strategic goals with their linked processes via performance measures only
     const goalsWithProcesses = await db
       .select({
         goalId: strategicGoals.id,
@@ -615,23 +615,11 @@ export class DatabaseStorage implements IStorage {
         measureName: performanceMeasures.measureName,
         elementId: oeElements.id,
         elementTitle: oeElements.title,
-        elementNumber: oeElements.elementNumber,
-        linkType: sql<string>`CASE 
-          WHEN ${oeProcesses.strategicGoalId} = ${strategicGoals.id} THEN 'direct'
-          WHEN ${performanceMeasures.strategicGoalId} = ${strategicGoals.id} THEN 'measure'
-          ELSE 'none'
-        END`.as('linkType')
+        elementNumber: oeElements.elementNumber
       })
       .from(strategicGoals)
-      .leftJoin(oeProcesses, 
-        sql`${oeProcesses.strategicGoalId} = ${strategicGoals.id} OR ${oeProcesses.id} IN (
-          SELECT ${performanceMeasures.processId} FROM ${performanceMeasures} 
-          WHERE ${performanceMeasures.strategicGoalId} = ${strategicGoals.id}
-        )`
-      )
-      .leftJoin(performanceMeasures, 
-        sql`${performanceMeasures.strategicGoalId} = ${strategicGoals.id} AND ${performanceMeasures.processId} = ${oeProcesses.id}`
-      )
+      .leftJoin(performanceMeasures, eq(strategicGoals.id, performanceMeasures.strategicGoalId))
+      .leftJoin(oeProcesses, eq(performanceMeasures.processId, oeProcesses.id))
       .leftJoin(oeElements, eq(strategicGoals.elementId, oeElements.id))
       .orderBy(strategicGoals.category, strategicGoals.priority, oeProcesses.processNumber);
 
