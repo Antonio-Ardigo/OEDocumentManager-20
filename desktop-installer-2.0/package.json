@@ -1,0 +1,42 @@
+{
+  "name": "wsm-oe-manager-installer-2.0",
+  "version": "2.0.0",
+  "description": "Desktop Installer 2.0 for WSM Operational Excellence Manager",
+  "main": "scripts/build-installer.js",
+  "scripts": {
+    "build": "node scripts/build-installer.js",
+    "build-installer": "node scripts/build-installer.js",
+    "clean": "rimraf build dist",
+    "test-installer": "node scripts/test-installer.js",
+    "package": "npm run clean && npm run build",
+    "dev": "node scripts/dev-build.js"
+  },
+  "keywords": [
+    "wsm",
+    "operational-excellence",
+    "desktop",
+    "installer",
+    "electron",
+    "windows"
+  ],
+  "author": "WSM Operational Excellence Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.6.4",
+    "rimraf": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/wsm-oe-manager.git",
+    "directory": "desktop-installer-2.0"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/wsm-oe-manager/issues"
+  },
+  "homepage": "https://github.com/your-org/wsm-oe-manager#readme"
+}

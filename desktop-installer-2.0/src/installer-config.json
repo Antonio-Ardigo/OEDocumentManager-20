@@ -1,0 +1,98 @@
+{
+  "application": {
+    "name": "WSM OE Manager",
+    "version": "2.0.0",
+    "description": "WSM Operational Excellence Manager - Desktop Application",
+    "publisher": "WSM Operational Excellence Team",
+    "website": "https://wsm-oe-manager.com",
+    "supportUrl": "https://wsm-oe-manager.com/support",
+    "appId": "com.wsm.oe-manager.v2"
+  },
+  "installation": {
+    "defaultDirectory": "%ProgramFiles%\\WSM OE Manager",
+    "allowCustomDirectory": true,
+    "requireAdministrator": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "addToPath": false,
+    "registerFileAssociations": false
+  },
+  "windows": {
+    "minimumVersion": "10.0.0",
+    "supportedArchitectures": ["x64", "ia32"],
+    "installer": {
+      "type": "nsis",
+      "oneClick": false,
+      "allowElevation": true,
+      "createUninstaller": true,
+      "compressionLevel": 9,
+      "languages": ["en-US"]
+    },
+    "registry": {
+      "companyName": "WSM Operational Excellence",
+      "productName": "WSM OE Manager",
+      "registerUninstaller": true,
+      "addToControlPanel": true
+    }
+  },
+  "features": {
+    "autoUpdater": {
+      "enabled": false,
+      "checkUrl": "",
+      "downloadUrl": ""
+    },
+    "telemetry": {
+      "enabled": false,
+      "endpoint": ""
+    },
+    "crashReporting": {
+      "enabled": false,
+      "endpoint": ""
+    }
+  },
+  "database": {
+    "type": "sqlite",
+    "location": "userData",
+    "filename": "wsm-oe.db",
+    "backupOnUpgrade": true,
+    "initializeWithSampleData": true
+  },
+  "server": {
+    "port": 5000,
+    "host": "localhost",
+    "autoStart": true,
+    "logLevel": "error"
+  },
+  "ui": {
+    "window": {
+      "width": 1400,
+      "height": 1000,
+      "minWidth": 1200,
+      "minHeight": 800,
+      "center": true,
+      "resizable": true,
+      "maximizable": true,
+      "fullscreenable": true
+    },
+    "theme": {
+      "defaultTheme": "light",
+      "allowThemeChange": true
+    }
+  },
+  "security": {
+    "nodeIntegration": false,
+    "contextIsolation": true,
+    "enableRemoteModule": false,
+    "allowRunningInsecureContent": false,
+    "experimentalFeatures": false
+  },
+  "build": {
+    "outputDirectory": "../dist",
+    "compressionLevel": "maximum",
+    "includeAllDependencies": true,
+    "bundleSize": {
+      "warning": "100MB",
+      "error": "200MB"
+    }
+  }
+}
