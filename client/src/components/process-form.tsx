@@ -78,9 +78,14 @@ export default function ProcessForm({
   const [selectedElementId, setSelectedElementId] = useState<string>(process?.elementId || "");
 
   // Load strategic goals for the dropdown
-  const { data: strategicGoals = [] } = useQuery<StrategicGoal[]>({
+  const { data: strategicGoals = [], isLoading: isLoadingGoals, error: goalsError } = useQuery<StrategicGoal[]>({
     queryKey: ["/api/strategic-goals"],
   });
+
+  // Debug logs
+  if (goalsError) {
+    console.error("Strategic Goals API Error:", goalsError);
+  }
 
   const form = useForm<ProcessFormData>({
     resolver: zodResolver(processFormSchema),
@@ -768,10 +773,26 @@ export default function ProcessForm({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Link to Strategic Goal (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          {goalsError && (
+                            <div className="text-sm text-red-600 mb-2">
+                              Error loading strategic goals. Please refresh the page.
+                            </div>
+                          )}
+                          {isLoadingGoals && (
+                            <div className="text-sm text-muted-foreground mb-2">
+                              Loading strategic goals...
+                            </div>
+                          )}
+                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingGoals}>
                             <FormControl>
                               <SelectTrigger data-testid={`select-strategic-goal-${index}`}>
-                                <SelectValue placeholder="Select a strategic goal" />
+                                <SelectValue placeholder={
+                                  isLoadingGoals 
+                                    ? "Loading goals..." 
+                                    : goalsError 
+                                    ? "Error loading goals" 
+                                    : "Select a strategic goal"
+                                } />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -781,6 +802,11 @@ export default function ProcessForm({
                                   {goal.title} ({goal.category})
                                 </SelectItem>
                               ))}
+                              {strategicGoals.length === 0 && !isLoadingGoals && !goalsError && (
+                                <SelectItem value="no-goals" disabled>
+                                  No strategic goals available
+                                </SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />
