@@ -1241,7 +1241,7 @@ This alignment ensures that operational activities directly support strategic ob
               ) : (
                 // Goals to Processes Mind Map
                 goalsWithProcesses && goalsWithProcesses.length > 0 ? (
-                  <GoalsProcessesMindMap ref={goalsMindMapRef} goals={goalsWithProcesses} />
+                  <GoalsProcessesMindMap ref={goalsMindMapRef} goals={goalsWithProcesses} hideText={hideText} />
                 ) : (
                   <div className="text-center py-12">
                     <Target className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
