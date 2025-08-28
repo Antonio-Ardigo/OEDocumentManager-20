@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, ChevronRight, Activity, Circle, Flag } from "lucide-react";
+import { Target, ChevronRight, Activity, Circle, BarChart3 } from "lucide-react";
 
 interface ProcessWithMeasures {
   id: string;
