@@ -10,8 +10,8 @@ interface HeaderProps {
 }
 
 export default function Header({ 
-  title = "OE Process Dashboard",
-  breadcrumbs = [{ label: "Home" }, { label: "Dashboard" }]
+  title,
+  breadcrumbs
 }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -28,21 +28,25 @@ export default function Header({
             <Menu className="h-5 w-5" />
           </Button>
           
-          <div>
-            <h1 className="text-2xl font-bold" data-testid="header-title">{title}</h1>
-            <nav className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-              {breadcrumbs.map((crumb, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <span className={index === breadcrumbs.length - 1 ? "text-foreground" : ""}>
-                    {crumb.label}
-                  </span>
-                  {index < breadcrumbs.length - 1 && (
-                    <ChevronRight className="h-3 w-3" />
-                  )}
-                </div>
-              ))}
-            </nav>
-          </div>
+          {(title || breadcrumbs) && (
+            <div>
+              {title && <h1 className="text-2xl font-bold" data-testid="header-title">{title}</h1>}
+              {breadcrumbs && breadcrumbs.length > 0 && (
+                <nav className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+                  {breadcrumbs.map((crumb, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <span className={index === breadcrumbs.length - 1 ? "text-foreground" : ""}>
+                        {crumb.label}
+                      </span>
+                      {index < breadcrumbs.length - 1 && (
+                        <ChevronRight className="h-3 w-3" />
+                      )}
+                    </div>
+                  ))}
+                </nav>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="flex items-center space-x-4">
