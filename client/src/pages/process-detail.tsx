@@ -25,6 +25,22 @@ import ProcessFlowDiagram from "@/components/process-flow-diagram";
 import ProcessContentSections from "@/components/process-content-sections";
 import type { OeProcessWithDetails } from "@shared/schema";
 
+// Scorecard flag mapping function
+const getScorecardFlag = (category: string) => {
+  switch (category?.toLowerCase()) {
+    case 'financial':
+      return '💰';
+    case 'customer':
+      return '👥';
+    case 'internal process':
+      return '⚙️';
+    case 'learning & growth':
+      return '📚';
+    default:
+      return '📊';
+  }
+};
+
 export default function ProcessDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
@@ -367,6 +383,15 @@ export default function ProcessDetail() {
                               <div>
                                 <span className="text-muted-foreground">Target: </span>
                                 <span>{measure.target}</span>
+                              </div>
+                            )}
+                            {measure.scorecardCategory && (
+                              <div>
+                                <span className="text-muted-foreground">Scorecard: </span>
+                                <span className="flex items-center gap-1">
+                                  <span className="text-lg">{getScorecardFlag(measure.scorecardCategory)}</span>
+                                  <span>{measure.scorecardCategory}</span>
+                                </span>
                               </div>
                             )}
                             {(measure as any).strategicGoalId && (
