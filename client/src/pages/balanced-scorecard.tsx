@@ -22,7 +22,8 @@ import {
   Edit3,
   Save,
   X,
-  Plus
+  Plus,
+  Trash2
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
@@ -210,6 +211,26 @@ export default function BalancedScorecard() {
       toast({
         title: "Error",
         description: "Failed to update performance metric",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (goalId: string) => {
+      await apiRequest(`/api/strategic-goals/${goalId}`, 'DELETE');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/strategic-goals"] });
+      toast({
+        title: "Success",
+        description: "Strategic goal deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete strategic goal",
         variant: "destructive",
       });
     },
@@ -502,17 +523,32 @@ export default function BalancedScorecard() {
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="font-semibold text-lg">{goal.title}</h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingGoal(goal.id);
-                                setEditingGoalData({});
-                              }}
-                              data-testid={`button-edit-goal-${goal.id}`}
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingGoal(goal.id);
+                                  setEditingGoalData({});
+                                }}
+                                data-testid={`button-edit-goal-${goal.id}`}
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this strategic goal?')) {
+                                    deleteGoalMutation.mutate(goal.id);
+                                  }
+                                }}
+                                disabled={deleteGoalMutation.isPending}
+                                data-testid={`button-delete-goal-${goal.id}`}
+                              >
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                              </Button>
+                            </div>
                           </div>
                           
                           {/* Element and Scorecard Relationship Flags */}
