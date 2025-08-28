@@ -51,6 +51,12 @@ export default function ProcessDetail() {
     enabled: isAuthenticated && !!id,
   });
 
+  // Load strategic goals for displaying linked goal names
+  const { data: strategicGoals = [] } = useQuery<any[]>({
+    queryKey: ["/api/strategic-goals"],
+    enabled: isAuthenticated,
+  });
+
   // Handle process error
   useEffect(() => {
     if (processError) {
@@ -366,7 +372,14 @@ export default function ProcessDetail() {
                             {(measure as any).strategicGoalId && (
                               <div>
                                 <span className="text-muted-foreground">Linked Goal: </span>
-                                <span>Strategic Goal</span>
+                                <span className="font-medium text-blue-600">
+                                  {(() => {
+                                    const linkedGoal = strategicGoals.find(goal => 
+                                      goal.id === (measure as any).strategicGoalId
+                                    );
+                                    return linkedGoal ? `${linkedGoal.title} (${linkedGoal.category})` : 'Strategic Goal';
+                                  })()}
+                                </span>
                               </div>
                             )}
                           </div>
