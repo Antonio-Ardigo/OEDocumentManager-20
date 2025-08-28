@@ -162,10 +162,19 @@ export default function ProcessEditor() {
   });
 
   const handleSubmit = async (data: any) => {
+    // Convert "none" values to null for strategicGoalId
+    const processedData = {
+      ...data,
+      performanceMeasures: data.performanceMeasures?.map((measure: any) => ({
+        ...measure,
+        strategicGoalId: measure.strategicGoalId === "none" ? null : measure.strategicGoalId,
+      })) || []
+    };
+
     if (isEditing) {
-      updateProcessMutation.mutate(data);
+      updateProcessMutation.mutate(processedData);
     } else {
-      createProcessMutation.mutate(data);
+      createProcessMutation.mutate(processedData);
     }
   };
 

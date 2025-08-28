@@ -108,7 +108,7 @@ export default function ProcessForm({
         frequency: measure.frequency || "",
         target: measure.target || "",
         scorecardCategory: measure.scorecardCategory || "",
-        strategicGoalId: (measure as any).strategicGoalId || "",
+        strategicGoalId: (measure as any).strategicGoalId || "none",
       })) || [],
     },
   });
@@ -775,7 +775,7 @@ export default function ProcessForm({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">No linked goal</SelectItem>
+                              <SelectItem value="none">No linked goal</SelectItem>
                               {strategicGoals.map((goal) => (
                                 <SelectItem key={goal.id} value={goal.id}>
                                   {goal.title} ({goal.category})
