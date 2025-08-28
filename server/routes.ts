@@ -219,9 +219,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/oe-processes/:id', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
+      
+      // Get process details before deletion for logging
+      const process = await storage.getOeProcess(req.params.id);
+      
       await storage.deleteOeProcess(req.params.id);
+      
+      // Log activity if process existed
+      if (process) {
+        await storage.logActivity({
+          userId,
+          action: 'deleted',
+          entityType: 'process',
+          entityId: process.id,
+          entityName: process.name,
+          description: `Deleted process "${process.name}"`,
+        });
+      }
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting OE process:", error);
@@ -307,8 +325,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: 'created',
         entityType: 'performance_measure',
         entityId: measure.id,
-        entityName: measure.name,
-        description: `Created performance measure "${measure.name}"`,
+        entityName: measure.measureName,
+        description: `Created performance measure "${measure.measureName}"`,
       });
       
       res.status(201).json(measure);
