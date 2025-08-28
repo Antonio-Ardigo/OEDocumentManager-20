@@ -95,10 +95,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-elements', isAuthenticated, async (req, res) => {
+  app.post('/api/oe-elements', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const validatedData = insertOeElementSchema.parse(req.body);
       const element = await storage.createOeElement(validatedData);
+      
+      // Log activity
+      await storage.logActivity({
+        userId,
+        action: 'created',
+        entityType: 'element',
+        entityId: element.id,
+        entityName: element.title,
+        description: `Created OE element "${element.title}"`,
+      });
+      
       res.status(201).json(element);
     } catch (error) {
       if (error instanceof z.ZodError) {
