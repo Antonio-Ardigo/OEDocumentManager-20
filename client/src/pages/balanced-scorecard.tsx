@@ -566,7 +566,7 @@ export default function BalancedScorecard() {
                           
                           <p className="text-sm text-muted-foreground mb-4">{goal.description}</p>
                           
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                             <div>
                               <span className="text-muted-foreground">Current: </span>
                               <span className="font-medium">{goal.currentValue}{goal.unit}</span>
@@ -576,6 +576,44 @@ export default function BalancedScorecard() {
                               <span className="font-medium">{goal.targetValue}{goal.unit}</span>
                             </div>
                           </div>
+                          
+                          {/* Related Performance Measures */}
+                          {(() => {
+                            const relatedMeasures = processPerformanceMeasures.filter(measure => 
+                              measure.scorecardCategory === goal.category && 
+                              measure.elementId === goal.elementId
+                            );
+                            
+                            if (relatedMeasures.length > 0) {
+                              return (
+                                <div className="mt-4 pt-4 border-t">
+                                  <h5 className="text-sm font-medium text-muted-foreground mb-2">Related Performance Measures</h5>
+                                  <div className="space-y-2">
+                                    {relatedMeasures.map((measure) => (
+                                      <div key={measure.id} className="text-xs bg-muted/30 rounded p-2">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="font-medium">{measure.measureName}</span>
+                                          <Badge variant="outline" className="text-xs">
+                                            Process {measure.processNumber}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                          <span>{measure.processName}</span>
+                                          {measure.target && (
+                                            <span className="ml-2">• Target: {measure.target}</span>
+                                          )}
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                          Scorecard: {measure.scorecardCategory}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       )}
                     </CardContent>

@@ -87,6 +87,7 @@ export const processSteps = pgTable("process_steps", {
 export const performanceMeasures = pgTable("performance_measures", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   processId: uuid("process_id").references(() => oeProcesses.id, { onDelete: 'cascade' }),
+  strategicGoalId: uuid("strategic_goal_id").references(() => strategicGoals.id, { onDelete: 'set null' }),
   measureName: varchar("measure_name", { length: 255 }).notNull(),
   formula: text("formula"),
   source: varchar("source", { length: 255 }),
@@ -171,6 +172,10 @@ export const performanceMeasuresRelations = relations(performanceMeasures, ({ on
     fields: [performanceMeasures.processId],
     references: [oeProcesses.id],
   }),
+  strategicGoal: one(strategicGoals, {
+    fields: [performanceMeasures.strategicGoalId],
+    references: [strategicGoals.id],
+  }),
 }));
 
 export const documentVersionsRelations = relations(documentVersions, ({ one }) => ({
@@ -188,11 +193,12 @@ export const documentVersionsRelations = relations(documentVersions, ({ one }) =
   }),
 }));
 
-export const strategicGoalsRelations = relations(strategicGoals, ({ one }) => ({
+export const strategicGoalsRelations = relations(strategicGoals, ({ one, many }) => ({
   element: one(oeElements, {
     fields: [strategicGoals.elementId],
     references: [oeElements.id],
   }),
+  performanceMeasures: many(performanceMeasures),
 }));
 
 export const elementPerformanceMetricsRelations = relations(elementPerformanceMetrics, ({ one }) => ({

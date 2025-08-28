@@ -325,7 +325,19 @@ export default function ProcessDetail() {
                     <div className="space-y-4">
                       {process.performanceMeasures.map((measure, index) => (
                         <div key={measure.id} className="border rounded-lg p-4" data-testid={`performance-measure-${index}`}>
-                          <h4 className="font-medium mb-2">{measure.measureName}</h4>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{measure.measureName}</h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                              data-testid={`button-edit-measure-${index}`}
+                            >
+                              <Link href={`/process/${process.id}/edit`}>
+                                <Edit3 className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                          </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             {measure.formula && (
                               <div>
@@ -349,6 +361,12 @@ export default function ProcessDetail() {
                               <div>
                                 <span className="text-muted-foreground">Target: </span>
                                 <span>{measure.target}</span>
+                              </div>
+                            )}
+                            {(measure as any).strategicGoalId && (
+                              <div>
+                                <span className="text-muted-foreground">Linked Goal: </span>
+                                <span>Strategic Goal</span>
                               </div>
                             )}
                           </div>
