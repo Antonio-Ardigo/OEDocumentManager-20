@@ -212,10 +212,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.issueDate = new Date(req.body.issueDate);
       }
       
+      console.log('Received process creation data:', JSON.stringify(req.body, null, 2));
+      
       const validatedData = insertOeProcessSchema.parse({
         ...req.body,
         createdBy: userId,
       });
+      
+      console.log('Validated process data:', JSON.stringify(validatedData, null, 2));
       const process = await storage.createOeProcess(validatedData);
       
       // Log activity
