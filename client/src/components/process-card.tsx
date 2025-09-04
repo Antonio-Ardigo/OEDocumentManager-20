@@ -148,7 +148,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                   <div className="font-medium" data-testid="metrics-count">
                     {element.performanceMetrics?.length || 0}
                   </div>
-                  <div>Metrics</div>
+                  <div>Performance Measurements</div>
                 </div>
                 <div className="text-center">
                   <div className="font-medium" data-testid="risks-count">
@@ -234,15 +234,6 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             </div>
           )}
           
-          <div className="flex items-center justify-between text-sm mb-4">
-            <span className="text-muted-foreground" data-testid="last-updated">
-              Last updated: {
-                element.updatedAt 
-                  ? new Date(element.updatedAt).toLocaleDateString()
-                  : 'Never'
-              }
-            </span>
-          </div>
           
           {/* Metrics and Risks Summary */}
           <div className="grid grid-cols-3 gap-4 text-center text-sm mb-4">
@@ -256,7 +247,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
               <div className="font-medium" data-testid="metrics-count">
                 {element.performanceMetrics?.length || 0}
               </div>
-              <div className="text-muted-foreground">Metrics</div>
+              <div className="text-muted-foreground">Performance Measurements</div>
             </div>
             <div>
               <div className="font-medium" data-testid="risks-count">
@@ -268,18 +259,15 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             </div>
           </div>
           
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-muted-foreground">Progress</span>
-              <span className="text-sm font-medium" data-testid="progress-percentage">
-                {progressPercentage}%
-              </span>
-            </div>
-            <Progress 
-              value={progressPercentage} 
-              className="h-2"
-              data-testid="progress-bar"
-            />
+          {/* Last Updated at Bottom */}
+          <div className="mt-4 pt-3 border-t border-muted/20">
+            <span className="text-xs text-muted-foreground" data-testid="last-updated">
+              Last updated: {
+                element.updatedAt 
+                  ? new Date(element.updatedAt).toLocaleDateString()
+                  : 'Never'
+              }
+            </span>
           </div>
         </CardContent>
       </Card>
