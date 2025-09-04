@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Link } from "wouter";
+import { useEffect, useState, useMemo } from "react";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +26,16 @@ import type { OeProcessWithDetails } from "@shared/schema";
 export default function AllProcesses() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
+  
+  // Get search params from URL
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const initialSearch = urlParams.get('search') || '';
+  
+  // Local filter states
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [elementFilter, setElementFilter] = useState('all');
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -42,10 +52,32 @@ export default function AllProcesses() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: processes, isLoading: processesLoading, error: processesError } = useQuery<OeProcessWithDetails[]>({
+  const { data: allProcesses, isLoading: processesLoading, error: processesError } = useQuery<OeProcessWithDetails[]>({
     queryKey: ["/api/oe-processes"],
     enabled: isAuthenticated,
   });
+
+  // Filter processes based on search and filters
+  const processes = useMemo(() => {
+    if (!allProcesses) return [];
+    
+    return allProcesses.filter(process => {
+      // Search filter
+      const searchMatch = !searchQuery || 
+        process.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        process.processNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        process.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        process.element?.title.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Status filter  
+      const statusMatch = statusFilter === 'all' || process.status === statusFilter;
+      
+      // Element filter
+      const elementMatch = elementFilter === 'all' || process.element?.elementNumber.toString() === elementFilter;
+      
+      return searchMatch && statusMatch && elementMatch;
+    });
+  }, [allProcesses, searchQuery, statusFilter, elementFilter]);
 
   // Handle processes error
   useEffect(() => {
@@ -129,11 +161,13 @@ export default function AllProcesses() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder="Search processes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
                 data-testid="input-search-processes"
               />
             </div>
-            <Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48" data-testid="select-filter-status">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -145,7 +179,7 @@ export default function AllProcesses() {
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
-            <Select>
+            <Select value={elementFilter} onValueChange={setElementFilter}>
               <SelectTrigger className="w-48" data-testid="select-filter-element">
                 <SelectValue placeholder="Filter by element" />
               </SelectTrigger>
