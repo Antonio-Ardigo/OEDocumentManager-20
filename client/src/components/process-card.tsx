@@ -107,7 +107,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                   <h4 className="text-primary font-medium mb-1" data-testid="element-name">
                     {element.title}
                   </h4>
-                  <p className="text-sm text-muted-foreground mb-2" data-testid="element-description">
+                  <p className="text-sm text-muted-foreground mb-2 line-clamp-4" data-testid="element-description">
                     {element.description || 'No description available'}
                   </p>
                   
@@ -145,10 +145,18 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                   <div>Process{processCount !== 1 ? 'es' : ''}</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-medium" data-testid="progress-percentage">
-                    {progressPercentage}%
+                  <div className="font-medium" data-testid="metrics-count">
+                    {element.performanceMetrics?.length || 0}
                   </div>
-                  <div>Complete</div>
+                  <div>Metrics</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium" data-testid="risks-count">
+                    {(element.processes || []).reduce((total, process) => {
+                      return total + (process.riskDescription ? 1 : 0);
+                    }, 0)}
+                  </div>
+                  <div>Risks</div>
                 </div>
                 <Badge className={statusColor}>
                   {statusText}
@@ -198,7 +206,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
           <h4 className="text-primary font-medium mb-3" data-testid="element-name">
             {element.title}
           </h4>
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2" data-testid="element-description">
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-3" data-testid="element-description">
             {element.description || 'No description available'}
           </p>
           
@@ -227,9 +235,6 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
           )}
           
           <div className="flex items-center justify-between text-sm mb-4">
-            <span className="text-muted-foreground" data-testid="process-count">
-              {processCount} Process{processCount !== 1 ? 'es' : ''}
-            </span>
             <span className="text-muted-foreground" data-testid="last-updated">
               Last updated: {
                 element.updatedAt 
@@ -239,30 +244,29 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             </span>
           </div>
           
-          {/* Process Flow Preview */}
-          {element.processes && element.processes.length > 0 && (
-            <div className="mb-4 p-3 bg-muted/30 rounded-lg">
-              <div className="text-xs font-medium text-muted-foreground mb-2">
-                Process Overview
+          {/* Metrics and Risks Summary */}
+          <div className="grid grid-cols-3 gap-4 text-center text-sm mb-4">
+            <div>
+              <div className="font-medium" data-testid="process-count">
+                {processCount}
               </div>
-              <div className="space-y-2">
-                {element.processes.slice(0, 2).map((process) => (
-                  <div key={process.id} className="text-xs">
-                    <MiniProcessFlow 
-                      processNumber={process.processNumber}
-                      steps={[]}
-                      compact={true}
-                    />
-                  </div>
-                ))}
-                {element.processes.length > 2 && (
-                  <div className="text-xs text-muted-foreground text-center pt-1">
-                    +{element.processes.length - 2} more processes
-                  </div>
-                )}
-              </div>
+              <div className="text-muted-foreground">Process{processCount !== 1 ? 'es' : ''}</div>
             </div>
-          )}
+            <div>
+              <div className="font-medium" data-testid="metrics-count">
+                {element.performanceMetrics?.length || 0}
+              </div>
+              <div className="text-muted-foreground">Metrics</div>
+            </div>
+            <div>
+              <div className="font-medium" data-testid="risks-count">
+                {(element.processes || []).reduce((total, process) => {
+                  return total + (process.riskDescription ? 1 : 0);
+                }, 0)}
+              </div>
+              <div className="text-muted-foreground">Risks</div>
+            </div>
+          </div>
           
           <div>
             <div className="flex justify-between items-center mb-2">
