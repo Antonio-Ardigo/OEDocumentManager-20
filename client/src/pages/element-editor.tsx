@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, X, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Save, X, Trash2, Plus } from "lucide-react";
 import { Link } from "wouter";
 import type { OeElement } from "@shared/schema";
 
@@ -25,6 +26,7 @@ interface ElementFormData {
   icon: string;
   color: string;
   isActive: boolean;
+  enablingElements: string[];
 }
 
 export default function ElementEditor() {
@@ -67,6 +69,7 @@ export default function ElementEditor() {
     icon: "📋",
     color: "#3B82F6",
     isActive: true,
+    enablingElements: [],
   });
 
   // Load existing element data for edit mode
@@ -85,6 +88,7 @@ export default function ElementEditor() {
         icon: existingElement.icon || "📋",
         color: existingElement.color || "#3B82F6",
         isActive: existingElement.isActive ?? true,
+        enablingElements: (existingElement as any).enablingElements || [],
       });
     }
   }, [existingElement, isEditMode]);
@@ -335,6 +339,84 @@ export default function ElementEditor() {
                         data-testid="switch-active"
                       />
                       <Label htmlFor="isActive">Active Element</Label>
+                    </div>
+                  </div>
+
+                  {/* Enabling Elements Section */}
+                  <div className="space-y-2">
+                    <Label>Enabling Elements</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Specify which processes or capabilities this element enables. These will be displayed in process flow diagrams.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          id="newEnablingElement"
+                          placeholder="Add enabling element (e.g., Risk Management, Quality Assurance)"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const input = e.target as HTMLInputElement;
+                              const value = input.value.trim();
+                              if (value && !formData.enablingElements.includes(value)) {
+                                setFormData({
+                                  ...formData,
+                                  enablingElements: [...formData.enablingElements, value]
+                                });
+                                input.value = '';
+                              }
+                            }
+                          }}
+                          data-testid="input-new-enabling-element"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const input = document.getElementById('newEnablingElement') as HTMLInputElement;
+                            const value = input.value.trim();
+                            if (value && !formData.enablingElements.includes(value)) {
+                              setFormData({
+                                ...formData,
+                                enablingElements: [...formData.enablingElements, value]
+                              });
+                              input.value = '';
+                            }
+                          }}
+                          data-testid="button-add-enabling-element"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        {formData.enablingElements.map((element, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="secondary" 
+                            className="flex items-center gap-1"
+                            data-testid={`badge-enabling-element-${index}`}
+                          >
+                            {element}
+                            <X 
+                              className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  enablingElements: formData.enablingElements.filter((_, i) => i !== index)
+                                });
+                              }}
+                            />
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      {formData.enablingElements.length === 0 && (
+                        <p className="text-sm text-muted-foreground italic">
+                          No enabling elements defined. Add elements that this OE element enables or supports.
+                        </p>
+                      )}
                     </div>
                   </div>
 

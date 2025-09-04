@@ -2,15 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ArrowDown, FileText } from "lucide-react";
-import type { ProcessStep } from "@shared/schema";
+import type { ProcessStep, OeElement } from "@shared/schema";
 
 interface ProcessFlowDiagramProps {
   processName: string;
   processNumber: string;
   steps: ProcessStep[];
+  element?: OeElement | null;
 }
 
-export default function ProcessFlowDiagram({ processName, processNumber, steps }: ProcessFlowDiagramProps) {
+export default function ProcessFlowDiagram({ processName, processNumber, steps, element }: ProcessFlowDiagramProps) {
   if (!steps || steps.length === 0) {
     return null;
   }
@@ -44,8 +45,14 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
 
   const styles = getProcessStyles(processNumber);
   
-  // Get enabling elements for process
+  // Get enabling elements for process from OE Elements or fallback to defaults
   const getEnablingElements = (processNumber: string) => {
+    // Try to get enabling elements from the current element's data
+    if (element?.enablingElements && element.enablingElements.length > 0) {
+      return element.enablingElements;
+    }
+    
+    // Fallback to process-specific defaults if no custom elements are defined
     switch (processNumber) {
       case 'OE-4.1':
         return ['Risk Management', 'Document Control', 'Change Management', 'Quality Assurance'];
@@ -193,9 +200,9 @@ export default function ProcessFlowDiagram({ processName, processNumber, steps }
           <div className={`${styles.secondary} ${styles.border} rounded-lg p-4 border`}>
             <h4 className="font-semibold text-sm mb-3">Enabling OE Elements</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {enablingElements.map((element, index) => (
+              {enablingElements.map((enablingElement: string, index: number) => (
                 <div key={index} className={`bg-white rounded px-3 py-2 text-center border ${styles.border}`}>
-                  <span className={`text-xs font-medium ${styles.accent}`}>{element}</span>
+                  <span className={`text-xs font-medium ${styles.accent}`}>{enablingElement}</span>
                 </div>
               ))}
             </div>

@@ -277,6 +277,7 @@ export default function ProcessDetail() {
                 processName={process.name}
                 processNumber={process.processNumber}
                 steps={process.steps || []}
+                element={process.element}
               />
 
               {/* Process Steps */}
