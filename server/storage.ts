@@ -5,6 +5,7 @@ import {
   processSteps,
   performanceMeasures,
   documentVersions,
+  processDocuments,
   strategicGoals,
   elementPerformanceMetrics,
   type User,
@@ -19,6 +20,8 @@ import {
   type InsertPerformanceMeasure,
   type DocumentVersion,
   type InsertDocumentVersion,
+  type ProcessDocument,
+  type InsertProcessDocument,
   type StrategicGoal,
   type InsertStrategicGoal,
   type ElementPerformanceMetric,
@@ -85,6 +88,11 @@ export interface IStorage {
 
   // Goals-to-Processes mind map operations
   getGoalsToProcessesMindMap(): Promise<any[]>;
+
+  // Process document operations
+  addProcessDocument(document: InsertProcessDocument): Promise<ProcessDocument>;
+  getProcessDocuments(processId: string): Promise<ProcessDocument[]>;
+  deleteProcessDocument(id: string): Promise<void>;
 }
 
 // Helper function for natural alphanumeric sorting
@@ -297,6 +305,9 @@ export class DatabaseStorage implements IStorage {
         performanceMeasures: true,
         versions: {
           orderBy: [desc(documentVersions.createdAt)],
+        },
+        documents: {
+          orderBy: [desc(processDocuments.createdAt)],
         },
         createdByUser: true,
       },
@@ -687,6 +698,29 @@ export class DatabaseStorage implements IStorage {
     }
     
     return Array.from(goalsMap.values());
+  }
+
+  // Process document operations
+  async addProcessDocument(document: InsertProcessDocument): Promise<ProcessDocument> {
+    const [newDocument] = await db
+      .insert(processDocuments)
+      .values(document)
+      .returning();
+    return newDocument;
+  }
+
+  async getProcessDocuments(processId: string): Promise<ProcessDocument[]> {
+    return await db
+      .select()
+      .from(processDocuments)
+      .where(eq(processDocuments.processId, processId))
+      .orderBy(processDocuments.createdAt);
+  }
+
+  async deleteProcessDocument(id: string): Promise<void> {
+    await db
+      .delete(processDocuments)
+      .where(eq(processDocuments.id, id));
   }
 }
 

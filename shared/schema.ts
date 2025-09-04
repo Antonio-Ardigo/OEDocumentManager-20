@@ -116,6 +116,20 @@ export const documentVersions = pgTable("document_versions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Process Document Attachments table
+export const processDocuments = pgTable("process_documents", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  processId: uuid("process_id").references(() => oeProcesses.id, { onDelete: 'cascade' }),
+  title: varchar("title", { length: 255 }).notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileUrl: varchar("file_url", { length: 500 }).notNull(),
+  fileSize: integer("file_size"),
+  mimeType: varchar("mime_type", { length: 100 }),
+  uploadedBy: varchar("uploaded_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Strategic Goals table for Balanced Scorecard
 export const strategicGoals = pgTable("strategic_goals", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -173,6 +187,7 @@ export const oeProcessesRelations = relations(oeProcesses, ({ one, many }) => ({
   steps: many(processSteps),
   performanceMeasures: many(performanceMeasures),
   versions: many(documentVersions),
+  documents: many(processDocuments),
   createdByUser: one(users, {
     fields: [oeProcesses.createdBy],
     references: [users.id],
@@ -234,6 +249,17 @@ export const activityLogRelations = relations(activityLog, ({ one }) => ({
   }),
 }));
 
+export const processDocumentsRelations = relations(processDocuments, ({ one }) => ({
+  process: one(oeProcesses, {
+    fields: [processDocuments.processId],
+    references: [oeProcesses.id],
+  }),
+  uploadedByUser: one(users, {
+    fields: [processDocuments.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertOeElementSchema = createInsertSchema(oeElements).omit({
   id: true,
@@ -281,6 +307,12 @@ export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
   createdAt: true,
 });
 
+export const insertProcessDocumentSchema = createInsertSchema(processDocuments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -300,6 +332,8 @@ export type ElementPerformanceMetric = typeof elementPerformanceMetrics.$inferSe
 export type InsertElementPerformanceMetric = z.infer<typeof insertElementPerformanceMetricSchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
+export type ProcessDocument = typeof processDocuments.$inferSelect;
+export type InsertProcessDocument = z.infer<typeof insertProcessDocumentSchema>;
 
 // Extended types for API responses
 export type OeProcessWithDetails = OeProcess & {
@@ -307,6 +341,7 @@ export type OeProcessWithDetails = OeProcess & {
   steps?: ProcessStep[];
   performanceMeasures?: PerformanceMeasure[];
   versions?: DocumentVersion[];
+  documents?: ProcessDocument[];
   createdByUser?: User | null;
 };
 

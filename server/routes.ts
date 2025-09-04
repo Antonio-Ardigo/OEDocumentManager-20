@@ -591,6 +591,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Process Document routes
+  app.get('/api/processes/:processId/documents', isAuthenticated, async (req, res) => {
+    try {
+      const documents = await storage.getProcessDocuments(req.params.processId);
+      res.json(documents);
+    } catch (error) {
+      console.error('Error fetching process documents:', error);
+      res.status(500).json({ error: 'Failed to fetch documents' });
+    }
+  });
+
+  app.post('/api/processes/:processId/documents/upload', isAuthenticated, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import('./objectStorage');
+      const objectStorageService = new ObjectStorageService();
+      const { fileName } = req.body;
+      
+      if (!fileName) {
+        return res.status(400).json({ error: 'fileName is required' });
+      }
+
+      const uploadURL = await objectStorageService.getDocumentUploadURL(fileName);
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error('Error getting document upload URL:', error);
+      res.status(500).json({ error: 'Failed to get upload URL' });
+    }
+  });
+
+  app.post('/api/processes/:processId/documents', isAuthenticated, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import('./objectStorage');
+      const objectStorageService = new ObjectStorageService();
+      const { title, fileName, fileUrl, fileSize, mimeType } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      if (!title || !fileName || !fileUrl) {
+        return res.status(400).json({ error: 'title, fileName, and fileUrl are required' });
+      }
+
+      // Normalize the document path
+      const normalizedPath = objectStorageService.normalizeDocumentPath(fileUrl);
+
+      const document = await storage.addProcessDocument({
+        processId: req.params.processId,
+        title,
+        fileName,
+        fileUrl: normalizedPath,
+        fileSize: fileSize || null,
+        mimeType: mimeType || null,
+        uploadedBy: userId,
+      });
+
+      res.status(201).json(document);
+    } catch (error) {
+      console.error('Error adding process document:', error);
+      res.status(500).json({ error: 'Failed to add document' });
+    }
+  });
+
+  app.get('/documents/:documentPath(*)', isAuthenticated, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import('./objectStorage');
+      const objectStorageService = new ObjectStorageService();
+      const documentPath = `/documents/${req.params.documentPath}`;
+      
+      const documentFile = await objectStorageService.getDocumentFile(documentPath);
+      objectStorageService.downloadObject(documentFile, res);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      if (error instanceof Error && error.name === 'ObjectNotFoundError') {
+        return res.status(404).json({ error: 'Document not found' });
+      }
+      return res.status(500).json({ error: 'Failed to download document' });
+    }
+  });
+
+  app.delete('/api/documents/:documentId', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteProcessDocument(req.params.documentId);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      res.status(500).json({ error: 'Failed to delete document' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
