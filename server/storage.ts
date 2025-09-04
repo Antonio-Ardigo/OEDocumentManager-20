@@ -149,7 +149,11 @@ export class DatabaseStorage implements IStorage {
   async getAllOeElements(): Promise<OeElementWithProcesses[]> {
     const elements = await db.query.oeElements.findMany({
       with: {
-        processes: true, // Remove orderBy from query
+        processes: {
+          with: {
+            performanceMeasures: true,
+          },
+        },
       },
       orderBy: [oeElements.elementNumber],
     });
