@@ -107,9 +107,33 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                   <h4 className="text-primary font-medium mb-1" data-testid="element-name">
                     {element.title}
                   </h4>
-                  <p className="text-sm text-muted-foreground" data-testid="element-description">
+                  <p className="text-sm text-muted-foreground mb-2" data-testid="element-description">
                     {element.description || 'No description available'}
                   </p>
+                  
+                  {/* Enabling Elements Display for List View */}
+                  {(element as any).enablingElements && (element as any).enablingElements.length > 0 && (
+                    <div className="mb-2">
+                      <div className="text-xs font-medium text-muted-foreground mb-1">Enabling Elements:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {(element as any).enablingElements.slice(0, 4).map((enabledElement: string, index: number) => (
+                          <Badge 
+                            key={index} 
+                            variant="outline" 
+                            className="text-xs px-2 py-0"
+                            data-testid={`list-enabling-element-${index}`}
+                          >
+                            {enabledElement}
+                          </Badge>
+                        ))}
+                        {(element as any).enablingElements.length > 4 && (
+                          <Badge variant="outline" className="text-xs px-2 py-0">
+                            +{(element as any).enablingElements.length - 4} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -174,9 +198,33 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
           <h4 className="text-primary font-medium mb-3" data-testid="element-name">
             {element.title}
           </h4>
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2" data-testid="element-description">
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2" data-testid="element-description">
             {element.description || 'No description available'}
           </p>
+          
+          {/* Enabling Elements Display */}
+          {(element as any).enablingElements && (element as any).enablingElements.length > 0 && (
+            <div className="mb-3">
+              <div className="text-xs font-medium text-muted-foreground mb-1">Enabling Elements:</div>
+              <div className="flex flex-wrap gap-1">
+                {(element as any).enablingElements.slice(0, 3).map((enabledElement: string, index: number) => (
+                  <Badge 
+                    key={index} 
+                    variant="outline" 
+                    className="text-xs px-2 py-0"
+                    data-testid={`card-enabling-element-${index}`}
+                  >
+                    {enabledElement}
+                  </Badge>
+                ))}
+                {(element as any).enablingElements.length > 3 && (
+                  <Badge variant="outline" className="text-xs px-2 py-0">
+                    +{(element as any).enablingElements.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
           
           <div className="flex items-center justify-between text-sm mb-4">
             <span className="text-muted-foreground" data-testid="process-count">
