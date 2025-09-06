@@ -473,6 +473,92 @@ export default function ProcessDetail() {
                 </CardContent>
               </Card>
 
+              {/* Performance Measures */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5" />
+                    <span>Performance Measures</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {process.performanceMeasures && process.performanceMeasures.length > 0 ? (
+                    <div className="space-y-4">
+                      {process.performanceMeasures.map((measure, index) => (
+                        <div key={measure.id} className="border rounded-lg p-4" data-testid={`performance-measure-${index}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{measure.measureName}</h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                              data-testid={`button-edit-measure-${index}`}
+                            >
+                              <Link href={`/process/${process.id}/edit`}>
+                                <Edit3 className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            {measure.formula && (
+                              <div>
+                                <span className="text-muted-foreground">Formula: </span>
+                                <span>{measure.formula}</span>
+                              </div>
+                            )}
+                            {measure.source && (
+                              <div>
+                                <span className="text-muted-foreground">Source: </span>
+                                <span>{measure.source}</span>
+                              </div>
+                            )}
+                            {measure.frequency && (
+                              <div>
+                                <span className="text-muted-foreground">Frequency: </span>
+                                <span>{measure.frequency}</span>
+                              </div>
+                            )}
+                            {measure.target && (
+                              <div>
+                                <span className="text-muted-foreground">Target: </span>
+                                <span>{measure.target}</span>
+                              </div>
+                            )}
+                            {measure.scorecardCategory && (
+                              <div>
+                                <span className="text-muted-foreground">Scorecard: </span>
+                                <span className="flex items-center gap-1">
+                                  <span className="text-lg">{getScorecardFlag(measure.scorecardCategory)}</span>
+                                  <span>{measure.scorecardCategory}</span>
+                                </span>
+                              </div>
+                            )}
+                            {(measure as any).strategicGoalId && (
+                              <div>
+                                <span className="text-muted-foreground">Linked Goal: </span>
+                                <span className="font-medium text-blue-600">
+                                  {(() => {
+                                    const linkedGoal = strategicGoals.find(goal => 
+                                      goal.id === (measure as any).strategicGoalId
+                                    );
+                                    return linkedGoal ? `${linkedGoal.title} (${linkedGoal.category})` : 'Strategic Goal';
+                                  })()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p>No performance measures defined yet.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* File Attachments */}
               <Card>
                 <CardHeader>
@@ -562,92 +648,6 @@ export default function ProcessDetail() {
                       <p className="text-xs">
                         Upload documents, images, or other files related to this process.
                       </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Performance Measures */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BarChart3 className="w-5 h-5" />
-                    <span>Performance Measures</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {process.performanceMeasures && process.performanceMeasures.length > 0 ? (
-                    <div className="space-y-4">
-                      {process.performanceMeasures.map((measure, index) => (
-                        <div key={measure.id} className="border rounded-lg p-4" data-testid={`performance-measure-${index}`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium">{measure.measureName}</h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              asChild
-                              data-testid={`button-edit-measure-${index}`}
-                            >
-                              <Link href={`/process/${process.id}/edit`}>
-                                <Edit3 className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            {measure.formula && (
-                              <div>
-                                <span className="text-muted-foreground">Formula: </span>
-                                <span>{measure.formula}</span>
-                              </div>
-                            )}
-                            {measure.source && (
-                              <div>
-                                <span className="text-muted-foreground">Source: </span>
-                                <span>{measure.source}</span>
-                              </div>
-                            )}
-                            {measure.frequency && (
-                              <div>
-                                <span className="text-muted-foreground">Frequency: </span>
-                                <span>{measure.frequency}</span>
-                              </div>
-                            )}
-                            {measure.target && (
-                              <div>
-                                <span className="text-muted-foreground">Target: </span>
-                                <span>{measure.target}</span>
-                              </div>
-                            )}
-                            {measure.scorecardCategory && (
-                              <div>
-                                <span className="text-muted-foreground">Scorecard: </span>
-                                <span className="flex items-center gap-1">
-                                  <span className="text-lg">{getScorecardFlag(measure.scorecardCategory)}</span>
-                                  <span>{measure.scorecardCategory}</span>
-                                </span>
-                              </div>
-                            )}
-                            {(measure as any).strategicGoalId && (
-                              <div>
-                                <span className="text-muted-foreground">Linked Goal: </span>
-                                <span className="font-medium text-blue-600">
-                                  {(() => {
-                                    const linkedGoal = strategicGoals.find(goal => 
-                                      goal.id === (measure as any).strategicGoalId
-                                    );
-                                    return linkedGoal ? `${linkedGoal.title} (${linkedGoal.category})` : 'Strategic Goal';
-                                  })()}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p>No performance measures defined yet.</p>
                     </div>
                   )}
                 </CardContent>
