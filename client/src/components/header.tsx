@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Search, Bell, ChevronRight } from "lucide-react";
+import { Menu, Search, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 
@@ -18,13 +18,6 @@ export default function Header({
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
   
-  // Get activity count for notification badge
-  const { data: activities = [] } = useQuery<any[]>({
-    queryKey: ["/api/activity-log"],
-    retry: false,
-  });
-  
-  const activityCount = activities.length;
 
   return (
     <header className="bg-card border-b border-border px-6 py-4">
@@ -78,23 +71,6 @@ export default function Header({
             />
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="relative"
-            onClick={() => setLocation('/dashboard#activity')}
-            data-testid="button-notifications"
-          >
-            <Bell className="h-5 w-5" />
-            {activityCount > 0 && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-              >
-                {activityCount > 99 ? '99+' : activityCount}
-              </Badge>
-            )}
-          </Button>
         </div>
       </div>
     </header>
