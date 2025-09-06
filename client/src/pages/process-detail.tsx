@@ -30,7 +30,7 @@ import ProcessFlowDiagram from "@/components/process-flow-diagram";
 import ProcessContentSections from "@/components/process-content-sections";
 import FileUpload from "@/components/file-upload";
 import type { OeProcessWithDetails, ProcessDocument } from "@shared/schema";
-import { useMutation, queryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 // Scorecard flag mapping function
@@ -116,7 +116,9 @@ export default function ProcessDetail() {
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: string) => {
-      await apiRequest(`/api/documents/${documentId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/documents/${documentId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete document');
+      return response;
     },
     onSuccess: () => {
       toast({

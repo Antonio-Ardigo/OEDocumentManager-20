@@ -52,14 +52,22 @@ export default function FileUpload({ processId, onUploadComplete }: FileUploadPr
 
     try {
       // Step 1: Get upload URL from server
-      const uploadResponse = await apiRequest(`/api/processes/${processId}/documents/upload`, {
+      const uploadResponse = await fetch(`/api/processes/${processId}/documents/upload`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           fileName: uploadData.file.name,
         }),
       });
 
-      const { uploadURL } = uploadResponse;
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+
+      const uploadData_response = await uploadResponse.json();
+      const { uploadURL } = uploadData_response;
 
       // Step 2: Upload file to object storage
       const uploadFileResponse = await fetch(uploadURL, {
@@ -75,8 +83,11 @@ export default function FileUpload({ processId, onUploadComplete }: FileUploadPr
       }
 
       // Step 3: Save document record to database
-      await apiRequest(`/api/processes/${processId}/documents`, {
+      const documentResponse = await fetch(`/api/processes/${processId}/documents`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           title: uploadData.title.trim(),
           fileName: uploadData.file.name,
@@ -85,6 +96,10 @@ export default function FileUpload({ processId, onUploadComplete }: FileUploadPr
           mimeType: uploadData.file.type,
         }),
       });
+
+      if (!documentResponse.ok) {
+        throw new Error('Failed to save document record');
+      }
 
       toast({
         title: "File Uploaded",
