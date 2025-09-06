@@ -21,11 +21,17 @@ import {
   ArrowLeft,
   Star,
   AlertTriangle,
-  Shield
+  Shield,
+  Download,
+  Trash2,
+  Paperclip
 } from "lucide-react";
 import ProcessFlowDiagram from "@/components/process-flow-diagram";
 import ProcessContentSections from "@/components/process-content-sections";
-import type { OeProcessWithDetails } from "@shared/schema";
+import FileUpload from "@/components/file-upload";
+import type { OeProcessWithDetails, ProcessDocument } from "@shared/schema";
+import { useMutation, queryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 // Scorecard flag mapping function
 const getScorecardFlag = (category: string) => {
@@ -99,6 +105,33 @@ export default function ProcessDetail() {
   const { data: strategicGoals = [] } = useQuery<any[]>({
     queryKey: ["/api/strategic-goals"],
     enabled: isAuthenticated,
+  });
+
+  // Load process documents
+  const { data: documents = [], isLoading: documentsLoading, refetch: refetchDocuments } = useQuery<ProcessDocument[]>({
+    queryKey: ["/api/processes", id, "documents"],
+    enabled: isAuthenticated && !!id,
+  });
+
+  // Delete document mutation
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId: string) => {
+      await apiRequest(`/api/documents/${documentId}`, { method: 'DELETE' });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Document Deleted",
+        description: "The document has been removed from this process.",
+      });
+      refetchDocuments();
+    },
+    onError: (error) => {
+      toast({
+        title: "Delete Failed",
+        description: error instanceof Error ? error.message : "Failed to delete document",
+        variant: "destructive",
+      });
+    },
   });
 
   // Handle process error
@@ -432,6 +465,100 @@ export default function ProcessDetail() {
                       <p className="mb-2">Risk assessment not completed</p>
                       <p className="text-xs">
                         Edit this process to add risk frequency, impact, and mitigation details.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* File Attachments */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center space-x-2">
+                      <Paperclip className="w-5 h-5" />
+                      <span>File Attachments</span>
+                    </CardTitle>
+                    <FileUpload 
+                      processId={process.id} 
+                      onUploadComplete={refetchDocuments}
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {documentsLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading attachments...</p>
+                    </div>
+                  ) : documents && documents.length > 0 ? (
+                    <div className="space-y-3">
+                      {documents.map((doc) => (
+                        <div 
+                          key={doc.id} 
+                          className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border"
+                          data-testid={`attachment-${doc.id}`}
+                        >
+                          <div className="flex items-center space-x-3 min-w-0 flex-1">
+                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <FileText className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-sm truncate" data-testid="attachment-title">
+                                {doc.title}
+                              </h4>
+                              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                                <span>{doc.fileName}</span>
+                                {doc.fileSize && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{(doc.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                                  </>
+                                )}
+                                {doc.createdAt && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                              data-testid="button-download-attachment"
+                            >
+                              <a
+                                href={doc.fileUrl}
+                                download={doc.fileName}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteDocumentMutation.mutate(doc.id)}
+                              disabled={deleteDocumentMutation.isPending}
+                              data-testid="button-delete-attachment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Paperclip className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="mb-2">No files attached yet</p>
+                      <p className="text-xs">
+                        Upload documents, images, or other files related to this process.
                       </p>
                     </div>
                   )}
