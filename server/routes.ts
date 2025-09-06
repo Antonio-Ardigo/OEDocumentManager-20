@@ -25,6 +25,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Public API routes (no authentication required) - for ChatGPT and other web agents
+  app.get('/public-api/elements', async (req, res) => {
+    try {
+      const elements = await storage.getOeElements();
+      res.json(elements.map(element => ({
+        id: element.id,
+        title: element.title,
+        description: element.description,
+        elementNumber: element.elementNumber,
+      })));
+    } catch (error) {
+      console.error("Error fetching public elements:", error);
+      res.status(500).json({ message: "Failed to fetch elements" });
+    }
+  });
+
+  app.get('/public-api/elements/:id', async (req, res) => {
+    try {
+      const element = await storage.getOeElement(req.params.id);
+      if (!element) {
+        return res.status(404).json({ message: "Element not found" });
+      }
+      res.json({
+        id: element.id,
+        title: element.title,
+        description: element.description,
+        elementNumber: element.elementNumber,
+        processes: element.processes || []
+      });
+    } catch (error) {
+      console.error("Error fetching public element:", error);
+      res.status(500).json({ message: "Failed to fetch element" });
+    }
+  });
+
+  app.get('/public-api/processes', async (req, res) => {
+    try {
+      const processes = await storage.getOeProcesses();
+      res.json(processes.map(process => ({
+        id: process.id,
+        name: process.name,
+        processNumber: process.processNumber,
+        description: process.description,
+        status: process.status,
+        elementId: process.elementId,
+        expectations: process.expectations,
+        riskFrequency: process.riskFrequency,
+        riskImpact: process.riskImpact,
+        riskDescription: process.riskDescription,
+        riskMitigation: process.riskMitigation,
+      })));
+    } catch (error) {
+      console.error("Error fetching public processes:", error);
+      res.status(500).json({ message: "Failed to fetch processes" });
+    }
+  });
+
+  app.get('/public-api/processes/:id', async (req, res) => {
+    try {
+      const process = await storage.getOeProcess(req.params.id);
+      if (!process) {
+        return res.status(404).json({ message: "Process not found" });
+      }
+      res.json({
+        id: process.id,
+        name: process.name,
+        processNumber: process.processNumber,
+        description: process.description,
+        status: process.status,
+        expectations: process.expectations,
+        riskFrequency: process.riskFrequency,
+        riskImpact: process.riskImpact,
+        riskDescription: process.riskDescription,
+        riskMitigation: process.riskMitigation,
+        steps: process.steps || [],
+        performanceMeasures: process.performanceMeasures || [],
+        element: process.element,
+      });
+    } catch (error) {
+      console.error("Error fetching public process:", error);
+      res.status(500).json({ message: "Failed to fetch process" });
+    }
+  });
+
+  app.get('/public-api/site-info', async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      const elements = await storage.getOeElements();
+      
+      res.json({
+        siteName: "WSM Operational Excellence Manager",
+        description: "Comprehensive desktop application for managing operational excellence processes with a 4-element OE framework",
+        framework: "4-element OE framework (OE-1: Transition Plan, OE-3: Purification Plant Operations, OE-4: Asset Management, OE-5: Strategic Localization)",
+        statistics: {
+          totalProcesses: stats.totalProcesses,
+          activeElements: stats.activeElements,
+          totalElements: elements.length,
+        },
+        elements: elements.map(el => ({
+          number: el.elementNumber,
+          title: el.title,
+          description: el.description,
+          processCount: el.processes?.length || 0
+        })),
+        publicApiEndpoints: [
+          '/public-api/elements - List all OE elements',
+          '/public-api/elements/{id} - Get specific element with processes',
+          '/public-api/processes - List all processes',
+          '/public-api/processes/{id} - Get specific process details',
+          '/public-api/site-info - This endpoint'
+        ]
+      });
+    } catch (error) {
+      console.error("Error fetching site info:", error);
+      res.status(500).json({ message: "Failed to fetch site information" });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
