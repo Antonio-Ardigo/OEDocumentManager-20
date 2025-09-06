@@ -325,7 +325,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Activity */}
-          <Card>
+          <Card id="activity">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
