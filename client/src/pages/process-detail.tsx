@@ -19,7 +19,9 @@ import {
   Target,
   BarChart3,
   ArrowLeft,
-  Star
+  Star,
+  AlertTriangle,
+  Shield
 } from "lucide-react";
 import ProcessFlowDiagram from "@/components/process-flow-diagram";
 import ProcessContentSections from "@/components/process-content-sections";
@@ -38,6 +40,32 @@ const getScorecardFlag = (category: string) => {
       return '📚';
     default:
       return '📊';
+  }
+};
+
+// Risk assessment utility functions
+const getRiskLevel = (frequency?: string, impact?: string) => {
+  if (!frequency || !impact) return { level: "Not Assessed", color: "gray", score: 0 };
+  
+  const freqScore = frequency.toLowerCase() === "high" ? 3 : frequency.toLowerCase() === "medium" ? 2 : 1;
+  const impactScore = impact.toLowerCase() === "high" ? 3 : impact.toLowerCase() === "medium" ? 2 : 1;
+  const totalScore = freqScore * impactScore;
+  
+  if (totalScore >= 7) return { level: "High Risk", color: "red", score: totalScore };
+  if (totalScore >= 3) return { level: "Medium Risk", color: "yellow", score: totalScore };
+  return { level: "Low Risk", color: "green", score: totalScore };
+};
+
+const getRiskBadgeClass = (color: string) => {
+  switch (color) {
+    case "red":
+      return "bg-red-100 text-red-800 border-red-200";
+    case "yellow":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "green":
+      return "bg-green-100 text-green-800 border-green-200";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
 
@@ -334,6 +362,81 @@ export default function ProcessDetail() {
 
               {/* TABLE OF CONTENTS Sections */}
               <ProcessContentSections process={process} />
+
+              {/* Risk Assessment */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Shield className="w-5 h-5" />
+                    <span>Risk Assessment</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {process.riskFrequency && process.riskImpact ? (
+                    <div className="space-y-4">
+                      {/* Risk Level Badge */}
+                      <div className="flex items-center space-x-3">
+                        <AlertTriangle className="w-5 h-5 text-muted-foreground" />
+                        <Badge 
+                          className={`${getRiskBadgeClass(getRiskLevel(process.riskFrequency, process.riskImpact).color)} border`}
+                          data-testid="risk-level"
+                        >
+                          {getRiskLevel(process.riskFrequency, process.riskImpact).level}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          Score: {getRiskLevel(process.riskFrequency, process.riskImpact).score}/9
+                        </span>
+                      </div>
+
+                      {/* Risk Matrix */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Risk Frequency</h4>
+                          <Badge variant="outline" data-testid="risk-frequency">
+                            {process.riskFrequency}
+                          </Badge>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Risk Impact</h4>
+                          <Badge variant="outline" data-testid="risk-impact">
+                            {process.riskImpact}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Risk Description */}
+                      {process.riskDescription && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Risk Description</h4>
+                          <p className="text-muted-foreground text-sm leading-relaxed" data-testid="risk-description">
+                            {process.riskDescription}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Risk Mitigation */}
+                      {process.riskMitigation && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Risk Mitigation Strategy</h4>
+                          <div className="bg-muted/50 rounded-lg p-3">
+                            <p className="text-muted-foreground text-sm leading-relaxed" data-testid="risk-mitigation">
+                              {process.riskMitigation}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="mb-2">Risk assessment not completed</p>
+                      <p className="text-xs">
+                        Edit this process to add risk frequency, impact, and mitigation details.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Performance Measures */}
               <Card>
