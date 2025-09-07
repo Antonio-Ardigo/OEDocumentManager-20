@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import {
   insertOeElementSchema,
   insertOeProcessSchema,
@@ -22,38 +22,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
-  // Auth middleware
-  await setupAuth(app);
+  // Simplified auth setup
+  setupAuth(app);
 
-  // Agent authentication endpoint (simple username/password for agents)
-  app.post('/agent-login', async (req, res) => {
+  // Agent authentication endpoint
+  app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
-    // Simple hardcoded credentials for agents (in production, use environment variables)
+    // Simple credentials for agents
     if (username === 'agent_user' && password === 'agent_access_2024') {
-      // Set a simple session flag for agent authentication
       (req.session as any).isAgent = true;
       (req.session as any).agentId = 'agent_user';
       res.json({ 
         success: true, 
-        message: 'Agent authenticated successfully',
+        message: 'Authenticated successfully',
         sessionId: req.sessionID
       });
     } else {
-      res.status(401).json({ success: false, message: 'Invalid agent credentials' });
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
   });
 
-  // Enhanced authentication middleware that allows both OAuth users and agents
-  const isAuthenticatedOrAgent: typeof isAuthenticated = async (req, res, next) => {
-    // Check if user is an authenticated agent
-    if ((req.session as any)?.isAgent) {
-      return next();
-    }
-    
-    // Otherwise, use normal OAuth authentication
-    return isAuthenticated(req, res, next);
-  };
+  // Logout endpoint
+  app.post('/logout', async (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Failed to logout' });
+      }
+      res.json({ success: true, message: 'Logged out successfully' });
+    });
+  });
 
   // Public API routes (no authentication required) - for ChatGPT and other web agents
   app.get('/public-api/elements', async (req, res) => {
@@ -173,9 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth routes - Updated to allow agent access
-  app.get('/api/auth/user', isAuthenticatedOrAgent, async (req: any, res) => {
-    // Handle agent users differently
+  // User info route
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    // Return agent user info
     if ((req.session as any)?.isAgent) {
       return res.json({
         id: 'agent_user',
@@ -186,15 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
     
-    // Regular OAuth user
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+    res.status(401).json({ message: "Unauthorized" });
   });
 
   // Dashboard stats - Now accessible to guests
@@ -232,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all OE elements with processes and steps for mind map (must come before :id route)
-  app.get('/api/mindmap/elements', isAuthenticatedOrAgent, async (req, res) => {
+  app.get('/api/mindmap/elements', isAuthenticated, async (req, res) => {
     try {
       const elements = await storage.getOeElementsForMindMap();
       res.json(elements);
@@ -243,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get strategic goals with linked processes for Goals-to-Processes mind map
-  app.get('/api/mindmap/goals-processes', isAuthenticatedOrAgent, async (req, res) => {
+  app.get('/api/mindmap/goals-processes', isAuthenticated, async (req, res) => {
     try {
       const goalsWithProcesses = await storage.getGoalsToProcessesMindMap();
       res.json(goalsWithProcesses);
@@ -266,9 +256,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-elements', isAuthenticatedOrAgent, async (req: any, res) => {
+  app.post('/api/oe-elements', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = (req.session as any)?.isAgent ? 'agent_user' : req.user.claims.sub;
+      const userId = 'agent_user';
       const validatedData = insertOeElementSchema.parse(req.body);
       const element = await storage.createOeElement(validatedData);
       
