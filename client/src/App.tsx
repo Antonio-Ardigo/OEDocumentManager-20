@@ -15,6 +15,7 @@ import ProcessDetail from "@/pages/process-detail";
 import ProcessEditor from "@/pages/process-editor";
 import ElementEditor from "@/pages/element-editor";
 import NotFound from "@/pages/not-found";
+import LoginPage from "@/pages/login";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/create-process" component={ProcessEditor} />
           <Route path="/create-element" component={ElementEditor} />
           <Route path="/element/:id/edit" component={ElementEditor} />
+          <Route path="/login" component={LoginPage} />
         </>
       )}
       <Route component={NotFound} />
