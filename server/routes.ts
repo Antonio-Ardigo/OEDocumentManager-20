@@ -438,25 +438,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create new measures if provided
       if (measuresData.length > 0) {
-        console.log('Creating performance measures:', measuresData);
         for (const measure of measuresData) {
-          try {
-            const measureData = {
-              processId: req.params.id,
-              measureName: measure.measureName || 'Untitled Measure',
-              formula: measure.formula || '',
-              source: measure.source || '',
-              frequency: measure.frequency || '',
-              target: measure.target || '',
-              scorecardCategory: measure.scorecardCategory || '',
-              strategicGoalId: measure.strategicGoalId === 'none' || !measure.strategicGoalId ? null : measure.strategicGoalId,
-            };
-            console.log('Creating measure:', measureData);
-            await storage.createPerformanceMeasure(measureData);
-          } catch (error) {
-            console.error('Error creating performance measure:', error);
-            throw error;
-          }
+          await storage.createPerformanceMeasure({
+            processId: req.params.id,
+            measureName: measure.measureName || 'Untitled Measure',
+            formula: measure.formula || '',
+            source: measure.source || '',
+            frequency: measure.frequency || '',
+            target: measure.target || '',
+            scorecardCategory: measure.scorecardCategory || '',
+            strategicGoalId: measure.strategicGoalId === 'none' || !measure.strategicGoalId ? null : measure.strategicGoalId,
+          });
         }
       }
       

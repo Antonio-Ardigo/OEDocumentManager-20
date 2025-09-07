@@ -131,8 +131,12 @@ export default function ProcessEditor() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate the specific process query
+      queryClient.invalidateQueries({ queryKey: [`/api/oe-processes/${id}`] });
+      // Invalidate the process list queries
       queryClient.invalidateQueries({ queryKey: ["/api/oe-processes", id] });
       queryClient.invalidateQueries({ queryKey: ["/api/oe-processes"] });
+      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ["/api/oe-elements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       toast({
