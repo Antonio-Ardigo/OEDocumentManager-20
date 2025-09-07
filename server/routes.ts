@@ -26,7 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
   // Agent authentication endpoint
-  app.post('/login', async (req, res) => {
+  app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     
     // Simple credentials for agents
@@ -44,7 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Logout endpoint
-  app.post('/logout', async (req, res) => {
+  app.post('/api/logout', async (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).json({ success: false, message: 'Failed to logout' });
