@@ -25,7 +25,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Simplified auth setup
   setupAuth(app);
 
-  // Agent authentication endpoint
+  // Agent authentication endpoints
+  app.get('/api/login', async (req, res) => {
+    res.json({ 
+      message: 'Login endpoint - use POST with username and password',
+      usage: 'POST /api/login with {"username": "agent_user", "password": "agent_access_2024"}' 
+    });
+  });
+
   app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     
