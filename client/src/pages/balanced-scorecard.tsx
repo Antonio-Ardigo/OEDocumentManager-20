@@ -253,7 +253,7 @@ export default function BalancedScorecard() {
     return processPerformanceMeasures.filter(measure => measure.elementId === elementId);
   };
 
-  if (isLoading || elementsLoading || goalsLoading || metricsLoading || processMeasuresLoading) {
+  if (elementsLoading || goalsLoading || metricsLoading || processMeasuresLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">

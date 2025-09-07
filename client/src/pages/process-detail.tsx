@@ -76,7 +76,6 @@ const getRiskBadgeClass = (color: string) => {
 export default function ProcessDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
 
 
   // Note: Authentication no longer required - guests have full access
@@ -132,7 +131,7 @@ export default function ProcessDetail() {
     }
   }, [processError, toast]);
 
-  if (isLoading) {
+  if (processLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

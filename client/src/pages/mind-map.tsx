@@ -325,29 +325,15 @@ export default function MindMap() {
   // Reference to the goals mind map component to call its methods
   const goalsMindMapRef = useRef<any>(null);
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: elements, isLoading: elementsLoading, error: elementsError } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/mindmap/elements"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   const { data: goalsWithProcesses, isLoading: goalsLoading, error: goalsError } = useQuery<any[]>({
     queryKey: ["/api/mindmap/goals-processes"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   // Handle errors
@@ -1062,10 +1048,10 @@ This alignment ensures that operational activities directly support strategic ob
     }
   };
 
-  const isLoadingData = isLoading || elementsLoading || goalsLoading;
+  const isLoadingData = elementsLoading || goalsLoading;
   const currentData = mindMapType === 'elements-processes' ? elements : goalsWithProcesses;
 
-  if (isLoadingData) {
+  if (elementsLoading || goalsLoading) {
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar />
