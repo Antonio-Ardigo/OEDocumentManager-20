@@ -362,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/oe-processes', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       
       // Convert issueDate string to Date object if provided
       if (req.body.issueDate && typeof req.body.issueDate === 'string') {
