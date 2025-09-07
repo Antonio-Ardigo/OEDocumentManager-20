@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
@@ -17,44 +16,18 @@ export default function ProcessEditor() {
   const { id } = useParams<{ id?: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const isEditing = !!id;
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: process, isLoading: processLoading, error: processError } = useQuery<OeProcessWithDetails>({
     queryKey: ["/api/oe-processes", id],
-    enabled: isAuthenticated && isEditing && !!id,
+    enabled: isEditing && !!id,
   });
 
   // Handle process error
   useEffect(() => {
     if (processError) {
-      if (isUnauthorizedError(processError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load process details",
@@ -65,23 +38,12 @@ export default function ProcessEditor() {
 
   const { data: elements, isLoading: elementsLoading, error: elementsError } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/oe-elements"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   // Handle elements error
   useEffect(() => {
     if (elementsError) {
-      if (isUnauthorizedError(elementsError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load OE elements",
@@ -106,17 +68,7 @@ export default function ProcessEditor() {
       setLocation(`/process/${newProcess.id}`);
     },
     onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+
       toast({
         title: "Error",
         description: "Failed to create process",
@@ -146,17 +98,7 @@ export default function ProcessEditor() {
       setLocation(`/process/${id}`);
     },
     onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+
       toast({
         title: "Error",
         description: "Failed to update process",

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -38,7 +37,6 @@ interface ActivityWithUser extends ActivityLog {
 
 export default function Dashboard() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const [elementFilter, setElementFilter] = useState<string>("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
@@ -51,17 +49,6 @@ export default function Dashboard() {
   // Handle stats error
   useEffect(() => {
     if (statsError) {
-      if (isUnauthorizedError(statsError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load dashboard statistics",
@@ -81,17 +68,6 @@ export default function Dashboard() {
   // Handle elements error
   useEffect(() => {
     if (elementsError) {
-      if (isUnauthorizedError(elementsError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load OE elements",
