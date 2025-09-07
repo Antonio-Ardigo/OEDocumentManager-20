@@ -8,7 +8,7 @@ import ProcessForm from "@/components/process-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Trash2 } from "lucide-react";
 import type { OeProcessWithDetails, OeElementWithProcesses } from "@shared/schema";
 
 export default function ProcessEditor() {
@@ -106,6 +106,29 @@ export default function ProcessEditor() {
     },
   });
 
+  const deleteProcessMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", `/api/oe-processes/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/oe-processes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/oe-elements"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      toast({
+        title: "Success",
+        description: "Process deleted successfully",
+      });
+      setLocation("/");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete process",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = async (data: any) => {
     // Convert "none" values to null for strategicGoalId
     const processedData = {
@@ -128,6 +151,12 @@ export default function ProcessEditor() {
       setLocation(`/process/${id}`);
     } else {
       setLocation("/");
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this process? This action cannot be undone.")) {
+      deleteProcessMutation.mutate();
     }
   };
 
@@ -211,6 +240,23 @@ export default function ProcessEditor() {
               onSubmit={handleSubmit}
               onCancel={handleCancel}
             />
+
+            {isEditing && (
+              <div className="mt-8 pt-8 border-t border-border">
+                <div className="flex justify-end">
+                  <Button
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={deleteProcessMutation.isPending}
+                    data-testid="button-delete-process"
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {deleteProcessMutation.isPending ? "Deleting..." : "Delete Process"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
