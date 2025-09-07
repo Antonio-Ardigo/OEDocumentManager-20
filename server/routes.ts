@@ -407,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Extract steps and performance measures from request body
-      const { steps = [], performanceMeasures = [], ...processData } = req.body;
+      const { steps = [], performanceMeasures: measuresData = [], ...processData } = req.body;
       
       const validatedData = insertOeProcessSchema.partial().parse(processData);
       
@@ -437,8 +437,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db.delete(performanceMeasures).where(eq(performanceMeasures.processId, req.params.id));
       
       // Create new measures if provided
-      if (performanceMeasures.length > 0) {
-        for (const measure of performanceMeasures) {
+      if (measuresData.length > 0) {
+        for (const measure of measuresData) {
           await storage.createPerformanceMeasure({
             processId: req.params.id,
             measureName: measure.measureName || '',
