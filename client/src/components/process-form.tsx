@@ -67,6 +67,13 @@ const processFormSchema = z.object({
     scorecardCategory: z.string().optional(),
     strategicGoalId: z.string().optional(),
   })).default([]),
+  fileAttachments: z.array(z.object({
+    title: z.string().min(1, "File title is required"),
+    description: z.string().optional(),
+    fileName: z.string().optional(),
+    fileUrl: z.string().optional(),
+    fileSize: z.number().optional(),
+  })).default([]),
 });
 
 type ProcessFormData = z.infer<typeof processFormSchema>;
@@ -177,6 +184,13 @@ export default function ProcessForm({
         scorecardCategory: measure.scorecardCategory || "",
         strategicGoalId: (measure as any).strategicGoalId || "none",
       })) || [],
+      fileAttachments: attachments.map(attachment => ({
+        title: attachment.title,
+        description: "", // Description not stored in current schema
+        fileName: attachment.fileName,
+        fileUrl: attachment.fileUrl,
+        fileSize: attachment.fileSize,
+      })) || [],
     },
   });
 
@@ -188,6 +202,11 @@ export default function ProcessForm({
   const { fields: measureFields, append: appendMeasure, remove: removeMeasure } = useFieldArray({
     control: form.control,
     name: "performanceMeasures",
+  });
+
+  const { fields: fileFields, append: appendFile, remove: removeFile } = useFieldArray({
+    control: form.control,
+    name: "fileAttachments",
   });
 
   const getElementIcon = (elementNumber: number) => {
@@ -1056,94 +1075,145 @@ export default function ProcessForm({
                 <Paperclip className="w-5 h-5" />
                 <span>File Attachments</span>
               </CardTitle>
-              {process?.id && (
-                <FileUpload 
-                  processId={process.id} 
-                  onUploadComplete={() => {
-                    queryClient.invalidateQueries({ 
-                      queryKey: [`/api/processes/${process.id}/documents`]
-                    });
-                  }}
-                />
-              )}
+              <Button 
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => appendFile({ 
+                  title: "", 
+                  description: "",
+                  fileName: "",
+                  fileUrl: "",
+                  fileSize: 0
+                })}
+                data-testid="button-add-file"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add File
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            {attachments.length > 0 ? (
-              <div className="space-y-3">
-                {attachments.map((attachment) => (
-                  <div 
-                    key={attachment.id} 
-                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border"
-                    data-testid={`form-attachment-${attachment.id}`}
-                  >
-                    <div className="flex items-center space-x-3 min-w-0 flex-1">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-medium text-sm truncate" data-testid="form-attachment-title">
-                          {attachment.title}
-                        </h4>
-                        <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                          <span>{attachment.fileName}</span>
-                          {attachment.fileSize && (
-                            <>
-                              <span>•</span>
-                              <span>{(attachment.fileSize / 1024 / 1024).toFixed(2)} MB</span>
-                            </>
-                          )}
-                          {attachment.createdAt && (
-                            <>
-                              <span>•</span>
-                              <span>{new Date(attachment.createdAt).toLocaleDateString()}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
+            {fileFields.length > 0 ? (
+              <div className="space-y-6">
+                {fileFields.map((field, index) => (
+                  <div key={field.id} className="p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium">File {index + 1}</h4>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        asChild
-                        data-testid="button-download-form-attachment"
+                        onClick={() => removeFile(index)}
+                        data-testid={`button-remove-file-${index}`}
                       >
-                        <a
-                          href={attachment.fileUrl}
-                          download={attachment.fileName}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Download className="w-4 h-4" />
-                        </a>
+                        <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
-                      {process?.id && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteDocumentMutation.mutate(attachment.id)}
-                          disabled={deleteDocumentMutation.isPending}
-                          data-testid="button-delete-form-attachment"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <FormField
+                        control={form.control}
+                        name={`fileAttachments.${index}.title`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>File Title</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., Process Documentation" 
+                                {...field} 
+                                data-testid={`input-file-title-${index}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex items-end">
+                        {process?.id && (
+                          <FileUpload 
+                            processId={process.id} 
+                            onUploadComplete={(uploadedFile) => {
+                              // Update the form with uploaded file info
+                              form.setValue(`fileAttachments.${index}.fileName`, uploadedFile.fileName || "");
+                              form.setValue(`fileAttachments.${index}.fileUrl`, uploadedFile.fileUrl || "");
+                              form.setValue(`fileAttachments.${index}.fileSize`, uploadedFile.fileSize || 0);
+                              queryClient.invalidateQueries({ 
+                                queryKey: [`/api/processes/${process.id}/documents`]
+                              });
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name={`fileAttachments.${index}.description`}
+                      render={({ field }) => (
+                        <FormItem className="mb-4">
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              rows={2}
+                              placeholder="Describe what this file contains..."
+                              {...field} 
+                              data-testid={`textarea-file-description-${index}`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Show file info if uploaded */}
+                    {form.watch(`fileAttachments.${index}.fileName`) && (
+                      <div className="flex items-center space-x-3 p-3 bg-background rounded-lg border">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">
+                            {form.watch(`fileAttachments.${index}.fileName`)}
+                          </p>
+                          {form.watch(`fileAttachments.${index}.fileSize`) && (
+                            <p className="text-xs text-muted-foreground">
+                              {((form.watch(`fileAttachments.${index}.fileSize`) || 0) / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {form.watch(`fileAttachments.${index}.fileUrl`) && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                              data-testid={`button-download-file-${index}`}
+                            >
+                              <a
+                                href={form.watch(`fileAttachments.${index}.fileUrl`)}
+                                download={form.watch(`fileAttachments.${index}.fileName`)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Paperclip className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="mb-2">No files attached yet</p>
+                <p className="mb-2">No file attachments added yet</p>
                 <p className="text-xs">
-                  {process?.id 
-                    ? "Upload documents, images, or other files related to this process." 
-                    : "Save the process first to attach files."
-                  }
+                  Click "Add File" to attach documents, images, or other files to this process.
                 </p>
               </div>
             )}
