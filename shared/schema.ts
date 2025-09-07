@@ -63,6 +63,9 @@ export const oeProcesses = pgTable("oe_processes", {
   isMandatory: boolean("is_mandatory").default(false),
   // TABLE OF CONTENTS sections
   expectations: text("expectations"),
+  inputToProcess: text("input_to_process"),
+  deliverable: text("deliverable"),
+  criticalToProcessQuality: text("critical_to_process_quality"),
   responsibilities: text("responsibilities"),
   processStepsContent: text("process_steps_content"),
   performanceMeasureContent: text("performance_measure_content"),

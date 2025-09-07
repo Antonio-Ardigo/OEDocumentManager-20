@@ -45,6 +45,9 @@ const processFormSchema = z.object({
   status: z.enum(["draft", "active", "review", "archived"]).default("draft"),
   isMandatory: z.boolean().default(false),
   expectations: z.string().optional(),
+  inputToProcess: z.string().optional(),
+  deliverable: z.string().optional(),
+  criticalToProcessQuality: z.string().optional(),
   issueDate: z.string().optional(),
   // Risk Management fields
   riskFrequency: z.string().optional(),
@@ -162,6 +165,9 @@ export default function ProcessForm({
       status: (process?.status as any) || "draft",
       isMandatory: process?.isMandatory || false,
       expectations: process?.expectations || "",
+      inputToProcess: process?.inputToProcess || "",
+      deliverable: process?.deliverable || "",
+      criticalToProcessQuality: process?.criticalToProcessQuality || "",
       issueDate: process?.issueDate ? new Date(process.issueDate).toISOString().split('T')[0] : "",
       // Risk Management fields
       riskFrequency: process?.riskFrequency || "",
@@ -507,6 +513,63 @@ export default function ProcessForm({
                       placeholder="Define the expectations and objectives for this process..."
                       {...field} 
                       data-testid="textarea-expectations"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="inputToProcess"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Input to Process</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      rows={3}
+                      placeholder="Describe the inputs required for this process..."
+                      {...field} 
+                      data-testid="textarea-input-to-process"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliverable"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deliverable</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      rows={3}
+                      placeholder="Describe the deliverables and outputs of this process..."
+                      {...field} 
+                      data-testid="textarea-deliverable"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="criticalToProcessQuality"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Critical To Process Quality</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      rows={3}
+                      placeholder="Describe what is critical to the quality of this process..."
+                      {...field} 
+                      data-testid="textarea-critical-to-process-quality"
                     />
                   </FormControl>
                   <FormMessage />

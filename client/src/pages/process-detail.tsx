@@ -332,6 +332,33 @@ export default function ProcessDetail() {
                       </p>
                     </div>
                   )}
+
+                  {process.inputToProcess && (
+                    <div>
+                      <h4 className="font-medium mb-2">Input to Process</h4>
+                      <p className="text-muted-foreground" data-testid="process-input-to-process">
+                        {process.inputToProcess}
+                      </p>
+                    </div>
+                  )}
+
+                  {process.deliverable && (
+                    <div>
+                      <h4 className="font-medium mb-2">Deliverable</h4>
+                      <p className="text-muted-foreground" data-testid="process-deliverable">
+                        {process.deliverable}
+                      </p>
+                    </div>
+                  )}
+
+                  {process.criticalToProcessQuality && (
+                    <div>
+                      <h4 className="font-medium mb-2">Critical To Process Quality</h4>
+                      <p className="text-muted-foreground" data-testid="process-critical-to-process-quality">
+                        {process.criticalToProcessQuality}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
