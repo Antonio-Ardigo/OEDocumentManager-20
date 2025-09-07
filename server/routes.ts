@@ -379,6 +379,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Data being validated:", JSON.stringify(dataToValidate, null, 2));
       
+      // Handle empty elementId
+      if (!dataToValidate.elementId || dataToValidate.elementId === "") {
+        return res.status(400).json({ 
+          message: "Invalid data", 
+          errors: [{ message: "Element ID is required", path: ["elementId"] }] 
+        });
+      }
+
       const validatedData = insertOeProcessSchema.parse(dataToValidate);
       const process = await storage.createOeProcess(validatedData);
       

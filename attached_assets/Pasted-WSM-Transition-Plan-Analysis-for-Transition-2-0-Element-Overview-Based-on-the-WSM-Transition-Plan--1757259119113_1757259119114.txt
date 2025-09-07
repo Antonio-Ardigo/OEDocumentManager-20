@@ -1,0 +1,535 @@
+WSM Transition Plan Analysis for Transition 2.0 Element
+
+Overview
+
+Based on the WSM Transition Plan document, I have identified the key requirements for revising the Transition 2.0 element. The plan focuses on pre-transition activities across 9 workstreams leading to Day 0.
+
+Pre-Transition Phase Focus
+
+The pre-transition phase includes strategic planning, capability assessments, legal structuring, organizational mobilization, and all prerequisites required prior to assuming operational control.
+
+Key Workstreams for Implementation
+
+1. WS1: Desalination Plant Operations Transition
+
+Pre-transition Activities:
+
+•
+Develop asset transition register
+
+•
+Conduct pre-handover assessments
+
+•
+Review asset boundaries and data
+
+•
+Assess current systems, processes, and competencies
+
+•
+Review Technical Due Diligence (TDD)
+
+•
+Assume supervisory control with WSM cluster leaders
+
+Key Risks:
+
+•
+Incomplete or inaccurate asset data
+
+•
+Misalignment of SOPs and safety protocols
+
+•
+Asset readiness assessment delays
+
+Performance Measures:
+
+•
+Asset transition register completion rate
+
+•
+Pre-handover assessment completion
+
+•
+TDD review completion
+
+•
+Supervisory control establishment
+
+2. WS2: Purification Plant Operations Transition
+
+Pre-transition Activities:
+
+•
+Develop asset transition register for purification plants
+
+•
+Conduct technical due diligence
+
+•
+Review engineering documentation
+
+•
+Complete readiness assessments
+
+•
+Prepare site onboarding packages
+
+•
+Establish interim HSE governance
+
+Key Risks:
+
+•
+Technical blockers to operational control
+
+•
+HSE protocol misalignment
+
+•
+Site readiness gaps
+
+Performance Measures:
+
+•
+Technical due diligence completion
+
+•
+Site readiness assessment scores
+
+•
+HSE governance establishment
+
+•
+Documentation completeness
+
+3. WS3: Human Capital
+
+Pre-transition Activities:
+
+•
+Develop comprehensive transition framework (Resolution 616 compliance)
+
+•
+Define governance and end-to-end process
+
+•
+Establish selection criteria and assessment methodology
+
+•
+Align compensation and benefits
+
+•
+Review and align HR policies
+
+•
+Create employee mapping to future structure
+
+•
+Design onboarding and change management strategy
+
+Key Risks:
+
+•
+Lack of accurate manpower planning
+
+•
+Misunderstanding of Decree No. 616
+
+•
+Resistance to change and low morale
+
+•
+Employee attrition
+
+Performance Measures:
+
+•
+Transition framework completion
+
+•
+HR policy alignment percentage
+
+•
+Employee mapping accuracy
+
+•
+Change management plan effectiveness
+
+4. WS4: Legal and Commercial Agreements
+
+Pre-transition Activities:
+
+•
+Review Council of Ministers' Resolution
+
+•
+Develop STA principles
+
+•
+Conduct legal due diligence of O&M agreements and WPAs
+
+•
+Develop novation/assignment strategy
+
+•
+Draft required STA amendments
+
+•
+Assist in drafting Water Connection Agreements
+
+•
+Execute final form STA
+
+Key Risks:
+
+•
+Delays in novation/assignment of contracts
+
+•
+Lack of clarity on CoM resolution
+
+•
+Legal ambiguity and contractual disputes
+
+Performance Measures:
+
+•
+Legal due diligence completion
+
+•
+Contract novation strategy approval
+
+•
+STA execution timeline
+
+•
+Regulatory compliance score
+
+5. WS5: Financial Carveout
+
+Pre-transition Activities:
+
+•
+Assess current finance function capabilities
+
+•
+Design future-state Finance Target Operating Model
+
+•
+Review and enhance finance processes
+
+•
+Develop Chart of Accounts and data structures
+
+•
+Design reporting framework
+
+•
+Develop carve-out accounting methodology
+
+•
+Define opening balance sheet framework
+
+Key Risks:
+
+•
+ERP configuration inaccuracies
+
+•
+Financial carve-out data issues
+
+•
+Accounting policy misalignment
+
+Performance Measures:
+
+•
+Finance TOM completion
+
+•
+Chart of Accounts readiness
+
+•
+Carve-out methodology approval
+
+•
+ERP configuration progress
+
+6. WS6: Procurement & Supply Chain
+
+Pre-transition Activities:
+
+•
+Review supply chain and procurement data
+
+•
+Assess baseline processes and controls
+
+•
+Develop procurement policies and procedures
+
+•
+Establish vendor management framework
+
+•
+Create inventory management system
+
+•
+Design logistics and warehousing strategy
+
+Key Risks:
+
+•
+Supplier contracts not novated in time
+
+•
+DoA and sourcing policies not finalized
+
+•
+Supplier communication gaps
+
+•
+Inventory data mismatches
+
+Performance Measures:
+
+•
+Procurement policy completion
+
+•
+Vendor management framework establishment
+
+•
+Inventory system readiness
+
+•
+Supplier transition rate
+
+7. WS7: IT, OT & Cybersecurity
+
+Pre-transition Activities:
+
+•
+Assess current IT/OT infrastructure
+
+•
+Develop IT architecture and roadmap
+
+•
+Establish cybersecurity framework
+
+•
+Plan SCADA and ERP system transitions
+
+•
+Design data migration strategy
+
+•
+Create system integration plans
+
+Key Risks:
+
+•
+Lack of full system autonomy by Day 1
+
+•
+Data quality issues
+
+•
+Dependency on SWA resources
+
+•
+Missing IT/OT documentation
+
+Performance Measures:
+
+•
+IT architecture completion
+
+•
+Cybersecurity framework establishment
+
+•
+System migration readiness
+
+•
+Data quality scores
+
+8. WS8: Corporate Services
+
+Pre-transition Activities:
+
+•
+Assess current corporate services
+
+•
+Plan service transition agreements
+
+•
+Develop facilities and fleet management
+
+•
+Establish logistics services
+
+•
+Create service level agreements
+
+•
+Plan human capital transfer
+
+Key Risks:
+
+•
+Service transition delays
+
+•
+SLA establishment issues
+
+•
+Corporate function gaps
+
+Performance Measures:
+
+•
+Service transition plan completion
+
+•
+SLA establishment rate
+
+•
+Corporate function readiness
+
+•
+Service continuity scores
+
+9. WS9: Other Functions
+
+Pre-transition Activities:
+
+•
+Plan PR & Communications transfer
+
+•
+Establish Internal Audit function
+
+•
+Develop Risk and Compliance framework
+
+•
+Create governance structures
+
+•
+Plan knowledge transfer
+
+•
+Establish reporting mechanisms
+
+Key Risks:
+
+•
+Function transfer delays
+
+•
+Governance gaps
+
+•
+Compliance issues
+
+Performance Measures:
+
+•
+Function transfer completion
+
+•
+Governance framework establishment
+
+•
+Compliance readiness
+
+•
+Knowledge transfer effectiveness
+
+Board Resolution Requirements
+
+Based on the transition plan, the following board resolutions are critical for pre-transition:
+
+1.
+Resolution 1: Transition Plan Approval
+
+•
+Approve overall WSM transition strategy
+
+•
+Authorize pre-transition activities
+
+•
+Establish governance framework
+
+
+
+2.
+Resolution 2: Financial Framework Approval
+
+•
+Approve financial carve-out methodology
+
+•
+Authorize Chart of Accounts
+
+•
+Approve budget for transition activities
+
+
+
+3.
+Resolution 3: Legal and Commercial Framework
+
+•
+Approve STA principles
+
+•
+Authorize contract novation strategy
+
+•
+Approve legal due diligence approach
+
+
+
+4.
+Resolution 4: Organizational Structure and HR Framework
+
+•
+Approve Target Operating Model
+
+•
+Authorize HR policies and procedures
+
+•
+Approve workforce transition plan
+
+
+
+Implementation Approach
+
+The Transition 2.0 element should be structured to include:
+
+1.
+All 9 workstreams as separate processes
+
+2.
+Pre-transition focus with clear Day 0 milestones
+
+3.
+Integrated risk management across workstreams
+
+4.
+Performance measures aligned with success criteria
+
+5.
+Board resolution process as separate governance element
+
+6.
+Dependencies and integration points clearly defined
+
