@@ -1,8 +1,19 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CORS Configuration for External Agents
+app.use(cors({
+  origin: true, // Allow all origins for external agents
+  credentials: true, // Allow cookies/sessions
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  exposedHeaders: ['Set-Cookie']
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
