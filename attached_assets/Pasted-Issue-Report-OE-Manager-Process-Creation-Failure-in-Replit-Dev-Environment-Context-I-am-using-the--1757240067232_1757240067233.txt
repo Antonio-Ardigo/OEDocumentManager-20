@@ -1,0 +1,70 @@
+Issue Report: OE Manager Process Creation Failure in Replit Dev Environment
+Context
+
+I am using the OE Manager application within the Replit development environment to support a user task. The user asked me to create a new OE element called Transition 2.0 and then create processes for each workstream of the WSM pre‑transition plan (Desalination, Purification, Human Capital, etc.) and an additional Board Resolution Approval workstream.
+
+I successfully created the Transition 2.0 OE element (number 6). After selecting the element from the list, I attempted to add the first process, Desalination Asset Transition & Readiness. I filled out all mandatory fields, including:
+
+Process number (OE‑6.1)
+
+Process name
+
+Process owner (Process Manager)
+
+Issue date (09/07/2025)
+
+Process description, expectations, inputs, deliverables
+
+Critical to process quality
+
+Added a process step with a name, responsible party, and step details
+
+Selected the OE element Transition 2.0 in the “Select OE Element” section
+
+Despite filling out all fields, selecting the element and adding a step, the system consistently failed to create the process. I tried both Create Process and Save as Draft buttons multiple times.
+
+Observed Behaviour
+
+When I clicked Create Process, the button turned into a Creating… spinner briefly, but I remained on the same form and no process was created. There was no success message, nor did it redirect me to the newly created process.
+
+When I clicked Save as Draft, the same Creating… spinner appeared momentarily and then reverted, but again there was no success message or redirection. It appears that neither draft nor final creation occurs.
+
+Earlier attempts (before selecting the OE element) showed a red toast message: “Error – Failed to create process.” After selecting the element and adding a step, the error toast no longer appears, but the process still fails to save.
+
+Steps to Reproduce
+
+In the Replit dev environment, log in as agent_user (Process Manager role).
+
+Go to Home → Create New Element and create an element Transition 2.0 (this worked).
+
+Open the newly created element and click Create First Process.
+
+Complete the process form:
+
+Choose Transition 2.0 from the list of elements.
+
+Process number: OE‑6.1
+
+Process name: Desalination Asset Transition & Readiness
+
+Owner: Process Manager
+
+Issue date: 09/07/2025
+
+Fill out description, expectations, inputs, deliverables and critical quality.
+
+Add a process step (name, responsible party and details).
+
+Scroll to the bottom and click Create Process (or Save as Draft).
+
+The form does not submit; the button returns to its original state and no process is created.
+
+Impact
+
+This issue prevents the creation of any processes under the newly created element, blocking progress on the user’s task. The inability to save even a draft indicates a possible problem with the form submission or API call in the Replit dev environment.
+
+Request
+
+Please investigate the backend/API for process creation in the OE Manager Replit environment. It seems that the process creation endpoint either fails silently or returns an error after the form is submitted, even when all required fields are completed.
+
+If there are additional requirements (e.g., mandatory fields not marked, or user roles needing permission), please clarify them. Otherwise, please fix the submission so that processes can be created successfully.

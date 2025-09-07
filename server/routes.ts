@@ -362,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/oe-processes', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Convert issueDate string to Date object if provided
       if (req.body.issueDate && typeof req.body.issueDate === 'string') {
@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/oe-processes/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Get process details before deletion for logging
       const process = await storage.getOeProcess(req.params.id);
@@ -526,7 +526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/oe-processes/:processId/measures', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertPerformanceMeasureSchema.parse({
         ...req.body,
         processId: req.params.processId,
@@ -590,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/oe-processes/:processId/versions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertDocumentVersionSchema.parse({
         ...req.body,
         processId: req.params.processId,
@@ -630,7 +630,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/strategic-goals', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const goalData = insertStrategicGoalSchema.parse(req.body);
       const goal = await storage.createStrategicGoal(goalData);
       
