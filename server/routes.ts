@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/oe-elements/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       // Get element details before deletion for logging
       const element = await storage.getOeElement(req.params.id);

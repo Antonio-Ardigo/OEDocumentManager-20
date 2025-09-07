@@ -34,6 +34,13 @@ export function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   // Check if user is an authenticated agent
   if ((req.session as any)?.isAgent) {
+    // Set user info for downstream routes
+    (req as any).user = {
+      id: 'agent_user',
+      email: 'agent@system.local',
+      firstName: 'Agent',
+      lastName: 'User'
+    };
     return next();
   }
   
