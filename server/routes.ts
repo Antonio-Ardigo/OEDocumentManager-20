@@ -1,6 +1,5 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import {
   insertOeElementSchema,
@@ -11,8 +10,13 @@ import {
   insertStrategicGoalSchema,
   insertElementPerformanceMetricSchema,
   insertActivityLogSchema,
+  processSteps,
+  performanceMeasures,
 } from "@shared/schema";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { storage } from "./storage";
+import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add headers for preview/iframe support
@@ -402,8 +406,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.issueDate = new Date(req.body.issueDate);
       }
       
-      const validatedData = insertOeProcessSchema.partial().parse(req.body);
+      // Extract steps and performance measures from request body
+      const { steps = [], performanceMeasures = [], ...processData } = req.body;
+      
+      const validatedData = insertOeProcessSchema.partial().parse(processData);
+      
+      // Update the main process
       const process = await storage.updateOeProcess(req.params.id, validatedData);
+      
+      // Handle process steps: always delete existing and recreate
+      // Delete existing steps for this process
+      await db.delete(processSteps).where(eq(processSteps.processId, req.params.id));
+      
+      // Create new steps if provided
+      if (steps.length > 0) {
+        for (const step of steps) {
+          await storage.createProcessStep({
+            processId: req.params.id,
+            stepNumber: step.stepNumber || 1,
+            stepName: step.stepName || '',
+            stepDetails: step.stepDetails || '',
+            responsibilities: step.responsibilities || '',
+            references: step.references || '',
+          });
+        }
+      }
+      
+      // Handle performance measures: always delete existing and recreate
+      // Delete existing measures for this process
+      await db.delete(performanceMeasures).where(eq(performanceMeasures.processId, req.params.id));
+      
+      // Create new measures if provided
+      if (performanceMeasures.length > 0) {
+        for (const measure of performanceMeasures) {
+          await storage.createPerformanceMeasure({
+            processId: req.params.id,
+            measureName: measure.measureName || '',
+            formula: measure.formula || '',
+            source: measure.source || '',
+            frequency: measure.frequency || '',
+            target: measure.target || '',
+            scorecardCategory: measure.scorecardCategory || '',
+            strategicGoalId: measure.strategicGoalId === 'none' ? null : measure.strategicGoalId,
+          });
+        }
+      }
+      
       res.json(process);
     } catch (error) {
       if (error instanceof z.ZodError) {
