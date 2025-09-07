@@ -489,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/oe-processes/:id', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.id || 'agent_user';
       
       // Get process details before deletion for logging
       const process = await storage.getOeProcess(req.params.id);

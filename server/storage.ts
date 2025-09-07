@@ -357,6 +357,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteOeProcess(id: string): Promise<void> {
+    // The database schema has onDelete: 'cascade' configured for all related tables
+    // so we can simply delete the process and let the database handle cascading deletes
     await db.delete(oeProcesses).where(eq(oeProcesses.id, id));
   }
 
