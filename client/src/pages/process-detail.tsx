@@ -81,36 +81,22 @@ export default function ProcessDetail() {
   const { isAuthenticated, isLoading } = useAuth();
 
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
+  // Note: Authentication no longer required - guests have full access
 
   const { data: process, isLoading: processLoading, error: processError } = useQuery<OeProcessWithDetails>({
     queryKey: ["/api/oe-processes", id],
-    enabled: isAuthenticated && !!id,
+    enabled: !!id, // Removed authentication requirement
   });
 
   // Load strategic goals for displaying linked goal names
   const { data: strategicGoals = [] } = useQuery<any[]>({
     queryKey: ["/api/strategic-goals"],
-    enabled: isAuthenticated,
   });
 
   // Load process documents
   const { data: documents = [], isLoading: documentsLoading, refetch: refetchDocuments } = useQuery<ProcessDocument[]>({
     queryKey: ["/api/processes", id, "documents"],
-    enabled: isAuthenticated && !!id,
+    enabled: !!id, // Removed authentication requirement
   });
 
   // Delete document mutation
@@ -139,17 +125,7 @@ export default function ProcessDetail() {
   // Handle process error
   useEffect(() => {
     if (processError) {
-      if (isUnauthorizedError(processError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+      // For guest users, just show the error without redirecting
       toast({
         title: "Error",
         description: "Failed to load process details",
@@ -158,7 +134,7 @@ export default function ProcessDetail() {
     }
   }, [processError, toast]);
 
-  if (isLoading || (!isAuthenticated && !isLoading)) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

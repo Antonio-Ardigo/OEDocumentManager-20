@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Search, ChevronRight } from "lucide-react";
+import { Menu, Search, ChevronRight, LogIn } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   title?: string;
@@ -17,6 +18,7 @@ export default function Header({
 }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
+  const { isAuthenticated, user } = useAuth();
   
 
   return (
@@ -71,6 +73,37 @@ export default function Header({
             />
           </div>
           
+          {/* Guest/User Status */}
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary">
+                Welcome, {user?.firstName || user?.email || 'User'}
+              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = '/api/logout'}
+                data-testid="button-logout"
+              >
+                Logout
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="text-muted-foreground">
+                Guest Mode
+              </Badge>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => window.location.href = '/api/login'}
+                data-testid="button-login-header"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -155,8 +155,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard stats
-  app.get('/api/dashboard/stats', isAuthenticated, async (req, res) => {
+  // Dashboard stats - Now accessible to guests
+  app.get('/api/dashboard/stats', async (req, res) => {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);
@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activity log routes
-  app.get('/api/activity-log', isAuthenticated, async (req, res) => {
+  app.get('/api/activity-log', async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const activities = await storage.getRecentActivity(limit);
@@ -178,8 +178,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // OE Elements routes
-  app.get('/api/oe-elements', isAuthenticated, async (req, res) => {
+  // OE Elements routes - Now accessible to guests
+  app.get('/api/oe-elements', async (req, res) => {
     try {
       const elements = await storage.getAllOeElements();
       res.json(elements);
@@ -211,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/oe-elements/:id', isAuthenticated, async (req, res) => {
+  app.get('/api/oe-elements/:id', async (req, res) => {
     try {
       const element = await storage.getOeElement(req.params.id);
       if (!element) {
@@ -292,8 +292,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // OE Processes routes
-  app.get('/api/oe-processes', isAuthenticated, async (req, res) => {
+  // OE Processes routes - Now accessible to guests
+  app.get('/api/oe-processes', async (req, res) => {
     try {
       const filters = {
         elementId: req.query.elementId as string,
@@ -308,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
+  app.get('/api/oe-processes/:id', async (req, res) => {
     try {
       const process = await storage.getOeProcess(req.params.id);
       if (!process) {
@@ -568,8 +568,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Strategic Goals routes
-  app.get('/api/strategic-goals', isAuthenticated, async (req, res) => {
+  // Strategic Goals routes - Now accessible to guests
+  app.get('/api/strategic-goals', async (req, res) => {
     try {
       const goals = await storage.getAllStrategicGoals();
       res.json(goals);

@@ -36,15 +36,16 @@ export default function Landing() {
               onClick={() => window.location.href = '/api/login'}
               data-testid="button-login"
             >
-              Access OE Manager
+              Login to Account
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
               className="px-8 py-4 text-lg"
-              data-testid="button-learn-more"
+              onClick={() => window.location.href = '/'}
+              data-testid="button-continue-guest"
             >
-              Learn More
+              Continue as Guest
             </Button>
           </div>
           
@@ -153,15 +154,26 @@ export default function Landing() {
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
             Join the digital transformation of operational excellence management
           </p>
-          <Button 
-            size="lg" 
-            variant="secondary"
-            className="px-8 py-4 text-lg"
-            onClick={() => window.location.href = '/api/login'}
-            data-testid="button-get-started"
-          >
-            Get Started Now
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              variant="secondary"
+              className="px-8 py-4 text-lg"
+              onClick={() => window.location.href = '/api/login'}
+              data-testid="button-get-started"
+            >
+              Login to Account
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="px-8 py-4 text-lg border-white text-white hover:bg-white hover:text-primary"
+              onClick={() => window.location.href = '/'}
+              data-testid="button-try-demo"
+            >
+              Try Demo
+            </Button>
+          </div>
         </div>
       </div>
 

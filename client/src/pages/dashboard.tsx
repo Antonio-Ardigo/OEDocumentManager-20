@@ -42,24 +42,10 @@ export default function Dashboard() {
   const [elementFilter, setElementFilter] = useState<string>("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
+  // Note: Authentication no longer required - guests have full access
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
-    enabled: isAuthenticated,
   });
 
   // Handle stats error
@@ -86,12 +72,10 @@ export default function Dashboard() {
 
   const { data: elements, isLoading: elementsLoading, error: elementsError } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/oe-elements"],
-    enabled: isAuthenticated,
   });
 
   const { data: activities, isLoading: activitiesLoading, error: activitiesError } = useQuery<ActivityWithUser[]>({
     queryKey: ["/api/activity-log"],
-    enabled: isAuthenticated,
   });
 
   // Handle elements error

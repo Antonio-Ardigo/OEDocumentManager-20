@@ -21,11 +21,14 @@ function Router() {
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
+      {/* Landing page only for loading state - guests can access all other pages */}
+      {isLoading ? (
         <Route path="/" component={Landing} />
       ) : (
         <>
+          {/* Dashboard accessible to both authenticated and guest users */}
           <Route path="/" component={Dashboard} />
+          <Route path="/landing" component={Landing} />
           <Route path="/processes" component={AllProcesses} />
           <Route path="/mindmap" component={MindMap} />
           <Route path="/scorecard" component={BalancedScorecard} />
