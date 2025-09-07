@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Shield, TrendingUp, Eye } from "lucide-react";
 import { Link } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
@@ -48,11 +47,10 @@ const getRiskBadgeClass = (color: string) => {
 };
 
 export default function RiskManagement() {
-  const { isAuthenticated, isLoading } = useAuth();
 
   const { data: processes = [], isLoading: processesLoading } = useQuery<ProcessRisk[]>({
     queryKey: ["/api/oe-processes"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   if (isLoading) {

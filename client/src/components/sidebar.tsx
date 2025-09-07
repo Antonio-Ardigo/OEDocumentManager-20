@@ -1,5 +1,4 @@
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -14,7 +13,13 @@ import {
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  // Mock user info for guest mode (no auth required)
+  const user = {
+    firstName: 'Guest',
+    lastName: 'User',
+    email: 'guest@system.local',
+    profileImageUrl: null
+  };
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -99,16 +104,6 @@ export default function Sidebar() {
         
         <Separator className="mb-4" />
         
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          onClick={() => window.location.href = '/api/logout'}
-          data-testid="button-logout"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </Button>
       </div>
     </aside>
   );

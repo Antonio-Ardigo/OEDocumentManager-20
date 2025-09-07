@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Menu, Search, ChevronRight, LogIn } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   title?: string;
@@ -18,7 +17,12 @@ export default function Header({
 }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
-  const { isAuthenticated, user } = useAuth();
+  // Mock user info for guest mode (no auth required)
+  const isAuthenticated = false;
+  const user = {
+    firstName: 'Guest',
+    email: 'guest@system.local'
+  };
   
 
   return (
@@ -73,37 +77,12 @@ export default function Header({
             />
           </div>
           
-          {/* Guest/User Status */}
-          {isAuthenticated ? (
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary">
-                Welcome, {user?.firstName || user?.email || 'User'}
-              </Badge>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.location.href = '/api/logout'}
-                data-testid="button-logout"
-              >
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="text-muted-foreground">
-                Guest Mode
-              </Badge>
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={() => setLocation('/login')}
-                data-testid="button-login-header"
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                Login
-              </Button>
-            </div>
-          )}
+          {/* Guest Status */}
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-muted-foreground">
+              Guest Mode
+            </Badge>
+          </div>
         </div>
       </div>
     </header>

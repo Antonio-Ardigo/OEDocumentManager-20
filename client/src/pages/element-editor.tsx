@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -31,7 +29,6 @@ interface ElementFormData {
 
 export default function ElementEditor() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const { id } = useParams();
   const queryClient = useQueryClient();

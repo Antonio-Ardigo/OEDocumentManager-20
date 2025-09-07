@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
@@ -9,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import {
   ArrowLeft,
   Plus,
@@ -29,7 +27,6 @@ import type { OeElementWithProcesses } from "@shared/schema";
 export default function ElementDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
 
   // Redirect to home if not authenticated
   useEffect(() => {

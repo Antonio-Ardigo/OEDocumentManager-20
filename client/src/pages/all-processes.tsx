@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
@@ -10,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import {
   Search,
   Plus,
@@ -25,7 +23,6 @@ import type { OeProcessWithDetails } from "@shared/schema";
 
 export default function AllProcesses() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const [location] = useLocation();
   
   // Get search params from URL
@@ -37,24 +34,10 @@ export default function AllProcesses() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [elementFilter, setElementFilter] = useState('all');
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: allProcesses, isLoading: processesLoading, error: processesError } = useQuery<OeProcessWithDetails[]>({
     queryKey: ["/api/oe-processes"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   // Filter processes based on search and filters
@@ -82,17 +65,6 @@ export default function AllProcesses() {
   // Handle processes error
   useEffect(() => {
     if (processesError) {
-      if (isUnauthorizedError(processesError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load processes",
@@ -101,7 +73,7 @@ export default function AllProcesses() {
     }
   }, [processesError, toast]);
 
-  if (isLoading || (!isAuthenticated && !isLoading)) {
+  if (processesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
