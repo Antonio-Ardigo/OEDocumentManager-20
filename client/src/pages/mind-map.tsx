@@ -316,8 +316,7 @@ function GridView({ elements, expandedNodes, toggleNode }: ViewProps) {
 
 export default function MindMap() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+    const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('hierarchical');
   const [mindMapType, setMindMapType] = useState<MindMapType>('elements-processes');
   const [isExporting, setIsExporting] = useState(false);
@@ -355,17 +354,6 @@ export default function MindMap() {
   useEffect(() => {
     const error = elementsError || goalsError;
     if (error) {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       
       toast({
         title: "Error",

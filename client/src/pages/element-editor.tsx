@@ -90,20 +90,6 @@ export default function ElementEditor() {
     }
   }, [existingElement, isEditMode]);
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const saveElementMutation = useMutation({
     mutationFn: async (data: ElementFormData) => {
@@ -137,17 +123,7 @@ export default function ElementEditor() {
       setLocation(isEditMode ? `/element/${id}` : "/");
     },
     onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+
       toast({
         title: "Error",
         description: `Failed to ${isEditMode ? 'update' : 'create'} OE element`,
@@ -172,17 +148,7 @@ export default function ElementEditor() {
       setLocation("/");
     },
     onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+
       toast({
         title: "Error",
         description: "Failed to delete OE element",
@@ -220,7 +186,7 @@ export default function ElementEditor() {
     }
   };
 
-  if (isLoading || (!isAuthenticated && !isLoading) || (isEditMode && elementLoading)) {
+  if (isEditMode && elementLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

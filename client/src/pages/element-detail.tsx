@@ -28,40 +28,15 @@ export default function ElementDetail() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: element, isLoading: elementLoading, error: elementError } = useQuery<OeElementWithProcesses>({
     queryKey: ["/api/oe-elements", id],
-    enabled: isAuthenticated && !!id,
+    enabled: !!id,
   });
 
   // Handle element error
   useEffect(() => {
     if (elementError) {
-      if (isUnauthorizedError(elementError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load element details",
@@ -384,7 +359,7 @@ export default function ElementDetail() {
     });
   };
 
-  if (isLoading || (!isAuthenticated && !isLoading)) {
+  if (elementLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

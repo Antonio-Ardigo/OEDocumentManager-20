@@ -53,12 +53,8 @@ export default function RiskManagement() {
     enabled: true,
   });
 
-  if (isLoading) {
+  if (processesLoading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <div className="text-center py-8">Please log in to access risk management.</div>;
   }
 
   // Filter processes and categorize by risk level
@@ -293,11 +289,11 @@ function ProcessRiskCard({ process }: { process: ProcessRisk }) {
         </div>
       )}
 
-      {process.riskDescription && (
+      {process.riskMitigation && (
         <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-md">
           <p className="text-sm">
             <span className="font-medium text-orange-700 dark:text-orange-300">Risk Description:</span>
-            <span className="ml-2 text-gray-700 dark:text-gray-300">{process.riskDescription}</span>
+            <span className="ml-2 text-gray-700 dark:text-gray-300">{process.riskMitigation}</span>
           </p>
         </div>
       )}

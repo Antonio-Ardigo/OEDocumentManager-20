@@ -68,7 +68,6 @@ interface ProcessPerformanceMeasure {
 
 export default function BalancedScorecard() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [editingGoal, setEditingGoal] = useState<string | null>(null);
   const [editingGoalData, setEditingGoalData] = useState<Partial<StrategicGoal>>({});
@@ -83,56 +82,31 @@ export default function BalancedScorecard() {
     priority: 'Medium' as const,
   });
 
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
 
   const { data: elements, isLoading: elementsLoading, error } = useQuery<OeElementWithProcesses[]>({
     queryKey: ["/api/oe-elements"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   const { data: goals = [], isLoading: goalsLoading } = useQuery<StrategicGoal[]>({
     queryKey: ["/api/strategic-goals"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   const { data: metrics = [], isLoading: metricsLoading } = useQuery<PerformanceMetric[]>({
     queryKey: ["/api/performance-metrics"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   // Fetch process performance measures with scorecard categories
   const { data: processPerformanceMeasures = [], isLoading: processMeasuresLoading } = useQuery<ProcessPerformanceMeasure[]>({
     queryKey: ["/api/scorecard/performance-measures"],
-    enabled: isAuthenticated,
+    enabled: true,
   });
 
   // Handle error
   useEffect(() => {
     if (error) {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       
       toast({
         title: "Error",
