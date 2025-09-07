@@ -25,10 +25,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Agent authentication endpoint (simple username/password for agents)
+  app.post('/agent-login', async (req, res) => {
+    const { username, password } = req.body;
+    
+    // Simple hardcoded credentials for agents (in production, use environment variables)
+    if (username === 'agent_user' && password === 'agent_access_2024') {
+      // Set a simple session flag for agent authentication
+      (req.session as any).isAgent = true;
+      (req.session as any).agentId = 'agent_user';
+      res.json({ 
+        success: true, 
+        message: 'Agent authenticated successfully',
+        sessionId: req.sessionID
+      });
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid agent credentials' });
+    }
+  });
+
+  // Enhanced authentication middleware that allows both OAuth users and agents
+  const isAuthenticatedOrAgent: typeof isAuthenticated = async (req, res, next) => {
+    // Check if user is an authenticated agent
+    if ((req.session as any)?.isAgent) {
+      return next();
+    }
+    
+    // Otherwise, use normal OAuth authentication
+    return isAuthenticated(req, res, next);
+  };
+
   // Public API routes (no authentication required) - for ChatGPT and other web agents
   app.get('/public-api/elements', async (req, res) => {
     try {
-      const elements = await storage.getOeElements();
+      const elements = await storage.getAllOeElements();
       res.json(elements.map(element => ({
         id: element.id,
         title: element.title,
@@ -62,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/public-api/processes', async (req, res) => {
     try {
-      const processes = await storage.getOeProcesses();
+      const processes = await storage.getAllOeProcesses();
       res.json(processes.map(process => ({
         id: process.id,
         name: process.name,
@@ -112,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/public-api/site-info', async (req, res) => {
     try {
       const stats = await storage.getDashboardStats();
-      const elements = await storage.getOeElements();
+      const elements = await storage.getAllOeElements();
       
       res.json({
         siteName: "WSM Operational Excellence Manager",
@@ -143,8 +173,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Auth routes - Updated to allow agent access
+  app.get('/api/auth/user', isAuthenticatedOrAgent, async (req: any, res) => {
+    // Handle agent users differently
+    if ((req.session as any)?.isAgent) {
+      return res.json({
+        id: 'agent_user',
+        email: 'agent@system.local',
+        firstName: 'Agent',
+        lastName: 'User',
+        profileImageUrl: null
+      });
+    }
+    
+    // Regular OAuth user
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -190,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all OE elements with processes and steps for mind map (must come before :id route)
-  app.get('/api/mindmap/elements', isAuthenticated, async (req, res) => {
+  app.get('/api/mindmap/elements', isAuthenticatedOrAgent, async (req, res) => {
     try {
       const elements = await storage.getOeElementsForMindMap();
       res.json(elements);
@@ -201,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get strategic goals with linked processes for Goals-to-Processes mind map
-  app.get('/api/mindmap/goals-processes', isAuthenticated, async (req, res) => {
+  app.get('/api/mindmap/goals-processes', isAuthenticatedOrAgent, async (req, res) => {
     try {
       const goalsWithProcesses = await storage.getGoalsToProcessesMindMap();
       res.json(goalsWithProcesses);
@@ -224,9 +266,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-elements', isAuthenticated, async (req: any, res) => {
+  app.post('/api/oe-elements', isAuthenticatedOrAgent, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = (req.session as any)?.isAgent ? 'agent_user' : req.user.claims.sub;
       const validatedData = insertOeElementSchema.parse(req.body);
       const element = await storage.createOeElement(validatedData);
       
