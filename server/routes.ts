@@ -364,9 +364,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       
-      // Log incoming data for debugging
-      console.log("Incoming process creation data:", JSON.stringify(req.body, null, 2));
-      
       // Convert issueDate string to Date object if provided
       if (req.body.issueDate && typeof req.body.issueDate === 'string') {
         req.body.issueDate = new Date(req.body.issueDate);
@@ -376,8 +373,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         createdBy: userId,
       };
-      
-      console.log("Data being validated:", JSON.stringify(dataToValidate, null, 2));
       
       // Handle empty elementId
       if (!dataToValidate.elementId || dataToValidate.elementId === "") {
