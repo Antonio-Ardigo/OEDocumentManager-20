@@ -25,9 +25,15 @@ import {
   MoveUp,
   MoveDown,
   Target,
-  BarChart3
+  BarChart3,
+  Paperclip,
+  FileText,
+  Download
 } from "lucide-react";
-import type { OeProcessWithDetails, OeElementWithProcesses, StrategicGoal } from "@shared/schema";
+import type { OeProcessWithDetails, OeElementWithProcesses, StrategicGoal, ProcessDocument } from "@shared/schema";
+import FileUpload from "@/components/file-upload";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 // Form validation schema
 const processFormSchema = z.object({
@@ -73,6 +79,16 @@ interface ProcessFormProps {
   onCancel: () => void;
 }
 
+// File attachment interface for display
+interface AttachmentDisplay {
+  id: string;
+  title: string;
+  fileName: string;
+  fileSize?: number;
+  fileUrl: string;
+  createdAt?: string;
+}
+
 export default function ProcessForm({ 
   process, 
   elements, 
@@ -81,6 +97,8 @@ export default function ProcessForm({
   onCancel 
 }: ProcessFormProps) {
   const [selectedElementId, setSelectedElementId] = useState<string>(process?.elementId || "");
+  const [attachments, setAttachments] = useState<AttachmentDisplay[]>([]);
+  const queryClient = useQueryClient();
 
   // Load strategic goals for the dropdown
   const { data: strategicGoals = [], isLoading: isLoadingGoals, error: goalsError } = useQuery<StrategicGoal[]>({
@@ -91,6 +109,40 @@ export default function ProcessForm({
   if (goalsError) {
     console.error("Strategic Goals API Error:", goalsError);
   }
+
+  // Load existing attachments for this process
+  const { data: documents = [] } = useQuery<ProcessDocument[]>({
+    queryKey: [`/api/processes/${process?.id}/documents`],
+    enabled: !!process?.id,
+  });
+
+  // Update attachments when documents change
+  useEffect(() => {
+    if (documents) {
+      setAttachments(documents.map(doc => ({
+        id: doc.id,
+        title: doc.title,
+        fileName: doc.fileName,
+        fileSize: doc.fileSize,
+        fileUrl: doc.fileUrl,
+        createdAt: doc.createdAt,
+      })));
+    }
+  }, [documents]);
+
+  // Delete attachment mutation
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId: string) => {
+      await apiRequest(`/api/documents/${documentId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: [`/api/processes/${process?.id}/documents`]
+      });
+    },
+  });
 
   const form = useForm<ProcessFormData>({
     resolver: zodResolver(processFormSchema),
@@ -993,6 +1045,108 @@ export default function ProcessForm({
                 </FormItem>
               )}
             />
+          </CardContent>
+        </Card>
+
+        {/* File Attachments */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Paperclip className="w-5 h-5" />
+                <span>File Attachments</span>
+              </CardTitle>
+              {process?.id && (
+                <FileUpload 
+                  processId={process.id} 
+                  onUploadComplete={() => {
+                    queryClient.invalidateQueries({ 
+                      queryKey: [`/api/processes/${process.id}/documents`]
+                    });
+                  }}
+                />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {attachments.length > 0 ? (
+              <div className="space-y-3">
+                {attachments.map((attachment) => (
+                  <div 
+                    key={attachment.id} 
+                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border"
+                    data-testid={`form-attachment-${attachment.id}`}
+                  >
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm truncate" data-testid="form-attachment-title">
+                          {attachment.title}
+                        </h4>
+                        <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                          <span>{attachment.fileName}</span>
+                          {attachment.fileSize && (
+                            <>
+                              <span>•</span>
+                              <span>{(attachment.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                            </>
+                          )}
+                          {attachment.createdAt && (
+                            <>
+                              <span>•</span>
+                              <span>{new Date(attachment.createdAt).toLocaleDateString()}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                        data-testid="button-download-form-attachment"
+                      >
+                        <a
+                          href={attachment.fileUrl}
+                          download={attachment.fileName}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                      </Button>
+                      {process?.id && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteDocumentMutation.mutate(attachment.id)}
+                          disabled={deleteDocumentMutation.isPending}
+                          data-testid="button-delete-form-attachment"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Paperclip className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="mb-2">No files attached yet</p>
+                <p className="text-xs">
+                  {process?.id 
+                    ? "Upload documents, images, or other files related to this process." 
+                    : "Save the process first to attach files."
+                  }
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
