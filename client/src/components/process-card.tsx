@@ -42,17 +42,8 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
   };
 
   const getElementColor = (elementNumber: number) => {
-    switch (elementNumber) {
-      case 1: return "text-blue-600 bg-blue-100";
-      case 2: return "text-indigo-600 bg-indigo-100";
-      case 3: return "text-orange-600 bg-orange-100";
-      case 4: return "text-purple-600 bg-purple-100";
-      case 5: return "text-indigo-600 bg-indigo-100";
-      case 6: return "text-green-600 bg-green-100";
-      case 7: return "text-red-600 bg-red-100";
-      case 8: return "text-orange-600 bg-orange-100";
-      default: return "text-blue-600 bg-blue-100";
-    }
+    // Removed color functionality - using neutral styling
+    return "text-foreground bg-muted";
   };
 
   const getStatusColor = (processCount: number) => {

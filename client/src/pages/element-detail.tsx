@@ -485,7 +485,7 @@ export default function ElementDetail() {
               <Separator orientation="vertical" className="h-6" />
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl" style={{ backgroundColor: element.color || '#3B82F6' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl bg-muted">
                     {element.icon}
                   </div>
                   <h1 className="text-2xl font-bold" data-testid="element-title">
