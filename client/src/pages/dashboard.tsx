@@ -8,7 +8,6 @@ import ProcessCard from "@/components/process-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import { 
   Plus, 
   Upload, 
@@ -79,17 +78,6 @@ export default function Dashboard() {
   // Handle activities error
   useEffect(() => {
     if (activitiesError) {
-      if (isUnauthorizedError(activitiesError)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to load activity log",
@@ -98,7 +86,7 @@ export default function Dashboard() {
     }
   }, [activitiesError, toast]);
 
-  if (isLoading) {
+  if (statsLoading || elementsLoading || activitiesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

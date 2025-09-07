@@ -7,7 +7,6 @@ import Header from "@/components/header";
 import ProcessForm from "@/components/process-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, FileText } from "lucide-react";
 import type { OeProcessWithDetails, OeElementWithProcesses } from "@shared/schema";
