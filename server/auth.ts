@@ -30,20 +30,14 @@ export function setupAuth(app: Express) {
   app.use(getSession());
 }
 
-// Simple authentication middleware that only checks for agent sessions
+// No authentication middleware - allow all requests through
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Check if user is an authenticated agent
-  if ((req.session as any)?.isAgent) {
-    // Set user info for downstream routes
-    (req as any).user = {
-      id: 'agent_user',
-      email: 'agent@system.local',
-      firstName: 'Agent',
-      lastName: 'User'
-    };
-    return next();
-  }
-  
-  // No authentication - reject
-  return res.status(401).json({ message: "Unauthorized" });
+  // Always set a default user for any routes that might need it
+  (req as any).user = {
+    id: 'agent_user',
+    email: 'agent@system.local',
+    firstName: 'Agent',
+    lastName: 'User'
+  };
+  return next();
 };

@@ -570,7 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/oe-processes/:processId/measures', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       const validatedData = insertPerformanceMeasureSchema.parse({
         ...req.body,
         processId: req.params.processId,
@@ -634,7 +634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/oe-processes/:processId/versions', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       const validatedData = insertDocumentVersionSchema.parse({
         ...req.body,
         processId: req.params.processId,
