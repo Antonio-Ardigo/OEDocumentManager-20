@@ -124,8 +124,14 @@ export default function ElementEditor() {
         queryClient.invalidateQueries({ queryKey: ["/api/oe-elements", id] });
         queryClient.invalidateQueries({ queryKey: [`/api/oe-elements/${id}`] });
       }
+      
+      // IMPORTANT: Invalidate process queries that contain element data
+      // This fixes the enabling elements mismatch issue
+      queryClient.invalidateQueries({ queryKey: ["/api/oe-processes"] });
+      
       // Clear all cached data to prevent race conditions
       queryClient.removeQueries({ queryKey: ["/api/oe-elements"] });
+      queryClient.removeQueries({ queryKey: ["/api/oe-processes"] });
       
       toast({
         title: "Success",
