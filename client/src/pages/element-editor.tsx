@@ -117,15 +117,20 @@ export default function ElementEditor() {
       }
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: `OE Element ${isEditMode ? 'updated' : 'created'} successfully`,
-      });
+      // Force invalidate all element-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/oe-elements"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       if (isEditMode) {
         queryClient.invalidateQueries({ queryKey: ["/api/oe-elements", id] });
+        queryClient.invalidateQueries({ queryKey: [`/api/oe-elements/${id}`] });
       }
+      // Clear all cached data to prevent race conditions
+      queryClient.removeQueries({ queryKey: ["/api/oe-elements"] });
+      
+      toast({
+        title: "Success",
+        description: `OE Element ${isEditMode ? 'updated' : 'created'} successfully`,
+      });
       setLocation(isEditMode ? `/element/${id}` : "/");
     },
     onError: (error) => {
