@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth } from "./auth";
 import {
   insertOeElementSchema,
   insertOeProcessSchema,
@@ -183,19 +183,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User info route
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    // Return agent user info
-    if ((req.session as any)?.isAgent) {
-      return res.json({
-        id: 'agent_user',
-        email: 'agent@system.local',
-        firstName: 'Agent',
-        lastName: 'User',
-        profileImageUrl: null
-      });
-    }
-    
-    res.status(401).json({ message: "Unauthorized" });
+  app.get('/api/auth/user', async (req: any, res) => {
+    // Return mock user info (no authentication required)
+    return res.json({
+      id: 'agent_user',
+      email: 'agent@system.local',
+      firstName: 'Agent',
+      lastName: 'User',
+      profileImageUrl: null
+    });
   });
 
   // Dashboard stats - Now accessible to guests
@@ -233,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all OE elements with processes and steps for mind map (must come before :id route)
-  app.get('/api/mindmap/elements', isAuthenticated, async (req, res) => {
+  app.get('/api/mindmap/elements', async (req, res) => {
     try {
       const elements = await storage.getOeElementsForMindMap();
       res.json(elements);
@@ -244,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get strategic goals with linked processes for Goals-to-Processes mind map
-  app.get('/api/mindmap/goals-processes', isAuthenticated, async (req, res) => {
+  app.get('/api/mindmap/goals-processes', async (req, res) => {
     try {
       const goalsWithProcesses = await storage.getGoalsToProcessesMindMap();
       res.json(goalsWithProcesses);
@@ -267,7 +263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-elements', isAuthenticated, async (req: any, res) => {
+  app.post('/api/oe-elements', async (req: any, res) => {
     try {
       const userId = 'agent_user';
       const validatedData = insertOeElementSchema.parse(req.body);
@@ -293,7 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/oe-elements/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/oe-elements/:id', async (req, res) => {
     try {
       const validatedData = insertOeElementSchema.partial().parse(req.body);
       const element = await storage.updateOeElement(req.params.id, validatedData);
@@ -307,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/oe-elements/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/oe-elements/:id', async (req: any, res) => {
     try {
       const userId = req.user.id;
       
@@ -364,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-processes', isAuthenticated, async (req: any, res) => {
+  app.post('/api/oe-processes', async (req: any, res) => {
     try {
       const userId = req.user.id;
       
@@ -399,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/oe-processes/:id', async (req, res) => {
     try {
       // Convert issueDate string to Date object if provided
       if (req.body.issueDate && typeof req.body.issueDate === 'string') {
@@ -462,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/oe-processes/:id', isAuthenticated, async (req, res) => {
+  app.patch('/api/oe-processes/:id', async (req, res) => {
     try {
       // Convert issueDate string to Date object if provided
       if (req.body.issueDate && typeof req.body.issueDate === 'string') {
@@ -481,7 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/oe-processes/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/oe-processes/:id', async (req: any, res) => {
     try {
       const userId = req.user.id;
       
@@ -510,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Process Steps routes
-  app.get('/api/oe-processes/:processId/steps', isAuthenticated, async (req, res) => {
+  app.get('/api/oe-processes/:processId/steps', async (req, res) => {
     try {
       const steps = await storage.getProcessSteps(req.params.processId);
       res.json(steps);
@@ -520,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-processes/:processId/steps', isAuthenticated, async (req, res) => {
+  app.post('/api/oe-processes/:processId/steps', async (req, res) => {
     try {
       const validatedData = insertProcessStepSchema.parse({
         ...req.body,
@@ -537,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/process-steps/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/process-steps/:id', async (req, res) => {
     try {
       const validatedData = insertProcessStepSchema.partial().parse(req.body);
       const step = await storage.updateProcessStep(req.params.id, validatedData);
@@ -551,7 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/process-steps/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/process-steps/:id', async (req, res) => {
     try {
       await storage.deleteProcessStep(req.params.id);
       res.status(204).send();
@@ -562,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Performance Measures routes
-  app.get('/api/oe-processes/:processId/measures', isAuthenticated, async (req, res) => {
+  app.get('/api/oe-processes/:processId/measures', async (req, res) => {
     try {
       const measures = await storage.getPerformanceMeasures(req.params.processId);
       res.json(measures);
@@ -572,7 +568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-processes/:processId/measures', isAuthenticated, async (req: any, res) => {
+  app.post('/api/oe-processes/:processId/measures', async (req: any, res) => {
     try {
       const userId = req.user.id;
       const validatedData = insertPerformanceMeasureSchema.parse({
@@ -601,7 +597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/performance-measures/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/performance-measures/:id', async (req, res) => {
     try {
       const validatedData = insertPerformanceMeasureSchema.partial().parse(req.body);
       const measure = await storage.updatePerformanceMeasure(req.params.id, validatedData);
@@ -615,7 +611,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/performance-measures/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/performance-measures/:id', async (req, res) => {
     try {
       await storage.deletePerformanceMeasure(req.params.id);
       res.status(204).send();
@@ -626,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Document Versions routes
-  app.get('/api/oe-processes/:processId/versions', isAuthenticated, async (req, res) => {
+  app.get('/api/oe-processes/:processId/versions', async (req, res) => {
     try {
       const versions = await storage.getDocumentVersions(req.params.processId);
       res.json(versions);
@@ -636,7 +632,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/oe-processes/:processId/versions', isAuthenticated, async (req: any, res) => {
+  app.post('/api/oe-processes/:processId/versions', async (req: any, res) => {
     try {
       const userId = req.user.id;
       const validatedData = insertDocumentVersionSchema.parse({
@@ -666,7 +662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/strategic-goals/element/:elementId', isAuthenticated, async (req, res) => {
+  app.get('/api/strategic-goals/element/:elementId', async (req, res) => {
     try {
       const goals = await storage.getStrategicGoalsByElement(req.params.elementId);
       res.json(goals);
@@ -676,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/strategic-goals', isAuthenticated, async (req: any, res) => {
+  app.post('/api/strategic-goals', async (req: any, res) => {
     try {
       const userId = req.user.id;
       const goalData = insertStrategicGoalSchema.parse(req.body);
@@ -702,7 +698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/strategic-goals/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/strategic-goals/:id', async (req, res) => {
     try {
       const goalData = insertStrategicGoalSchema.partial().parse(req.body);
       const goal = await storage.updateStrategicGoal(req.params.id, goalData);
@@ -716,7 +712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/strategic-goals/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/strategic-goals/:id', async (req, res) => {
     try {
       await storage.deleteStrategicGoal(req.params.id);
       res.status(204).end();
@@ -727,7 +723,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Element Performance Metrics routes
-  app.get('/api/performance-metrics', isAuthenticated, async (req, res) => {
+  app.get('/api/performance-metrics', async (req, res) => {
     try {
       const metrics = await storage.getAllElementPerformanceMetrics();
       res.json(metrics);
@@ -737,7 +733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/performance-metrics/element/:elementId', isAuthenticated, async (req, res) => {
+  app.get('/api/performance-metrics/element/:elementId', async (req, res) => {
     try {
       const metrics = await storage.getElementPerformanceMetricsByElement(req.params.elementId);
       res.json(metrics);
@@ -747,7 +743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/performance-metrics', isAuthenticated, async (req, res) => {
+  app.post('/api/performance-metrics', async (req, res) => {
     try {
       const metricData = insertElementPerformanceMetricSchema.parse(req.body);
       const metric = await storage.createElementPerformanceMetric(metricData);
@@ -761,7 +757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/performance-metrics/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/performance-metrics/:id', async (req, res) => {
     try {
       const metricData = insertElementPerformanceMetricSchema.partial().parse(req.body);
       const metric = await storage.updateElementPerformanceMetric(req.params.id, metricData);
@@ -775,7 +771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/performance-metrics/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/performance-metrics/:id', async (req, res) => {
     try {
       await storage.deleteElementPerformanceMetric(req.params.id);
       res.status(204).end();
@@ -786,7 +782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Process performance measures grouped by scorecard category
-  app.get('/api/scorecard/performance-measures', isAuthenticated, async (req, res) => {
+  app.get('/api/scorecard/performance-measures', async (req, res) => {
     try {
       const measures = await storage.getPerformanceMeasuresForScorecard();
       res.json(measures);
@@ -797,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Process Document routes
-  app.get('/api/processes/:processId/documents', isAuthenticated, async (req, res) => {
+  app.get('/api/processes/:processId/documents', async (req, res) => {
     try {
       const documents = await storage.getProcessDocuments(req.params.processId);
       res.json(documents);
@@ -807,7 +803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/processes/:processId/documents/upload', isAuthenticated, async (req, res) => {
+  app.post('/api/processes/:processId/documents/upload', async (req, res) => {
     try {
       // For now, we'll return a mock upload URL to simulate the upload
       // In production, this would use proper object storage
@@ -827,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mock upload endpoint for file handling
-  app.put('/api/mock-upload/:processId/:fileName', isAuthenticated, async (req, res) => {
+  app.put('/api/mock-upload/:processId/:fileName', async (req, res) => {
     try {
       // This simulates file upload - in production would save to object storage
       // For now we just return success
@@ -838,7 +834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/processes/:processId/documents', isAuthenticated, async (req, res) => {
+  app.post('/api/processes/:processId/documents', async (req, res) => {
     try {
       const { title, fileName, fileUrl, fileSize, mimeType } = req.body;
       const userId = req.user?.claims?.sub;
@@ -877,7 +873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/documents/:processId/:fileName', isAuthenticated, async (req, res) => {
+  app.get('/documents/:processId/:fileName', async (req, res) => {
     try {
       // For now, return a simple response indicating the document
       // In production, this would serve the actual file from object storage
@@ -895,7 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/documents/:documentId', isAuthenticated, async (req, res) => {
+  app.delete('/api/documents/:documentId', async (req, res) => {
     try {
       await storage.deleteProcessDocument(req.params.documentId);
       res.status(204).send();
