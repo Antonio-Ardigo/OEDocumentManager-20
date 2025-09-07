@@ -33,7 +33,7 @@ import {
   activityLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or, sql, asc, isNotNull } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql, asc, isNotNull, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -243,6 +243,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteOeElement(id: string): Promise<void> {
+    // We need to delete all related records first due to foreign key constraints
+    // Get all processes for this element first
+    const elementProcesses = await db.query.oeProcesses.findMany({
+      where: eq(oeProcesses.elementId, id),
+      columns: { id: true }
+    });
+    
+    const processIds = elementProcesses.map(p => p.id);
+    
+    if (processIds.length > 0) {
+      // Delete process-related records first
+      await db.delete(processDocuments).where(inArray(processDocuments.processId, processIds));
+      await db.delete(documentVersions).where(inArray(documentVersions.processId, processIds));
+      await db.delete(performanceMeasures).where(inArray(performanceMeasures.processId, processIds));
+      await db.delete(processSteps).where(inArray(processSteps.processId, processIds));
+    }
+    
+    // Delete element-related records
+    await db.delete(strategicGoals).where(eq(strategicGoals.elementId, id));
+    await db.delete(elementPerformanceMetrics).where(eq(elementPerformanceMetrics.elementId, id));
+    
+    // Delete processes that reference this element
+    await db.delete(oeProcesses).where(eq(oeProcesses.elementId, id));
+    
+    // Finally delete the element itself
     await db.delete(oeElements).where(eq(oeElements.id, id));
   }
 
