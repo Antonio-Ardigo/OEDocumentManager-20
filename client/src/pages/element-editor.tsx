@@ -316,11 +316,16 @@ export default function ElementEditor() {
                     </div>
                   </div>
 
-                  {/* Enabling Elements Section */}
-                  <div className="space-y-2">
-                    <Label>Enabling Elements</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Specify which processes or capabilities this element enables. These will be displayed in process flow diagrams.
+                  {/* Enabling Elements Section - Enhanced Visual Design */}
+                  <div className="space-y-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">⚡</span>
+                      </div>
+                      <Label className="font-semibold text-blue-900 dark:text-blue-100">Enabling Elements</Label>
+                    </div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                      Specify which processes or capabilities this element enables. These will be displayed prominently in the element overview.
                     </p>
                     <div className="space-y-3">
                       <div className="flex gap-2">
@@ -368,13 +373,14 @@ export default function ElementEditor() {
                         {formData.enablingElements.map((element, index) => (
                           <Badge 
                             key={index} 
-                            variant="secondary" 
-                            className="flex items-center gap-1"
+                            variant="default"
+                            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white border-0 shadow-sm transition-all duration-200"
                             data-testid={`badge-enabling-element-${index}`}
                           >
-                            {element}
+                            <span className="text-xs">🔹</span>
+                            <span className="text-sm font-medium">{element}</span>
                             <X 
-                              className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                              className="w-3 h-3 cursor-pointer text-blue-200 hover:text-red-200 hover:bg-red-500/20 rounded-full p-0.5 transition-colors duration-200" 
                               onClick={() => {
                                 setFormData({
                                   ...formData,
@@ -387,9 +393,15 @@ export default function ElementEditor() {
                       </div>
                       
                       {formData.enablingElements.length === 0 && (
-                        <p className="text-sm text-muted-foreground italic">
-                          No enabling elements defined. Add elements that this OE element enables or supports.
-                        </p>
+                        <div className="text-center py-4 border-2 border-dashed border-blue-200 dark:border-blue-700 rounded-lg bg-blue-50/50 dark:bg-blue-950/10">
+                          <div className="text-blue-400 mb-2">⚡</div>
+                          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                            No enabling elements defined
+                          </p>
+                          <p className="text-xs text-blue-500 dark:text-blue-500">
+                            Add elements that this OE element enables or supports
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
