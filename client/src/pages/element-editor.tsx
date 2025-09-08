@@ -85,7 +85,7 @@ export default function ElementEditor() {
         icon: existingElement.icon || "📋",
         color: existingElement.color || "#3B82F6",
         isActive: existingElement.isActive ?? true,
-        enablingElements: (existingElement as any).enablingElements || [],
+        enablingElements: existingElement.enablingElements || [],
       });
     }
   }, [existingElement, isEditMode]);
