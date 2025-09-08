@@ -22,6 +22,7 @@ import type { OeProcessWithDetails } from "@shared/schema";
 
 interface ProcessContentSectionsProps {
   process: OeProcessWithDetails;
+  readonly?: boolean;
 }
 
 interface ContentSection {
@@ -32,7 +33,7 @@ interface ContentSection {
   defaultContent: string;
 }
 
-export default function ProcessContentSections({ process }: ProcessContentSectionsProps) {
+export default function ProcessContentSections({ process, readonly = false }: ProcessContentSectionsProps) {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState<string>("");
   const { toast } = useToast();
@@ -314,7 +315,7 @@ Daily operational dashboards, weekly maintenance scorecards, monthly executive r
                     </div>
                   </div>
                   
-                  {!isEditing && (
+                  {!isEditing && !readonly && (
                     <Button
                       variant="outline"
                       size="sm"

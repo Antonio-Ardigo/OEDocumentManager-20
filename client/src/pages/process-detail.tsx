@@ -395,7 +395,7 @@ export default function ProcessDetail() {
               </Card>
 
               {/* TABLE OF CONTENTS Sections */}
-              <ProcessContentSections process={process} />
+              <ProcessContentSections process={process} readonly={true} />
 
               {/* Risk Assessment */}
               <Card>
