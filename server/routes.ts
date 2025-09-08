@@ -364,9 +364,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       
-      // Convert issueDate string to Date object if provided
-      if (req.body.issueDate && typeof req.body.issueDate === 'string') {
+      // Handle issueDate field  
+      if (req.body.issueDate && typeof req.body.issueDate === 'string' && req.body.issueDate.trim() !== '') {
+        // Convert valid date string to Date object
         req.body.issueDate = new Date(req.body.issueDate);
+      } else if (req.body.issueDate === '' || req.body.issueDate === null || req.body.issueDate === undefined) {
+        // Remove empty/null issueDate field entirely to avoid validation issues
+        delete req.body.issueDate;
       }
       
       const dataToValidate = {
@@ -407,13 +411,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/oe-processes/:id', async (req, res) => {
     try {
-      // Convert issueDate string to Date object if provided
-      if (req.body.issueDate && typeof req.body.issueDate === 'string') {
-        req.body.issueDate = new Date(req.body.issueDate);
-      }
-      
-      // Extract steps and performance measures from request body
+      // Extract steps and performance measures from request body first
       const { steps = [], performanceMeasures: measuresData = [], ...processData } = req.body;
+      
+      // Handle issueDate field
+      if (processData.issueDate && typeof processData.issueDate === 'string' && processData.issueDate.trim() !== '') {
+        // Convert valid date string to Date object
+        processData.issueDate = new Date(processData.issueDate);
+      } else if (processData.issueDate === '' || processData.issueDate === null || processData.issueDate === undefined) {
+        // Remove empty/null issueDate field entirely to avoid validation issues
+        delete processData.issueDate;
+      }
       
       const validatedData = insertOeProcessSchema.partial().parse(processData);
       
@@ -470,9 +478,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/oe-processes/:id', async (req, res) => {
     try {
-      // Convert issueDate string to Date object if provided
-      if (req.body.issueDate && typeof req.body.issueDate === 'string') {
+      // Handle issueDate field
+      if (req.body.issueDate && typeof req.body.issueDate === 'string' && req.body.issueDate.trim() !== '') {
+        // Convert valid date string to Date object
         req.body.issueDate = new Date(req.body.issueDate);
+      } else if (req.body.issueDate === '' || req.body.issueDate === null || req.body.issueDate === undefined) {
+        // Remove empty/null issueDate field entirely to avoid validation issues
+        delete req.body.issueDate;
       }
       
       const validatedData = insertOeProcessSchema.partial().parse(req.body);
