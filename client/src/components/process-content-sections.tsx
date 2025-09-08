@@ -42,7 +42,7 @@ export default function ProcessContentSections({ process, readonly = false }: Pr
   const contentSections: ContentSection[] = [
     {
       key: "expectations",
-      title: "EXPECTATIONS",
+      title: "DETAILED EXPECTATIONS",
       icon: CheckCircle,
       number: 1,
       defaultContent: "Define clear expectations for this process including what outcomes are expected, quality standards, and success criteria."
@@ -56,17 +56,24 @@ export default function ProcessContentSections({ process, readonly = false }: Pr
     },
     {
       key: "processStepsContent",
-      title: "PROCESS STEPS",
+      title: "PROCESS STEPS DETAILED DESCRIPTION",
       icon: Target,
       number: 3,
       defaultContent: "Provide comprehensive guidance on executing process steps, including methodology, best practices, and coordination requirements."
     },
     {
       key: "performanceMeasureContent",
-      title: "PERFORMANCE MEASURE",
+      title: "ADDITIONAL INFORMATION ON PERFORMANCE MEASURES",
       icon: BarChart3,
       number: 4,
       defaultContent: "Establish performance measurement framework including key metrics, monitoring procedures, and reporting requirements."
+    },
+    {
+      key: "riskDescription",
+      title: "ADDITIONAL INFORMATION ON RISKS",
+      icon: AlertCircle,
+      number: 5,
+      defaultContent: "Provide detailed risk analysis including risk identification, assessment, mitigation strategies, and monitoring procedures for this process."
     }
   ];
 
@@ -292,7 +299,7 @@ Daily operational dashboards, weekly maintenance scorecards, monthly executive r
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <FileText className="w-5 h-5" />
-          <span>DETAILED DESCRIPTION OF THE PROCESSES OF THE OE ELEMENT</span>
+          <span>DETAILED PROCESSES DESCRIPTION</span>
           <Badge variant="outline" className="ml-2">Process Documentation</Badge>
         </CardTitle>
       </CardHeader>
