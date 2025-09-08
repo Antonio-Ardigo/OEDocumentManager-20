@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import ProcessFlowDiagram from "@/components/process-flow-diagram";
 import ProcessContentSections from "@/components/process-content-sections";
-import FileUpload from "@/components/file-upload";
 import type { OeProcessWithDetails, ProcessDocument } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -562,16 +561,10 @@ export default function ProcessDetail() {
               {/* File Attachments */}
               <Card>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center space-x-2">
-                      <Paperclip className="w-5 h-5" />
-                      <span>File Attachments</span>
-                    </CardTitle>
-                    <FileUpload 
-                      processId={process.id} 
-                      onUploadComplete={refetchDocuments}
-                    />
-                  </div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Paperclip className="w-5 h-5" />
+                    <span>File Attachments</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {documentsLoading ? (
