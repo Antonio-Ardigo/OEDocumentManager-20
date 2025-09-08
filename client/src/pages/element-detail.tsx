@@ -475,11 +475,11 @@ export default function ElementDetail() {
                 </div>
                 
                 {/* Enabling Elements Display */}
-                {(element as any).enablingElements && (element as any).enablingElements.length > 0 && (
+                {element.enablingElements && element.enablingElements.length > 0 && (
                   <div className="mt-3">
                     <div className="text-sm font-medium text-muted-foreground mb-2">Enabling Elements:</div>
                     <div className="flex flex-wrap gap-2">
-                      {(element as any).enablingElements.map((enabledElement: string, index: number) => (
+                      {element.enablingElements.map((enabledElement: string, index: number) => (
                         <Badge 
                           key={index} 
                           variant="outline" 
