@@ -72,7 +72,8 @@ export default function ProcessContentSections({ process, readonly = false }: Pr
 
   const updateProcessMutation = useMutation({
     mutationFn: async (data: { [key: string]: string }) => {
-      return await apiRequest(`/api/oe-processes/${process.id}`, "PATCH", data);
+      const response = await apiRequest("PATCH", `/api/oe-processes/${process.id}`, data);
+      return await response.json();
     },
     onSuccess: () => {
       toast({
@@ -82,13 +83,13 @@ export default function ProcessContentSections({ process, readonly = false }: Pr
       queryClient.invalidateQueries({ queryKey: ["/api/oe-processes", process.id] });
       setEditingSection(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error("Content section update error:", error);
       toast({
-        title: "Error",
-        description: "Failed to update process content",
+        title: "Error", 
+        description: error.message || "Failed to update process content",
         variant: "destructive",
       });
-      console.error("Update error:", error);
     },
   });
 

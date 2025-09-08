@@ -98,10 +98,10 @@ export default function ProcessEditor() {
       setLocation(`/process/${id}`);
     },
     onError: (error: Error) => {
-
+      console.error("Process update error:", error);
       toast({
         title: "Error",
-        description: "Failed to update process",
+        description: error.message || "Failed to update process",
         variant: "destructive",
       });
     },
