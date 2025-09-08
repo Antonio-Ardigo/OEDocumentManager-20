@@ -474,37 +474,6 @@ export default function ElementDetail() {
                   </Badge>
                 </div>
                 
-                {/* Enabling Elements Display - Enhanced Visual Design */}
-                {element.enablingElements && element.enablingElements.length > 0 && (
-                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">⚡</span>
-                      </div>
-                      <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                        Enabling Elements
-                      </div>
-                      <div className="ml-auto">
-                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          {element.enablingElements.length} Element{element.enablingElements.length !== 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {element.enablingElements.map((enabledElement: string, index: number) => (
-                        <Badge 
-                          key={index} 
-                          variant="default"
-                          className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white border-0 shadow-sm transition-colors duration-200"
-                          data-testid={`enabling-element-${index}`}
-                        >
-                          <span className="mr-1">🔹</span>
-                          {enabledElement}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
             
@@ -576,6 +545,42 @@ export default function ElementDetail() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Enabling Elements Display - Enhanced Visual Design */}
+              {element.enablingElements && element.enablingElements.length > 0 && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">⚡</span>
+                        </div>
+                        <div className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                          Enabling Elements
+                        </div>
+                        <div className="ml-auto">
+                          <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {element.enablingElements.length} Element{element.enablingElements.length !== 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {element.enablingElements.map((enabledElement: string, index: number) => (
+                          <Badge 
+                            key={index} 
+                            variant="default"
+                            className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white border-0 shadow-sm transition-colors duration-200"
+                            data-testid={`enabling-element-${index}`}
+                          >
+                            <span className="mr-1">🔹</span>
+                            {enabledElement}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Associated Processes */}
               <Card>
