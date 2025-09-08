@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 import ProcessForm from "@/components/process-form";
+import ProcessContentSections from "@/components/process-content-sections";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
@@ -240,6 +241,13 @@ export default function ProcessEditor() {
               onSubmit={handleSubmit}
               onCancel={handleCancel}
             />
+
+            {/* TABLE OF CONTENTS Sections - Editable */}
+            {isEditing && process && (
+              <div className="mt-6">
+                <ProcessContentSections process={process} />
+              </div>
+            )}
 
             {isEditing && (
               <div className="mt-8 pt-8 border-t border-border">
