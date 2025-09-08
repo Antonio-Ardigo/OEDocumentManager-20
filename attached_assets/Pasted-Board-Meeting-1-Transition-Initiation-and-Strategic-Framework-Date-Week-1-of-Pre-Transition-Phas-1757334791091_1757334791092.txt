@@ -1,0 +1,289 @@
+Board Meeting #1: Transition Initiation and Strategic Framework
+Date: Week 1 of Pre-Transition Phase
+Duration: 3 hours
+Meeting Type: Strategic Planning Session
+AGENDA
+1. Opening and Governance (30 minutes)
+Call to order and attendance confirmation
+Approval of previous meeting minutes
+Declaration of conflicts of interest
+Review of board meeting protocols for transition period
+2. Transition Overview and Strategic Direction (45 minutes)
+Presentation: WSM Transition Plan Overview
+Strategic objectives and success criteria
+Timeline and critical milestones review
+Stakeholder engagement strategy
+3. Governance Framework Establishment (60 minutes)
+Board oversight structure for transition
+Committee formations and responsibilities
+Decision-making authorities and escalation procedures
+Risk management framework approval
+4. Financial Framework and Budget Approval (45 minutes)
+Transition budget presentation and approval
+Financial controls and audit requirements
+Capital allocation for transition activities
+Contingency fund establishment
+5. Next Steps and Action Items (20 minutes)
+Board resolution approvals
+Assignment of board member responsibilities
+Next meeting scheduling
+BOARD RESOLUTIONS
+Resolution BR-001: Transition Plan Approval
+RESOLVED THAT:
+
+The Board hereby approves the WSM Transition Plan as presented
+The Chief Executive Officer is authorized to implement the transition plan
+A Transition Oversight Committee is established with the following members: [Board Chair, 2 Independent Directors, CEO]
+Monthly progress reports shall be submitted to the Board
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+Resolution BR-002: Financial Authorization for Transition
+RESOLVED THAT:
+
+The Board approves a transition budget of [Amount] for pre-transition activities
+The CEO is authorized to incur expenses up to [Amount] without additional board approval
+All expenditures above [Amount] require Transition Oversight Committee approval
+A dedicated transition account shall be established with dual authorization requirements
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+Resolution BR-003: Risk Management Framework
+RESOLVED THAT:
+
+The Board approves the Transition Risk Management Framework
+A Risk Committee is established to monitor transition risks
+Monthly risk assessments shall be conducted and reported to the Board
+The CEO is authorized to implement risk mitigation measures as necessary
+
+Voting: Majority approval required
+Effective Date: Immediately upon approval
+Resolution BR-004: Governance and Oversight Structure
+RESOLVED THAT:
+
+The Board establishes enhanced governance protocols for the transition period
+Weekly executive briefings shall be provided to the Board Chair
+Emergency board meetings may be called with 24-hour notice during transition
+All major transition decisions require board or committee pre-approval
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+
+
+Board Meeting #2: Operational Readiness and Asset Management
+Date: Week 4 of Pre-Transition Phase
+Duration: 4 hours
+Meeting Type: Operational Review and Approval Session
+AGENDA
+1. Opening and Progress Review (30 minutes)
+Call to order and attendance confirmation
+Transition progress report from CEO
+Review of previous meeting action items
+Key performance indicators dashboard review
+2. Asset Management and Transfer Strategy (90 minutes)
+Desalination asset transition plan presentation
+Purification asset readiness assessment
+Asset valuation and transfer protocols
+Insurance and liability considerations
+3. Human Capital Strategy and Workforce Planning (75 minutes)
+Employee mapping and transition planning
+First batch employee sponsor change process
+Ministry of Finance audit preparation for remaining staff
+Retention and change management strategies
+4. Data Management and Information Security (60 minutes)
+WSM Data Policy framework presentation
+Data transfer protocols and security measures
+Finance data governance requirements
+Cybersecurity and data protection measures
+5. Legal and Regulatory Compliance (45 minutes)
+Regulatory compliance framework
+Legal documentation requirements
+Contract novation strategy
+Compliance monitoring and reporting
+BOARD RESOLUTIONS
+Resolution BR-005: Asset Management SLA Approval
+RESOLVED THAT:
+
+The Board approves the Service Level Agreement (SLA) for transferring Asset Management Services from SWCC to WSM
+The CEO is authorized to negotiate and execute the Asset Management SLA
+Asset transfer protocols and timelines are approved as presented
+Monthly asset readiness reports shall be provided to the Board
+
+Voting: Unanimous approval required
+Effective Date: Upon SLA execution
+Resolution BR-006: WSM Data Policy Authorization
+RESOLVED THAT:
+
+The Board hereby approves the WSM Data Policy including finance data governance framework
+Data transfer protocols requiring board approval are established for sensitive financial information
+The Chief Information Officer is authorized to implement data security measures
+Quarterly data governance audits shall be conducted and reported to the Board
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+Resolution BR-007: Human Capital Transition Authorization
+RESOLVED THAT:
+
+The Board approves the phased approach for employee transitions
+The first batch of employee sponsor changes is authorized to proceed
+The CEO is authorized to engage with Ministry of Finance for remaining employee transfer audits
+Employee retention incentives up to [Amount] are approved
+
+Voting: Majority approval required
+Effective Date: Immediately upon approval
+Resolution BR-008: Legal and Compliance Framework
+RESOLVED THAT:
+
+The Board approves the legal and regulatory compliance framework for transition
+External legal counsel is authorized to assist with contract novation processes
+Compliance monitoring and reporting protocols are established
+The Chief Legal Officer shall provide monthly compliance reports to the Board
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+
+
+Board Meeting #3: Financial Independence and Systems Integration
+Date: Week 8 of Pre-Transition Phase
+Duration: 4.5 hours
+Meeting Type: Financial Systems and Integration Review
+AGENDA
+1. Opening and Mid-Phase Assessment (30 minutes)
+Call to order and attendance confirmation
+Mid-transition progress assessment
+Key milestone achievement review
+Risk register updates and mitigation status
+2. Financial Carveout and Systems Independence (105 minutes)
+Finance Target Operating Model (FTOM) presentation
+Financial systems carveout strategy
+Independent financial controls implementation
+Treasury and cash management setup
+3. Water Purchase Agreement (WPA) Strategy (90 minutes)
+WPA valuation methodology presentation
+Engagement strategy with SWA and SWCC
+Cost-based valuation framework
+Commercial terms and negotiation parameters
+4. IT/OT Systems and Cybersecurity (75 minutes)
+IT systems carveout and independence plan
+Operational technology (OT) transition strategy
+Cybersecurity framework implementation
+Data center and infrastructure readiness
+5. Procurement and Supply Chain Readiness (60 minutes)
+Procurement framework establishment
+Supply chain independence strategy
+Vendor management and contract transitions
+Emergency procurement protocols
+BOARD RESOLUTIONS
+Resolution BR-009: Financial Independence Authorization
+RESOLVED THAT:
+
+The Board approves the Finance Target Operating Model (FTOM) for WSM independence
+The CFO is authorized to implement independent financial systems and controls
+Treasury operations and cash management protocols are approved
+Independent audit and financial reporting requirements are established
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+Resolution BR-010: Water Purchase Agreement (WPA) Negotiation Authority
+RESOLVED THAT:
+
+The Board authorizes engagement with SWA and SWCC for WPA valuation and negotiation
+The CEO and CFO are jointly authorized to negotiate WPA terms within approved parameters
+Cost-based valuation methodology is approved for WPA pricing
+Final WPA agreement requires board approval before execution
+
+Voting: Unanimous approval required
+Effective Date: Immediately upon approval
+Resolution BR-011: IT/OT Systems Independence
+RESOLVED THAT:
+
+The Board approves the IT/OT systems carveout and independence strategy
+The CIO is authorized to implement cybersecurity measures and data protection protocols
+IT infrastructure investments up to [Amount] are approved
+Business continuity and disaster recovery plans are mandated
+
+Voting: Majority approval required
+Effective Date: Immediately upon approval
+Resolution BR-012: Procurement and Supply Chain Authorization
+RESOLVED THAT:
+
+The Board approves the independent procurement framework for WSM
+Supply chain transition strategy and vendor management protocols are approved
+Emergency procurement authorities are established for critical operations
+Procurement policies and procedures are adopted as presented
+
+Voting: Majority approval required
+Effective Date: Immediately upon approval
+
+
+Board Meeting #4: Final Readiness and Day 0 Authorization
+Date: Week 12 of Pre-Transition Phase (Final Pre-Day 0 Meeting)
+Duration: 5 hours
+Meeting Type: Final Readiness Assessment and Go/No-Go Decision
+AGENDA
+1. Opening and Final Status Review (45 minutes)
+Call to order and attendance confirmation
+Comprehensive transition readiness assessment
+All workstream completion status review
+Outstanding issues and resolution plans
+2. Operational Readiness Certification (90 minutes)
+Asset readiness certification reports
+Human capital transition completion status
+Systems integration and testing results
+Emergency response and business continuity verification
+3. Financial and Commercial Readiness (75 minutes)
+Financial systems independence verification
+WPA negotiation status and final terms
+Commercial agreements and contract novations
+Financial controls and audit readiness
+4. Regulatory and Compliance Final Review (60 minutes)
+Regulatory approval status
+Compliance framework implementation verification
+Legal documentation completion
+Risk assessment and mitigation status
+5. Go/No-Go Decision for Day 0 (90 minutes)
+Final readiness assessment presentation
+Board discussion and deliberation
+Go/No-Go decision vote
+Day 0 authorization and final preparations
+BOARD RESOLUTIONS
+Resolution BR-013: Final Readiness Certification
+RESOLVED THAT:
+
+The Board certifies that WSM has achieved operational readiness for independence
+All critical transition workstreams have been completed satisfactorily
+Risk mitigation measures are in place and acceptable
+WSM is prepared to commence independent operations
+
+Voting: Unanimous approval required
+Effective Date: Upon satisfactory completion verification
+Resolution BR-014: Water Purchase Agreement Final Approval
+RESOLVED THAT:
+
+The Board approves the final Water Purchase Agreement terms as negotiated
+The CEO is authorized to execute the WPA on behalf of WSM
+WPA pricing and commercial terms are accepted as presented
+WPA implementation and monitoring protocols are established
+
+Voting: Unanimous approval required
+Effective Date: Upon WPA execution
+Resolution BR-015: Day 0 Authorization - GO Decision
+RESOLVED THAT:
+
+The Board hereby authorizes the commencement of WSM independent operations on Day 0
+All necessary approvals, certifications, and authorizations are confirmed
+The CEO is authorized to implement Day 0 transition activities
+Emergency protocols and escalation procedures are activated
+
+Voting: Unanimous approval required
+Effective Date: Day 0 commencement date
+Resolution BR-016: Post-Day 0 Governance and Monitoring
+RESOLVED THAT:
+
+The Board establishes post-Day 0 monitoring and governance protocols
+Daily operational reports shall be provided for the first 30 days post-Day 0
+Weekly board briefings are mandated for the first 90 days
+A comprehensive 90-day post-transition review is scheduled
+
+Voting: Majority approval required
+Effective Date: Day 0 commencement date
