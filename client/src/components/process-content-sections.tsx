@@ -292,7 +292,7 @@ Daily operational dashboards, weekly maintenance scorecards, monthly executive r
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <FileText className="w-5 h-5" />
-          <span>TABLE OF CONTENTS</span>
+          <span>DETAILED DESCRIPTION OF THE PROCESSES OF THE OE ELEMENT</span>
           <Badge variant="outline" className="ml-2">Process Documentation</Badge>
         </CardTitle>
       </CardHeader>
