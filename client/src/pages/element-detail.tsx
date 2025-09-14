@@ -311,30 +311,7 @@ export default function ElementDetail() {
           yPos += 3;
         }
         
-        // Additional process fields
-        if (process.processFlowContent) {
-          doc.setFont('helvetica', 'bold');
-          addJustifiedText('Process Flow:', 20, 9);
-          doc.setFont('helvetica', 'normal');
-          addJustifiedText(process.processFlowContent, 25, 8, 165, 5);
-          yPos += 3;
-        }
-        
-        if (process.resourceRequirements) {
-          doc.setFont('helvetica', 'bold');
-          addJustifiedText('Resource Requirements:', 20, 9);
-          doc.setFont('helvetica', 'normal');
-          addJustifiedText(process.resourceRequirements, 25, 8, 165, 5);
-          yPos += 3;
-        }
-        
-        if (process.riskConsiderations) {
-          doc.setFont('helvetica', 'bold');
-          addJustifiedText('Risk Considerations:', 20, 9);
-          doc.setFont('helvetica', 'normal');
-          addJustifiedText(process.riskConsiderations, 25, 8, 165, 5);
-          yPos += 3;
-        }
+        // Additional process fields (removed non-existent properties)
         
         yPos += 8; // Reduced space between processes
       });
