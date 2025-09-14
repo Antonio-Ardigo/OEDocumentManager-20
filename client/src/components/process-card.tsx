@@ -14,7 +14,8 @@ import {
   Star,
   Factory,
   Settings,
-  Globe
+  Globe,
+  ArrowRight
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
 import type { OeElementWithProcesses } from "@shared/schema";
@@ -38,6 +39,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
         case 'DollarSign': return DollarSign;
         case 'Cog': return Cog;
         case 'GraduationCap': return GraduationCap;
+        case 'ArrowRight': return ArrowRight;
         default: return Activity;
       }
     }
