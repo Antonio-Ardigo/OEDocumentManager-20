@@ -35,35 +35,35 @@ export default function ElementEditor() {
   
   const isEditMode = Boolean(id);
 
-  // Available icons for selection
+  // Available icons for selection (Lucide React icons)
   const iconOptions = [
-    { value: "👑", label: "👑 Crown" },
-    { value: "📊", label: "📊 Chart" },
-    { value: "🏭", label: "🏭 Factory" },
-    { value: "⚙️", label: "⚙️ Gear" },
-    { value: "🎯", label: "🎯 Target" },
-    { value: "💼", label: "💼 Briefcase" },
-    { value: "🔒", label: "🔒 Security" },
-    { value: "🎓", label: "🎓 Education" },
-    { value: "📋", label: "📋 Clipboard" },
-    { value: "🚀", label: "🚀 Rocket" },
-    { value: "💡", label: "💡 Lightbulb" },
-    { value: "🔧", label: "🔧 Wrench" },
-    { value: "📈", label: "📈 Growth" },
-    { value: "🏆", label: "🏆 Trophy" },
-    { value: "🌟", label: "🌟 Star" },
-    { value: "💰", label: "💰 Money" },
-    { value: "🔍", label: "🔍 Search" },
-    { value: "📱", label: "📱 Mobile" },
-    { value: "🌍", label: "🌍 Globe" },
-    { value: "🔥", label: "🔥 Fire" }
+    { value: "Crown", label: "Crown (Leadership)" },
+    { value: "Activity", label: "Activity (Operations)" },
+    { value: "Factory", label: "Factory (Manufacturing)" },
+    { value: "Settings", label: "Settings (Configuration)" },
+    { value: "Globe", label: "Globe (Global/Localization)" },
+    { value: "Shield", label: "Shield (Security/Risk)" },
+    { value: "DollarSign", label: "Dollar Sign (Financial)" },
+    { value: "Cog", label: "Cog (Engineering)" },
+    { value: "GraduationCap", label: "Graduation Cap (Learning)" },
+    { value: "Star", label: "Star (Excellence)" },
+    { value: "Target", label: "Target (Goals)" },
+    { value: "Briefcase", label: "Briefcase (Business)" },
+    { value: "Rocket", label: "Rocket (Innovation)" },
+    { value: "TrendingUp", label: "Trending Up (Growth)" },
+    { value: "Award", label: "Award (Achievement)" },
+    { value: "Search", label: "Search (Analysis)" },
+    { value: "Smartphone", label: "Smartphone (Technology)" },
+    { value: "Building", label: "Building (Infrastructure)" },
+    { value: "Users", label: "Users (People)" },
+    { value: "Zap", label: "Zap (Energy/Speed)" }
   ];
 
   const [formData, setFormData] = useState<ElementFormData>({
     elementNumber: 1,
     title: "",
     description: "",
-    icon: "📋",
+    icon: "Activity",
     color: "#3B82F6",
     isActive: true,
     enablingElements: [],
@@ -82,7 +82,7 @@ export default function ElementEditor() {
         elementNumber: existingElement.elementNumber,
         title: existingElement.title || "",
         description: existingElement.description || "",
-        icon: existingElement.icon || "📋",
+        icon: existingElement.icon || "Activity",
         color: existingElement.color || "#3B82F6",
         isActive: existingElement.isActive ?? true,
         enablingElements: existingElement.enablingElements || [],
