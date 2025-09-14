@@ -11,7 +11,10 @@ import {
   Activity, 
   GraduationCap, 
   MoreVertical,
-  Star 
+  Star,
+  Factory,
+  Settings,
+  Globe
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
 import type { OeElementWithProcesses } from "@shared/schema";
@@ -23,9 +26,20 @@ interface ProcessCardProps {
 
 export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardProps) {
   const getElementIcon = (elementNumber: number) => {
-    // If element has a custom icon, use it, otherwise fallback to default icons
+    // If element has a custom icon, map it to the corresponding Lucide icon
     if (element.icon) {
-      return null; // We'll render the emoji directly
+      switch (element.icon) {
+        case 'Factory': return Factory;
+        case 'Settings': return Settings;
+        case 'Globe': return Globe;
+        case 'Crown': return Crown;
+        case 'Activity': return Activity;
+        case 'Shield': return Shield;
+        case 'DollarSign': return DollarSign;
+        case 'Cog': return Cog;
+        case 'GraduationCap': return GraduationCap;
+        default: return Activity;
+      }
     }
     
     switch (elementNumber) {
@@ -81,9 +95,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
-                  {element.icon ? (
-                    <span className="text-2xl">{element.icon}</span>
-                  ) : Icon ? (
+                  {Icon ? (
                     <Icon className="text-xl" />
                   ) : (
                     <Activity className="text-xl" />
@@ -138,7 +150,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                 <div className="text-center">
                   <div className="font-medium" data-testid="metrics-count">
                     {(element.processes || []).reduce((total, process) => {
-                      return total + (process.performanceMeasures?.length || 0);
+                      return total + ((process as any).performanceMeasures?.length || 0);
                     }, 0)}
                   </div>
                   <div>Performance Measurements</div>
@@ -175,9 +187,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconColorClass}`}>
-              {element.icon ? (
-                <span className="text-2xl">{element.icon}</span>
-              ) : Icon ? (
+              {Icon ? (
                 <Icon className="text-xl" />
               ) : (
                 <Activity className="text-xl" />
@@ -239,7 +249,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             <div>
               <div className="font-medium" data-testid="metrics-count">
                 {(element.processes || []).reduce((total, process) => {
-                  return total + (process.performanceMeasures?.length || 0);
+                  return total + ((process as any).performanceMeasures?.length || 0);
                 }, 0)}
               </div>
               <div className="text-muted-foreground">Performance Measurements</div>
