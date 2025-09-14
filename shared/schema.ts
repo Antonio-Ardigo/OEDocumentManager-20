@@ -349,7 +349,7 @@ export type OeProcessWithDetails = OeProcess & {
 };
 
 export type OeElementWithProcesses = OeElement & {
-  processes?: OeProcess[];
+  processes?: OeProcessWithDetails[];
   strategicGoals?: StrategicGoal[];
   performanceMetrics?: ElementPerformanceMetric[];
 };

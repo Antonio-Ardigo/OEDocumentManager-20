@@ -152,7 +152,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
                 <div className="text-center">
                   <div className="font-medium" data-testid="metrics-count">
                     {(element.processes || []).reduce((total, process) => {
-                      return total + ((process as any).performanceMeasures?.length || 0);
+                      return total + (process.performanceMeasures?.length || 0);
                     }, 0)}
                   </div>
                   <div>Performance Measurements</div>
@@ -251,7 +251,7 @@ export default function ProcessCard({ element, viewMode = "grid" }: ProcessCardP
             <div>
               <div className="font-medium" data-testid="metrics-count">
                 {(element.processes || []).reduce((total, process) => {
-                  return total + ((process as any).performanceMeasures?.length || 0);
+                  return total + (process.performanceMeasures?.length || 0);
                 }, 0)}
               </div>
               <div className="text-muted-foreground">Performance Measurements</div>
