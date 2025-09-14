@@ -47,8 +47,14 @@ const getScorecardFlag = (category: string) => {
 };
 
 // Risk assessment utility functions
-const getRiskLevel = (frequency?: string, impact?: string) => {
-  if (!frequency || !impact) return { level: "Not Assessed", color: "gray", score: 0 };
+const getRiskLevel = (frequency?: string, impact?: string, elementNumber?: number) => {
+  if (!frequency || !impact) {
+    // Strategic Localization (Element 5) doesn't require risk assessments
+    if (elementNumber === 5) {
+      return { level: "N/A - Strategic Localization", color: "blue", score: 0 };
+    }
+    return { level: "Not Assessed", color: "gray", score: 0 };
+  }
   
   const freqScore = frequency.toLowerCase() === "high" ? 3 : frequency.toLowerCase() === "medium" ? 2 : 1;
   const impactScore = impact.toLowerCase() === "high" ? 3 : impact.toLowerCase() === "medium" ? 2 : 1;
@@ -67,6 +73,8 @@ const getRiskBadgeClass = (color: string) => {
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     case "green":
       return "bg-green-100 text-green-800 border-green-200";
+    case "blue":
+      return "bg-blue-100 text-blue-800 border-blue-200";
     default:
       return "bg-gray-100 text-gray-800 border-gray-200";
   }
@@ -412,13 +420,13 @@ export default function ProcessDetail() {
                       <div className="flex items-center space-x-3">
                         <AlertTriangle className="w-5 h-5 text-muted-foreground" />
                         <Badge 
-                          className={`${getRiskBadgeClass(getRiskLevel(process.riskFrequency, process.riskImpact).color)} border`}
+                          className={`${getRiskBadgeClass(getRiskLevel(process.riskFrequency, process.riskImpact, process.element?.elementNumber).color)} border`}
                           data-testid="risk-level"
                         >
-                          {getRiskLevel(process.riskFrequency, process.riskImpact).level}
+                          {getRiskLevel(process.riskFrequency, process.riskImpact, process.element?.elementNumber).level}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
-                          Score: {getRiskLevel(process.riskFrequency, process.riskImpact).score}/9
+                          Score: {getRiskLevel(process.riskFrequency, process.riskImpact, process.element?.elementNumber).score}/9
                         </span>
                       </div>
 
@@ -462,11 +470,25 @@ export default function ProcessDetail() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="mb-2">Risk assessment not completed</p>
-                      <p className="text-xs">
-                        Edit this process to add risk frequency, impact, and mitigation details.
-                      </p>
+                      {process.element?.elementNumber === 5 ? (
+                        // Strategic Localization processes don't require risk assessments
+                        <>
+                          <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="mb-2">No risk assessment required</p>
+                          <p className="text-xs">
+                            Strategic Localization processes are excluded from risk assessments.
+                          </p>
+                        </>
+                      ) : (
+                        // Other processes need risk assessments
+                        <>
+                          <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="mb-2">Risk assessment not completed</p>
+                          <p className="text-xs">
+                            Edit this process to add risk frequency, impact, and mitigation details.
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
                 </CardContent>
