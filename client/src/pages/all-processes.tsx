@@ -73,6 +73,64 @@ export default function AllProcesses() {
     }
   }, [processesError, toast]);
 
+  // Export functionality
+  const handleExport = () => {
+    if (!processes || processes.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No processes to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create CSV content
+    const headers = [
+      'Process Number',
+      'Name', 
+      'Element',
+      'Status',
+      'Owner',
+      'Mandatory',
+      'Steps Count',
+      'Description',
+      'Updated Date'
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...processes.map(process => [
+        `"${process.processNumber}"`,
+        `"${process.name}"`,
+        `"${process.element?.title || ''}"`,
+        `"${process.status || 'draft'}"`,
+        `"${process.processOwner || ''}"`,
+        `"${process.isMandatory ? 'Yes' : 'No'}"`,
+        `"${process.steps?.length || 0}"`,
+        `"${(process.description || '').replace(/"/g, '""')}"`,
+        `"${process.updatedAt ? new Date(process.updatedAt).toLocaleDateString() : ''}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `oe-processes-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    toast({
+      title: "Export Complete",
+      description: `Successfully exported ${processes.length} processes`,
+    });
+  };
+
   if (processesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -114,7 +172,12 @@ export default function AllProcesses() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm" data-testid="button-export">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExport}
+                data-testid="button-export"
+              >
                 <FileText className="w-4 h-4 mr-2" />
                 Export List
               </Button>
