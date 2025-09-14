@@ -18,7 +18,16 @@ import {
   Activity,
   Edit,
   Download,
-  BarChart3
+  BarChart3,
+  Crown,
+  DollarSign,
+  Cog,
+  Shield,
+  GraduationCap,
+  Factory,
+  Settings,
+  Globe,
+  ArrowRight
 } from "lucide-react";
 import MiniProcessFlow from "@/components/mini-process-flow";
 import { MindMapTree } from "@/components/mind-map-tree";
@@ -437,6 +446,37 @@ export default function ElementDetail() {
     }
   };
 
+  const getElementIcon = (elementNumber: number) => {
+    // If element has a custom icon, map it to the corresponding Lucide icon
+    if (element?.icon) {
+      switch (element.icon) {
+        case 'Factory': return Factory;
+        case 'Settings': return Settings;
+        case 'Globe': return Globe;
+        case 'Crown': return Crown;
+        case 'Activity': return Activity;
+        case 'Shield': return Shield;
+        case 'DollarSign': return DollarSign;
+        case 'Cog': return Cog;
+        case 'GraduationCap': return GraduationCap;
+        case 'ArrowRight': return ArrowRight;
+        default: return Activity;
+      }
+    }
+    
+    switch (elementNumber) {
+      case 1: return Crown;
+      case 2: return Activity;
+      case 3: return GraduationCap;
+      case 4: return Cog;
+      case 5: return Activity;
+      case 6: return DollarSign;
+      case 7: return Shield;
+      case 8: return GraduationCap;
+      default: return Activity;
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-background">
       <Sidebar />
@@ -458,7 +498,10 @@ export default function ElementDetail() {
               <div>
                 <div className="flex items-center space-x-3 mb-2">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl bg-muted">
-                    {element.icon}
+                    {(() => {
+                      const IconComponent = getElementIcon(element.elementNumber);
+                      return <IconComponent className="w-6 h-6" />;
+                    })()}
                   </div>
                   <h1 className="text-2xl font-bold" data-testid="element-title">
                     OE Element No. {element.elementNumber}: {element.title}
