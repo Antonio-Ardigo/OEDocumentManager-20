@@ -21,7 +21,9 @@ import {
   Save,
   X,
   Plus,
-  Trash2
+  Trash2,
+  FileText,
+  Download
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
@@ -115,6 +117,328 @@ export default function BalancedScorecard() {
       });
     }
   }, [error, toast]);
+
+  // Comprehensive PDF Export functionality
+  const handleExportPDF = async () => {
+    if (!elements || !goals || !processPerformanceMeasures) {
+      toast({
+        title: "No Data Available",
+        description: "Please wait for data to load before exporting",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+    
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    let yPos = 20;
+
+    // Helper function to add justified text with better overflow control
+    const addJustifiedText = (text: string, x: number, fontSize: number = 9, maxWidth: number = 165, indent: number = 0) => {
+      doc.setFontSize(fontSize);
+      const availableWidth = maxWidth - indent;
+      const lines = doc.splitTextToSize(text, availableWidth);
+      
+      lines.forEach((line: string) => {
+        doc.text(line, x + indent, yPos);
+        yPos += fontSize * 0.6 + 1;
+      });
+      
+      return yPos;
+    };
+    
+    // Helper function for chapter headings
+    const addChapterHeading = (title: string, level: number = 1) => {
+      checkNewPage(15);
+      yPos += level === 1 ? 8 : 5;
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(level === 1 ? 12 : 10);
+      doc.text(title.toUpperCase(), 20, yPos);
+      
+      if (level === 1) {
+        doc.setLineWidth(0.3);
+        doc.line(20, yPos + 1, 20 + doc.getTextWidth(title.toUpperCase()), yPos + 1);
+      }
+      
+      yPos += level === 1 ? 6 : 4;
+    };
+    
+    // Helper function to add new page if needed
+    const checkNewPage = (requiredSpace: number = 20) => {
+      if (yPos + requiredSpace > 275) {
+        doc.addPage();
+        yPos = 20;
+      }
+    };
+
+    // Document Title Page
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('WSM OPERATIONAL EXCELLENCE', 105, 50, { align: 'center' });
+    
+    doc.setFontSize(16);
+    doc.text('BALANCED SCORECARD REPORT', 105, 65, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Strategic Goals & Performance Metrics', 105, 80, { align: 'center' });
+    
+    // Document info
+    doc.setFontSize(9);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 110, { align: 'center' });
+    doc.text('WSM Operational Excellence Framework', 105, 120, { align: 'center' });
+    
+    // Simple line separator
+    doc.setLineWidth(0.5);
+    doc.line(50, 130, 160, 130);
+    
+    doc.addPage();
+    yPos = 20;
+
+    // Chapter 1: Executive Summary
+    addChapterHeading('1. EXECUTIVE SUMMARY', 1);
+    
+    doc.setFont('helvetica', 'normal');
+    
+    const totalElements = elements.length;
+    const activeElements = elements.filter(e => e.isActive).length;
+    const totalGoals = goals.length;
+    const totalProcessMeasures = processPerformanceMeasures.length;
+    
+    // Calculate scorecard category distribution
+    const categoryDistribution = ['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].map(category => {
+      const processesInCategory = processPerformanceMeasures
+        .filter(measure => measure.scorecardCategory === category)
+        .reduce((acc, measure) => {
+          const key = `${measure.elementId}-${measure.processId}`;
+          if (!acc.includes(key)) acc.push(key);
+          return acc;
+        }, [] as string[]);
+      return { category, count: processesInCategory.length };
+    });
+
+    addJustifiedText(`This Balanced Scorecard report provides a comprehensive overview of WSM's Operational Excellence framework performance across all strategic dimensions. The report includes detailed analysis of ${totalGoals} strategic goals, ${totalProcessMeasures} performance measures, and ${totalElements} OE elements.`, 20, 9);
+    yPos += 3;
+
+    doc.setFont('helvetica', 'bold');
+    addJustifiedText('Key Statistics:', 20, 9);
+    doc.setFont('helvetica', 'normal');
+    addJustifiedText(`• Active Elements: ${activeElements} of ${totalElements}`, 25, 8, 165, 5);
+    addJustifiedText(`• Strategic Goals: ${totalGoals}`, 25, 8, 165, 5);
+    addJustifiedText(`• Performance Measures: ${totalProcessMeasures}`, 25, 8, 165, 5);
+    yPos += 2;
+
+    doc.setFont('helvetica', 'bold');
+    addJustifiedText('Scorecard Category Distribution:', 20, 9);
+    doc.setFont('helvetica', 'normal');
+    categoryDistribution.forEach(({ category, count }) => {
+      addJustifiedText(`• ${category}: ${count} processes`, 25, 8, 165, 5);
+    });
+    yPos += 5;
+
+    // Chapter 2: Strategic Goals Analysis
+    addChapterHeading('2. STRATEGIC GOALS ANALYSIS', 1);
+    
+    if (goals.length > 0) {
+      doc.setFont('helvetica', 'normal');
+      addJustifiedText(`The organization has established ${goals.length} strategic goals across all balanced scorecard categories. These goals are aligned with specific OE elements to ensure comprehensive coverage of operational excellence initiatives.`, 20, 9);
+      yPos += 3;
+
+      // Strategic goals by category
+      ['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].forEach(category => {
+        const categoryGoals = goals.filter(g => g.category === category);
+        
+        if (categoryGoals.length > 0) {
+          checkNewPage(30);
+          addChapterHeading(`2.${['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].indexOf(category) + 1} ${category} Goals`, 2);
+          
+          categoryGoals.forEach((goal, index) => {
+            checkNewPage(25);
+            const goalElement = elements?.find(e => e.id === goal.elementId);
+            
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText(`Goal ${index + 1}: ${goal.title}`, 25, 8, 165, 5);
+            
+            doc.setFont('helvetica', 'normal');
+            if (goalElement) {
+              addJustifiedText(`OE Element: ${goalElement.elementNumber} - ${goalElement.title}`, 30, 8, 165, 10);
+            }
+            addJustifiedText(`Priority: ${goal.priority}`, 30, 8, 165, 10);
+            addJustifiedText(`Target: ${goal.targetValue} ${goal.unit}`, 30, 8, 165, 10);
+            addJustifiedText(`Current: ${goal.currentValue} ${goal.unit}`, 30, 8, 165, 10);
+            
+            if (goal.description) {
+              doc.setFont('helvetica', 'bold');
+              addJustifiedText('Description:', 30, 8, 165, 10);
+              doc.setFont('helvetica', 'normal');
+              addJustifiedText(goal.description, 35, 8, 165, 15);
+            }
+            
+            yPos += 3;
+          });
+        }
+      });
+    } else {
+      doc.setFont('helvetica', 'normal');
+      addJustifiedText('No strategic goals have been defined yet. Consider establishing goals across all balanced scorecard categories.', 20, 9);
+      yPos += 3;
+    }
+
+    // Chapter 3: Performance Measures Analysis
+    addChapterHeading('3. PERFORMANCE MEASURES ANALYSIS', 1);
+    
+    if (processPerformanceMeasures.length > 0) {
+      doc.setFont('helvetica', 'normal');
+      addJustifiedText(`The system tracks ${processPerformanceMeasures.length} performance measures across all OE elements. These measures are categorized according to the balanced scorecard framework to provide comprehensive performance visibility.`, 20, 9);
+      yPos += 3;
+
+      // Performance measures by category and element
+      ['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].forEach(category => {
+        const categoryMeasures = processPerformanceMeasures.filter(m => m.scorecardCategory === category);
+        
+        if (categoryMeasures.length > 0) {
+          checkNewPage(30);
+          addChapterHeading(`3.${['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].indexOf(category) + 1} ${category} Measures`, 2);
+          
+          // Group by element
+          const elementGroups = categoryMeasures.reduce((acc, measure) => {
+            if (!acc[measure.elementId]) {
+              acc[measure.elementId] = [];
+            }
+            acc[measure.elementId].push(measure);
+            return acc;
+          }, {} as Record<string, typeof categoryMeasures>);
+
+          Object.entries(elementGroups).forEach(([elementId, measures]) => {
+            checkNewPage(20);
+            const element = elements?.find(e => e.id === elementId);
+            
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText(`Element ${element?.elementNumber || 'Unknown'}: ${element?.title || 'Unknown Element'}`, 25, 8, 165, 5);
+            yPos += 2;
+            
+            measures.forEach((measure) => {
+              checkNewPage(15);
+              
+              doc.setFont('helvetica', 'bold');
+              addJustifiedText(`• ${measure.measureName}`, 30, 8, 165, 10);
+              
+              doc.setFont('helvetica', 'normal');
+              addJustifiedText(`Process: ${measure.processNumber} - ${measure.processName}`, 35, 8, 165, 15);
+              
+              if (measure.target) {
+                addJustifiedText(`Target: ${measure.target}`, 35, 8, 165, 15);
+              }
+              if (measure.frequency) {
+                addJustifiedText(`Frequency: ${measure.frequency}`, 35, 8, 165, 15);
+              }
+              if (measure.source) {
+                addJustifiedText(`Source: ${measure.source}`, 35, 8, 165, 15);
+              }
+              if (measure.formula) {
+                addJustifiedText(`Formula: ${measure.formula}`, 35, 8, 165, 15);
+              }
+              
+              yPos += 2;
+            });
+            
+            yPos += 2;
+          });
+        }
+      });
+    } else {
+      doc.setFont('helvetica', 'normal');
+      addJustifiedText('No performance measures have been defined yet. Consider establishing measures across all scorecard categories.', 20, 9);
+      yPos += 3;
+    }
+
+    // Chapter 4: Element Analysis
+    addChapterHeading('4. OE ELEMENT ANALYSIS', 1);
+    
+    doc.setFont('helvetica', 'normal');
+    addJustifiedText(`This section provides detailed analysis of each OE element's contribution to the balanced scorecard framework.`, 20, 9);
+    yPos += 3;
+
+    elements?.forEach((element, index) => {
+      checkNewPage(30);
+      addChapterHeading(`4.${index + 1} Element ${element.elementNumber}: ${element.title}`, 2);
+      
+      const elementGoals = goals.filter(g => g.elementId === element.id);
+      const elementMeasures = processPerformanceMeasures.filter(m => m.elementId === element.id);
+      
+      doc.setFont('helvetica', 'normal');
+      addJustifiedText(`Status: ${element.isActive ? 'Active' : 'Inactive'}`, 25, 8, 165, 5);
+      addJustifiedText(`Processes: ${element.processes?.length || 0}`, 25, 8, 165, 5);
+      addJustifiedText(`Strategic Goals: ${elementGoals.length}`, 25, 8, 165, 5);
+      addJustifiedText(`Performance Measures: ${elementMeasures.length}`, 25, 8, 165, 5);
+      yPos += 2;
+      
+      if (element.description) {
+        doc.setFont('helvetica', 'bold');
+        addJustifiedText('Description:', 25, 8, 165, 5);
+        doc.setFont('helvetica', 'normal');
+        addJustifiedText(element.description, 30, 8, 165, 10);
+        yPos += 2;
+      }
+      
+      // Element scorecard distribution
+      const elementCategoryDistribution = ['Financial', 'Customer', 'Internal Process', 'Learning & Growth'].map(category => ({
+        category,
+        count: elementMeasures.filter(m => m.scorecardCategory === category).length
+      })).filter(item => item.count > 0);
+      
+      if (elementCategoryDistribution.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        addJustifiedText('Scorecard Category Distribution:', 25, 8, 165, 5);
+        doc.setFont('helvetica', 'normal');
+        elementCategoryDistribution.forEach(({ category, count }) => {
+          addJustifiedText(`• ${category}: ${count} measures`, 30, 8, 165, 10);
+        });
+        yPos += 2;
+      }
+      
+      yPos += 3;
+    });
+
+    // Footer for all pages
+    const pageCount = (doc as any).getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      
+      doc.setLineWidth(0.3);
+      doc.setDrawColor(0, 0, 0);
+      doc.line(20, 285, 190, 285);
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.text('WSM Balanced Scorecard Report', 20, 292);
+      doc.text(`Page ${i} of ${pageCount}`, 190, 292, { align: 'right' });
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 292, { align: 'center' });
+    }
+
+    // Save the PDF
+    doc.save(`WSM-Balanced-Scorecard-Report-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast({
+      title: "Export Successful",
+      description: "Balanced Scorecard report has been exported as PDF",
+    });
+    
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the PDF report",
+        variant: "destructive",
+      });
+    }
+  };
 
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: any) => {
@@ -274,13 +598,28 @@ export default function BalancedScorecard() {
         <div className="p-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-primary-foreground" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Balanced Scorecard</h1>
+                <p className="text-muted-foreground">Strategic goals and performance metrics for operational excellence</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Balanced Scorecard</h1>
-              <p className="text-muted-foreground">Strategic goals and performance metrics for operational excellence</p>
+            
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExportPDF}
+                disabled={elementsLoading || goalsLoading || metricsLoading || processMeasuresLoading || !elements || !goals || !processPerformanceMeasures}
+                data-testid="button-export-scorecard"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Report
+              </Button>
             </div>
           </div>
         </div>
