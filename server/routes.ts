@@ -155,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         siteName: "WSM Operational Excellence Manager",
-        description: "Comprehensive desktop application for managing operational excellence processes with a 4-element OE framework",
+        description: "Comprehensive web application for managing operational excellence processes with a 4-element OE framework",
         framework: "4-element OE framework (OE-1: Transition Plan, OE-3: Purification Plant Operations, OE-4: Asset Management, OE-5: Strategic Localization)",
         statistics: {
           totalProcesses: stats.totalProcesses,

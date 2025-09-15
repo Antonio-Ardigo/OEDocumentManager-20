@@ -6,8 +6,8 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 
-// Create user data directory for the desktop app
-const userDataPath = process.env.ELECTRON_USER_DATA || path.join(os.homedir(), '.wsm-oe-manager');
+// Create user data directory for the application
+const userDataPath = path.join(os.homedir(), '.wsm-oe-manager');
 if (!fs.existsSync(userDataPath)) {
   fs.mkdirSync(userDataPath, { recursive: true });
 }
