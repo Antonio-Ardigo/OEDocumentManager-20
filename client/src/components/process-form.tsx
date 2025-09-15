@@ -133,9 +133,9 @@ export default function ProcessForm({
         id: doc.id,
         title: doc.title,
         fileName: doc.fileName,
-        fileSize: doc.fileSize,
+        fileSize: doc.fileSize || undefined,
         fileUrl: doc.fileUrl,
-        createdAt: doc.createdAt,
+        createdAt: doc.createdAt?.toString(),
       })));
     }
   }, [documents]);
@@ -143,9 +143,7 @@ export default function ProcessForm({
   // Delete attachment mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: string) => {
-      await apiRequest(`/api/documents/${documentId}`, {
-        method: "DELETE",
-      });
+      await apiRequest("DELETE", `/api/documents/${documentId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ 
@@ -1197,11 +1195,8 @@ export default function ProcessForm({
                         {process?.id && (
                           <FileUpload 
                             processId={process.id} 
-                            onUploadComplete={(uploadedFile) => {
-                              // Update the form with uploaded file info
-                              form.setValue(`fileAttachments.${index}.fileName`, uploadedFile.fileName || "");
-                              form.setValue(`fileAttachments.${index}.fileUrl`, uploadedFile.fileUrl || "");
-                              form.setValue(`fileAttachments.${index}.fileSize`, uploadedFile.fileSize || 0);
+                            onUploadComplete={() => {
+                              // Refresh documents after upload
                               queryClient.invalidateQueries({ 
                                 queryKey: [`/api/processes/${process.id}/documents`]
                               });
