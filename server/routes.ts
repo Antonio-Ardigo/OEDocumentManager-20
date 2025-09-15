@@ -859,7 +859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/processes/:processId/documents', async (req, res) => {
     try {
       const { title, fileName, fileUrl, fileSize, mimeType } = req.body;
-      const userId = req.user?.claims?.sub;
+      const userId = 'agent_user'; // Mock user ID for this demo
 
       if (!title || !fileName) {
         return res.status(400).json({ error: 'title and fileName are required' });
