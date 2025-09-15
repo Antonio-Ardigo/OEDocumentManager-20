@@ -191,7 +191,7 @@ export default function RiskManagement() {
           addJustifiedText(`2.${index + 1} ${process.processNumber}: ${process.name}`, 25, 9, 165, 5);
           
           doc.setFont('helvetica', 'normal');
-          addJustifiedText(`Element: ${process.elementNumber} - ${process.elementTitle}`, 30, 8, 165, 10);
+          addJustifiedText(`Element: ${process.element?.elementNumber} - ${process.element?.title}`, 30, 8, 165, 10);
           addJustifiedText(`Risk Level: ${riskLevel.level} (Score: ${riskLevel.score})`, 30, 8, 165, 10);
           addJustifiedText(`Frequency: ${process.riskFrequency} | Impact: ${process.riskImpact}`, 30, 8, 165, 10);
           addJustifiedText(`Status: ${process.status}`, 30, 8, 165, 10);
@@ -223,7 +223,7 @@ export default function RiskManagement() {
           addJustifiedText(`3.${index + 1} ${process.processNumber}: ${process.name}`, 25, 8, 165, 5);
           
           doc.setFont('helvetica', 'normal');
-          addJustifiedText(`Element: ${process.elementNumber} - ${process.elementTitle}`, 30, 8, 165, 10);
+          addJustifiedText(`Element: ${process.element?.elementNumber} - ${process.element?.title}`, 30, 8, 165, 10);
           addJustifiedText(`Risk Level: ${riskLevel.level} (Score: ${riskLevel.score})`, 30, 8, 165, 10);
           addJustifiedText(`Frequency: ${process.riskFrequency} | Impact: ${process.riskImpact}`, 30, 8, 165, 10);
           
@@ -252,7 +252,7 @@ export default function RiskManagement() {
         doc.setFont('helvetica', 'normal');
         lowRiskProcesses.forEach((process) => {
           checkNewPage(10);
-          addJustifiedText(`• ${process.processNumber}: ${process.name} (Element ${process.elementNumber})`, 30, 8, 165, 10);
+          addJustifiedText(`• ${process.processNumber}: ${process.name} (Element ${process.element?.elementNumber})`, 30, 8, 165, 10);
         });
         yPos += 3;
       }
@@ -270,7 +270,7 @@ export default function RiskManagement() {
         doc.setFont('helvetica', 'normal');
         unassessedProcesses.forEach((process) => {
           checkNewPage(10);
-          addJustifiedText(`• ${process.processNumber}: ${process.name} (Element ${process.elementNumber})`, 30, 8, 165, 10);
+          addJustifiedText(`• ${process.processNumber}: ${process.name} (Element ${process.element?.elementNumber})`, 30, 8, 165, 10);
         });
         yPos += 3;
       }
@@ -387,7 +387,7 @@ export default function RiskManagement() {
             sanitizeCsvValue(process.id), // Use actual process ID instead of synthetic
             sanitizeCsvValue(process.processNumber),
             sanitizeCsvValue(process.name),
-            sanitizeCsvValue(`Element ${process.elementNumber}: ${process.elementTitle}`),
+            sanitizeCsvValue(`Element ${process.element?.elementNumber}: ${process.element?.title}`),
             sanitizeCsvValue(riskLevel.level),
             sanitizeCsvValue(process.riskFrequency || 'Not Assessed'),
             sanitizeCsvValue(process.riskImpact || 'Not Assessed'),
