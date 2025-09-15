@@ -19,6 +19,24 @@ interface ProcessRisk {
   riskImpact?: string;
   riskMitigation?: string;
   status: string;
+  element?: {
+    elementNumber: number;
+    title: string;
+  };
+}
+
+interface PerformanceMeasure {
+  id: string;
+  measureName: string;
+  processNumber: string;
+  processName: string;
+  elementNumber: number;
+  elementTitle: string;
+  scorecardCategory?: string;
+  formula?: string;
+  source?: string;
+  frequency?: string;
+  target?: string;
 }
 
 // Risk level calculation and styling
@@ -52,6 +70,11 @@ export default function RiskManagement() {
 
   const { data: processes = [], isLoading: processesLoading } = useQuery<ProcessRisk[]>({
     queryKey: ["/api/oe-processes"],
+    enabled: true,
+  });
+
+  const { data: performanceMeasures = [], isLoading: performanceMeasuresLoading } = useQuery<PerformanceMeasure[]>({
+    queryKey: ["/api/scorecard/performance-measures"],
     enabled: true,
   });
 
@@ -427,6 +450,98 @@ export default function RiskManagement() {
     }
   };
 
+  // Performance Management Register Export functionality
+  const handleExportPerformanceRegister = () => {
+    if (!performanceMeasures || performanceMeasures.length === 0) {
+      toast({
+        title: "No Data Available",
+        description: "No performance measures data available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Helper function to sanitize CSV values and prevent CSV injection
+      const sanitizeCsvValue = (value: string): string => {
+        if (!value) return '';
+        
+        // Convert to string and normalize line breaks
+        let sanitized = String(value).replace(/\r?\n/g, ' ').trim();
+        
+        // Escape internal quotes by doubling them
+        sanitized = sanitized.replace(/"/g, '""');
+        
+        // Prevent CSV formula injection by prefixing with single quote if starts with dangerous characters
+        if (/^[=+\-@]/.test(sanitized)) {
+          sanitized = "'" + sanitized;
+        }
+        
+        return `"${sanitized}"`;
+      };
+
+      // Create Excel-compatible CSV with proper formatting and security
+      const headers = [
+        'Measure ID',
+        'Measure Name',
+        'Process Number',
+        'Process Name',
+        'Element',
+        'Scorecard Category',
+        'Formula',
+        'Source',
+        'Frequency',
+        'Target',
+        'Created Date'
+      ];
+      
+      const csvContent = [
+        headers.map(h => sanitizeCsvValue(h)).join(','),
+        ...performanceMeasures.map((measure) => {
+          return [
+            sanitizeCsvValue(measure.id),
+            sanitizeCsvValue(measure.measureName),
+            sanitizeCsvValue(measure.processNumber),
+            sanitizeCsvValue(measure.processName),
+            sanitizeCsvValue(`Element ${measure.elementNumber}: ${measure.elementTitle}`),
+            sanitizeCsvValue(measure.scorecardCategory || 'Not Categorized'),
+            sanitizeCsvValue(measure.formula || 'Not specified'),
+            sanitizeCsvValue(measure.source || 'Not specified'),
+            sanitizeCsvValue(measure.frequency || 'Not specified'),
+            sanitizeCsvValue(measure.target || 'Not specified'),
+            sanitizeCsvValue(new Date().toLocaleDateString())
+          ].join(',');
+        })
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `WSM-Performance-Management-Register-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      toast({
+        title: "Export Successful",
+        description: `Performance management register exported with ${performanceMeasures.length} measures`,
+      });
+      
+    } catch (error) {
+      console.error('Performance register export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the performance register file",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-background">
       <Sidebar />
@@ -467,6 +582,16 @@ export default function RiskManagement() {
                 >
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Risk Register
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleExportPerformanceRegister}
+                  disabled={performanceMeasuresLoading || !performanceMeasures || performanceMeasures.length === 0}
+                  data-testid="button-export-performance-register"
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Perf Register
                 </Button>
               </div>
             </div>
