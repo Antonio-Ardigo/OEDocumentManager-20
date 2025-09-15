@@ -60,6 +60,17 @@ export default function ElementDetail() {
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     let yPos = 20;
+
+    // Helper function to calculate risk level
+    const calculateRiskLevel = (frequency: string, impact: string): string => {
+      const freqValue = frequency?.toLowerCase() === 'high' ? 3 : frequency?.toLowerCase() === 'medium' ? 2 : 1;
+      const impactValue = impact?.toLowerCase() === 'high' ? 3 : impact?.toLowerCase() === 'medium' ? 2 : 1;
+      const riskScore = freqValue * impactValue;
+      
+      if (riskScore >= 6) return 'HIGH RISK';
+      if (riskScore >= 3) return 'MEDIUM RISK';
+      return 'LOW RISK';
+    };
     
     // Helper function to add justified text with better overflow control
     const addJustifiedText = (text: string, x: number, fontSize: number = 9, maxWidth: number = 165, indent: number = 0) => {
@@ -148,17 +159,87 @@ export default function ElementDetail() {
       addJustifiedText(element.description, 20, 9);
       yPos += 3;
     }
+
+    // COMPREHENSIVE ELEMENT STATISTICS
+    checkNewPage(30);
+    doc.setFont('helvetica', 'bold');
+    addJustifiedText('Element Statistics and Analysis:', 20, 9);
+    yPos += 2;
+    
+    const processes = element.processes || [];
+    const activeProcesses = processes.filter(p => p.status === 'active').length;
+    const mandatoryProcesses = processes.filter(p => p.isMandatory).length;
+    const processesWithRisks = processes.filter(p => p.riskFrequency && p.riskImpact).length;
+    const highRiskProcesses = processes.filter(p => {
+      if (!p.riskFrequency || !p.riskImpact) return false;
+      const riskLevel = calculateRiskLevel(p.riskFrequency, p.riskImpact);
+      return riskLevel === 'HIGH RISK';
+    }).length;
+    
+    const totalSteps = processes.reduce((sum, p) => sum + (p.steps?.length || 0), 0);
+    const totalPerfMeasures = processes.reduce((sum, p) => sum + (p.performanceMeasures?.length || 0), 0);
+    
+    doc.setFont('helvetica', 'normal');
+    addJustifiedText(`Active Processes: ${activeProcesses} of ${processes.length}`, 25, 8, 165, 5);
+    addJustifiedText(`Mandatory Processes: ${mandatoryProcesses}`, 25, 8, 165, 5);
+    addJustifiedText(`Total Process Steps: ${totalSteps}`, 25, 8, 165, 5);
+    addJustifiedText(`Total Performance Measures: ${totalPerfMeasures}`, 25, 8, 165, 5);
+    addJustifiedText(`Processes with Risk Assessment: ${processesWithRisks}`, 25, 8, 165, 5);
+    addJustifiedText(`High Risk Processes: ${highRiskProcesses}`, 25, 8, 165, 5);
+    yPos += 3;
+
+    // ELEMENT ISSUES AND ALERTS
+    checkNewPage(25);
+    doc.setFont('helvetica', 'bold');
+    addJustifiedText('Element Issues and Recommendations:', 20, 9);
+    yPos += 2;
+    
+    doc.setFont('helvetica', 'normal');
+    const issues = [];
+    
+    if (processes.length === 0) {
+      issues.push('No processes defined for this element.');
+    }
+    if (activeProcesses < processes.length) {
+      issues.push(`${processes.length - activeProcesses} processes are not in active status.`);
+    }
+    if (processesWithRisks < processes.length) {
+      issues.push(`${processes.length - processesWithRisks} processes lack risk assessment.`);
+    }
+    if (highRiskProcesses > 0) {
+      issues.push(`${highRiskProcesses} processes identified as high risk requiring immediate attention.`);
+    }
+    
+    const processesWithoutSteps = processes.filter(p => !p.steps || p.steps.length === 0).length;
+    if (processesWithoutSteps > 0) {
+      issues.push(`${processesWithoutSteps} processes lack detailed process steps.`);
+    }
+    
+    const processesWithoutPerfMeasures = processes.filter(p => !p.performanceMeasures || p.performanceMeasures.length === 0).length;
+    if (processesWithoutPerfMeasures > 0) {
+      issues.push(`${processesWithoutPerfMeasures} processes lack performance measures.`);
+    }
+    
+    if (issues.length === 0) {
+      addJustifiedText('✓ No issues identified. This element meets all operational excellence criteria.', 25, 8, 165, 5);
+    } else {
+      issues.forEach((issue, index) => {
+        addJustifiedText(`• ${issue}`, 25, 8, 165, 5);
+      });
+    }
+    yPos += 3;
     
     if (element.createdAt || element.updatedAt) {
+      checkNewPage(15);
       doc.setFont('helvetica', 'bold');
       addJustifiedText('Timeline Information:', 20, 9);
       doc.setFont('helvetica', 'normal');
       
       if (element.createdAt) {
-        addJustifiedText(`Created: ${new Date(element.createdAt).toLocaleDateString()}`, 20, 9);
+        addJustifiedText(`Created: ${new Date(element.createdAt).toLocaleDateString()}`, 25, 8, 165, 5);
       }
       if (element.updatedAt) {
-        addJustifiedText(`Last Updated: ${new Date(element.updatedAt).toLocaleDateString()}`, 20, 9);
+        addJustifiedText(`Last Updated: ${new Date(element.updatedAt).toLocaleDateString()}`, 25, 8, 165, 5);
       }
       yPos += 5;
     }
@@ -305,11 +386,104 @@ export default function ElementDetail() {
             if (measure.source) {
               addJustifiedText(`Source: ${measure.source}`, 30, 8, 165, 10);
             }
+
+            if (measure.scorecardCategory) {
+              addJustifiedText(`Scorecard Category: ${measure.scorecardCategory}`, 30, 8, 165, 10);
+            }
             
             yPos += 2;
           });
           yPos += 3;
         }
+
+        // Risk Assessment Section - COMPREHENSIVE RISK INFORMATION
+        checkNewPage(25);
+        doc.setFont('helvetica', 'bold');
+        addJustifiedText('Risk Assessment:', 20, 9);
+        
+        if (process.riskFrequency || process.riskImpact || process.riskDescription || process.riskMitigation) {
+          doc.setFont('helvetica', 'normal');
+          
+          if (process.riskFrequency && process.riskImpact) {
+            const riskLevel = calculateRiskLevel(process.riskFrequency, process.riskImpact);
+            addJustifiedText(`Risk Level: ${riskLevel} (Frequency: ${process.riskFrequency}, Impact: ${process.riskImpact})`, 25, 8, 165, 5);
+          }
+          
+          if (process.riskDescription) {
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText('Risk Description:', 25, 8, 165, 5);
+            doc.setFont('helvetica', 'normal');
+            addJustifiedText(process.riskDescription, 30, 8, 165, 10);
+          }
+          
+          if (process.riskMitigation) {
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText('Risk Mitigation Strategy:', 25, 8, 165, 5);
+            doc.setFont('helvetica', 'normal');
+            addJustifiedText(process.riskMitigation, 30, 8, 165, 10);
+          }
+          
+          yPos += 3;
+        } else {
+          doc.setFont('helvetica', 'normal');
+          addJustifiedText('No risk assessment required for this process.', 25, 8, 165, 5);
+          yPos += 3;
+        }
+
+        // Additional Process Information Section
+        if (process.inputToProcess || process.deliverable || process.criticalToProcessQuality) {
+          checkNewPage(20);
+          doc.setFont('helvetica', 'bold');
+          addJustifiedText('Additional Process Information:', 20, 9);
+          yPos += 2;
+          
+          if (process.inputToProcess) {
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText('Input to Process:', 25, 8, 165, 5);
+            doc.setFont('helvetica', 'normal');
+            addJustifiedText(process.inputToProcess, 30, 8, 165, 10);
+          }
+          
+          if (process.deliverable) {
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText('Process Deliverable:', 25, 8, 165, 5);
+            doc.setFont('helvetica', 'normal');
+            addJustifiedText(process.deliverable, 30, 8, 165, 10);
+          }
+          
+          if (process.criticalToProcessQuality) {
+            doc.setFont('helvetica', 'bold');
+            addJustifiedText('Critical to Process Quality:', 25, 8, 165, 5);
+            doc.setFont('helvetica', 'normal');
+            addJustifiedText(process.criticalToProcessQuality, 30, 8, 165, 10);
+          }
+          
+          yPos += 3;
+        }
+
+        // Document Attachments and References Section
+        checkNewPage(20);
+        doc.setFont('helvetica', 'bold');
+        addJustifiedText('Document Attachments and References:', 20, 9);
+        yPos += 2;
+        
+        // Note about file attachments (as we don't have them loaded in current API)
+        doc.setFont('helvetica', 'normal');
+        addJustifiedText('File attachments and supporting documents are available in the digital system.', 25, 8, 165, 5);
+        addJustifiedText('Access the online system for complete document library and version control.', 25, 8, 165, 5);
+        
+        // Document version information
+        doc.setFont('helvetica', 'bold');
+        addJustifiedText('Document Control:', 25, 8, 165, 5);
+        doc.setFont('helvetica', 'normal');
+        addJustifiedText(`Current Revision: ${process.revision || 1}`, 30, 8, 165, 10);
+        addJustifiedText(`Process Status: ${process.status || 'Draft'}`, 30, 8, 165, 10);
+        
+        if (process.issueDate) {
+          addJustifiedText(`Issue Date: ${new Date(process.issueDate).toLocaleDateString()}`, 30, 8, 165, 10);
+        }
+        
+        yPos += 5;
         
         // Additional process fields (removed non-existent properties)
         
