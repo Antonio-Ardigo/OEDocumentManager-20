@@ -23,7 +23,8 @@ import {
   Plus,
   Trash2,
   FileText,
-  Download
+  Download,
+  FileSpreadsheet
 } from "lucide-react";
 import type { OeElementWithProcesses } from "@shared/schema";
 
@@ -440,6 +441,104 @@ export default function BalancedScorecard() {
     }
   };
 
+  // Performance Management Register Export functionality
+  const handleExportPerformanceRegister = () => {
+    if (!processPerformanceMeasures || processPerformanceMeasures.length === 0) {
+      toast({
+        title: "No Data Available",
+        description: "No performance measures data available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Helper function to sanitize CSV values and prevent CSV injection
+      const sanitizeCsvValue = (value: string): string => {
+        if (!value) return '';
+        
+        // Convert to string and normalize line breaks
+        let sanitized = String(value).replace(/\r?\n/g, ' ').trim();
+        
+        // Escape internal quotes by doubling them
+        sanitized = sanitized.replace(/"/g, '""');
+        
+        // Prevent CSV formula injection by prefixing with single quote if starts with dangerous characters
+        if (/^[=+\-@]/.test(sanitized)) {
+          sanitized = "'" + sanitized;
+        }
+        
+        return `"${sanitized}"`;
+      };
+
+      // Create Excel-compatible CSV with proper formatting and security
+      const headers = [
+        'Measure ID',
+        'Measure Name',
+        'Process Number',
+        'Process Name',
+        'Element',
+        'Scorecard Category',
+        'Formula',
+        'Source',
+        'Frequency',
+        'Target'
+      ];
+      
+      const csvContent = [
+        headers.map(h => sanitizeCsvValue(h)).join(','),
+        ...processPerformanceMeasures.map((measure, index) => {
+          // Create shorter, more readable Measure ID
+          const shortId = `PM-${String(index + 1).padStart(3, '0')}`;
+          
+          // Clean up target value to remove unwanted symbols
+          const cleanTarget = measure.target ? 
+            measure.target.replace(/[^\w\s\.\-%]/g, '').trim() : 
+            'Not specified';
+            
+          return [
+            sanitizeCsvValue(shortId),
+            sanitizeCsvValue(measure.measureName),
+            sanitizeCsvValue(measure.processNumber),
+            sanitizeCsvValue(measure.processName),
+            sanitizeCsvValue(`Element ${measure.elementNumber}: ${measure.elementTitle}`),
+            sanitizeCsvValue(measure.scorecardCategory || 'Not Categorized'),
+            sanitizeCsvValue(measure.formula || 'Not specified'),
+            sanitizeCsvValue(measure.source || 'Not specified'),
+            sanitizeCsvValue(measure.frequency || 'Not specified'),
+            sanitizeCsvValue(cleanTarget)
+          ].join(',');
+        })
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `WSM-Performance-Management-Register-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      toast({
+        title: "Export Successful",
+        description: `Performance management register exported with ${processPerformanceMeasures.length} measures`,
+      });
+      
+    } catch (error) {
+      console.error('Performance register export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the performance register file",
+        variant: "destructive",
+      });
+    }
+  };
+
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: any) => {
       await apiRequest('/api/strategic-goals', 'POST', goalData);
@@ -619,6 +718,16 @@ export default function BalancedScorecard() {
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export Report
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExportPerformanceRegister}
+                disabled={processMeasuresLoading || !processPerformanceMeasures || processPerformanceMeasures.length === 0}
+                data-testid="button-export-performance-register"
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Perf Register
               </Button>
             </div>
           </div>
