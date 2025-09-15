@@ -101,6 +101,11 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
                             <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
                               {step.stepName}
                             </p>
+                            {step.stepDetails && (
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                {step.stepDetails}
+                              </p>
+                            )}
                           </div>
                         </div>
                       ))}
