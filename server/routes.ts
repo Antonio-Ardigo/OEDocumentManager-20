@@ -12,6 +12,7 @@ import {
   insertElementPerformanceMetricSchema,
   insertActivityLogSchema,
   processSteps,
+  processStepEdges,
   performanceMeasures,
 } from "@shared/schema";
 import { z } from "zod";
@@ -597,6 +598,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         processId: req.params.processId,
       });
+      
+      // Validate that both fromStepId and toStepId belong to the same process
+      const fromStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.fromStepId!)).limit(1);
+      const toStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.toStepId!)).limit(1);
+      
+      if (fromStep.length === 0 || toStep.length === 0) {
+        return res.status(400).json({ message: "One or both steps not found" });
+      }
+      
+      if (fromStep[0].processId !== req.params.processId || toStep[0].processId !== req.params.processId) {
+        return res.status(400).json({ message: "Both steps must belong to the specified process" });
+      }
+      
       const edge = await storage.createProcessStepEdge(validatedData);
       res.status(201).json(edge);
     } catch (error) {
@@ -611,6 +625,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/process-step-edges/:id', async (req, res) => {
     try {
       const validatedData = insertProcessStepEdgeSchema.partial().parse(req.body);
+      
+      // If updating step IDs, validate they belong to the same process
+      if (validatedData.fromStepId || validatedData.toStepId) {
+        // Get the existing edge to know the process
+        const existingEdge = await db.select().from(processStepEdges).where(eq(processStepEdges.id, req.params.id)).limit(1);
+        if (existingEdge.length === 0) {
+          return res.status(404).json({ message: "Edge not found" });
+        }
+        
+        const processId = existingEdge[0].processId;
+        
+        if (validatedData.fromStepId) {
+          const fromStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.fromStepId)).limit(1);
+          if (fromStep.length === 0 || fromStep[0].processId !== processId) {
+            return res.status(400).json({ message: "fromStepId must belong to the same process" });
+          }
+        }
+        
+        if (validatedData.toStepId) {
+          const toStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.toStepId)).limit(1);
+          if (toStep.length === 0 || toStep[0].processId !== processId) {
+            return res.status(400).json({ message: "toStepId must belong to the same process" });
+          }
+        }
+      }
+      
       const edge = await storage.updateProcessStepEdge(req.params.id, validatedData);
       res.json(edge);
     } catch (error) {

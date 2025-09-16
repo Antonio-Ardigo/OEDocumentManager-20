@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity, ChevronRight, FileText, Circle, Diamond, ArrowRight, PlayCircle, StopCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 // Helper component to render step nodes
 function StepNode({ step }: { step: ProcessStep }) {
@@ -150,6 +151,66 @@ interface MindMapTreeProps {
   elementTitle: string;
 }
 
+// Component to render a single process with graph data fetching
+function ProcessCard({ process }: { process: Process }) {
+  // Fetch graph data for decision tree processes
+  const { data: graph } = useQuery<ProcessGraph>({
+    queryKey: ['/api/oe-processes', process.id, 'graph'],
+    enabled: process.processType === 'decisionTree',
+  });
+
+  return (
+    <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md">
+      <CardContent className="p-4">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <Activity className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-blue-700 dark:text-blue-300 text-base">
+              {process.processNumber}
+            </h4>
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+              {process.name}
+            </p>
+          </div>
+        </div>
+
+        {/* Process Steps - Render differently based on process type */}
+        {process.processType === 'decisionTree' && graph ? (
+          <DecisionTreeVisualization graph={graph} />
+        ) : process.steps && process.steps.length > 0 ? (
+          <div className="space-y-2 pl-2">
+            <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
+              Sequential Steps:
+            </h5>
+            {process.steps.map((step, stepIndex) => (
+              <div key={step.id} className="flex items-start space-x-2 text-xs">
+                <div className="flex items-center space-x-1 flex-shrink-0">
+                  <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500 mt-1" />
+                  <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {step.stepNumber}
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
+                    {step.stepName}
+                  </p>
+                  {step.stepDetails && (
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {step.stepDetails}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
   if (!processes || processes.length === 0) {
     return (
@@ -195,55 +256,8 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
               {/* Vertical line down to process */}
               <div className="absolute left-1/2 -top-12 w-0.5 h-12 bg-border/40 transform -translate-x-1/2"></div>
               
-              {/* Process Card */}
-              <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <Activity className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-blue-700 dark:text-blue-300 text-base">
-                        {process.processNumber}
-                      </h4>
-                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        {process.name}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Process Steps - Render differently based on process type */}
-                  {process.processType === 'decisionTree' && process.graph ? (
-                    <DecisionTreeVisualization graph={process.graph} />
-                  ) : process.steps && process.steps.length > 0 ? (
-                    <div className="space-y-2 pl-2">
-                      <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
-                        Sequential Steps:
-                      </h5>
-                      {process.steps.map((step, stepIndex) => (
-                        <div key={step.id} className="flex items-start space-x-2 text-xs">
-                          <div className="flex items-center space-x-1 flex-shrink-0">
-                            <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500 mt-1" />
-                            <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              {step.stepNumber}
-                            </span>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
-                              {step.stepName}
-                            </p>
-                            {step.stepDetails && (
-                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                                {step.stepDetails}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </CardContent>
-              </Card>
+              {/* Process Card with graph fetching */}
+              <ProcessCard process={process} />
             </div>
           ))}
         </div>
