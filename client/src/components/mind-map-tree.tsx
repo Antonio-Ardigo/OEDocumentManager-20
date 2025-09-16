@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity, ChevronRight, FileText, Circle, Diamond, ArrowRight, PlayCircle, StopCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { DecisionTreeVisualization } from "./decision-tree-visualization";
 
 // Helper component to render step nodes
 function StepNode({ step }: { step: ProcessStep }) {
@@ -84,14 +83,8 @@ interface MindMapTreeProps {
   elementTitle: string;
 }
 
-// Component to render a single process with graph data fetching
+// Component to render a single process
 function ProcessCard({ process }: { process: Process }) {
-  // Fetch graph data for decision tree processes
-  const { data: graph } = useQuery<ProcessGraph>({
-    queryKey: ['/api/oe-processes', process.id, 'graph'],
-    enabled: process.processType === 'decisionTree',
-  });
-
   return (
     <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md">
       <CardContent className="p-4">
@@ -109,13 +102,11 @@ function ProcessCard({ process }: { process: Process }) {
           </div>
         </div>
 
-        {/* Process Steps - Render differently based on process type */}
-        {process.processType === 'decisionTree' && graph ? (
-          <DecisionTreeVisualization graph={graph} />
-        ) : process.steps && process.steps.length > 0 ? (
+        {/* Process Steps */}
+        {process.steps && process.steps.length > 0 ? (
           <div className="space-y-2 pl-2">
             <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
-              Sequential Steps:
+              Process Steps:
             </h5>
             {process.steps.map((step, stepIndex) => (
               <div key={step.id} className="flex items-start space-x-2 text-xs">
