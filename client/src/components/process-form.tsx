@@ -42,6 +42,7 @@ const processFormSchema = z.object({
   name: z.string().min(1, "Process name is required"),
   description: z.string().optional(),
   processOwner: z.string().optional(),
+  processType: z.enum(["sequential", "decisionTree"]).default("sequential"),
   status: z.enum(["draft", "active", "review", "archived"]).default("draft"),
   isMandatory: z.boolean().default(false),
   expectations: z.string().optional(),
@@ -60,6 +61,7 @@ const processFormSchema = z.object({
     stepDetails: z.string().optional(),
     responsibilities: z.string().optional(),
     references: z.string().optional(),
+    stepType: z.enum(["task", "decision", "start", "end"]).default("task"),
   })).default([]),
   performanceMeasures: z.array(z.object({
     measureName: z.string().min(1, "Measure name is required"),
@@ -160,6 +162,7 @@ export default function ProcessForm({
       name: process?.name || "",
       description: process?.description || "",
       processOwner: process?.processOwner || "",
+      processType: (process as any)?.processType || "sequential",
       status: (process?.status as any) || "draft",
       isMandatory: process?.isMandatory || false,
       expectations: process?.expectations || "",
@@ -178,6 +181,7 @@ export default function ProcessForm({
         stepDetails: step.stepDetails || "",
         responsibilities: step.responsibilities || "",
         references: step.references || "",
+        stepType: (step as any).stepType || "task",
       })) || [],
       performanceMeasures: process?.performanceMeasures?.map(measure => ({
         measureName: measure.measureName,
@@ -249,6 +253,7 @@ export default function ProcessForm({
       stepDetails: "",
       responsibilities: "",
       references: "",
+      stepType: "task",
     });
   };
 
@@ -386,7 +391,7 @@ export default function ProcessForm({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
                 name="processOwner"
@@ -404,6 +409,28 @@ export default function ProcessForm({
                         <SelectItem value="Division Head">Division Head</SelectItem>
                         <SelectItem value="Unit Head">Unit Head</SelectItem>
                         <SelectItem value="Process Manager">Process Manager</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="processType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Process Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-process-type">
+                          <SelectValue placeholder="Select Process Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="sequential">Sequential</SelectItem>
+                        <SelectItem value="decisionTree">Decision Tree</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -657,7 +684,7 @@ export default function ProcessForm({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <FormField
                       control={form.control}
                       name={`steps.${index}.stepName`}
@@ -671,6 +698,30 @@ export default function ProcessForm({
                               data-testid={`input-step-name-${index}`}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`steps.${index}.stepType`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Step Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid={`select-step-type-${index}`}>
+                                <SelectValue placeholder="Select Step Type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="task">Task</SelectItem>
+                              <SelectItem value="decision">Decision</SelectItem>
+                              <SelectItem value="start">Start</SelectItem>
+                              <SelectItem value="end">End</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
