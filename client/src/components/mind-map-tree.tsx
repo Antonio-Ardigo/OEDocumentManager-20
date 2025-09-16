@@ -1,19 +1,148 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Activity, ChevronRight, FileText, Circle } from "lucide-react";
+import { Activity, ChevronRight, FileText, Circle, Diamond, ArrowRight, PlayCircle, StopCircle } from "lucide-react";
+
+// Helper component to render step nodes
+function StepNode({ step }: { step: ProcessStep }) {
+  const getStepIcon = (stepType: string = 'task') => {
+    switch (stepType) {
+      case 'start':
+        return <PlayCircle className="w-3 h-3 text-green-600" />;
+      case 'end':
+        return <StopCircle className="w-3 h-3 text-red-600" />;
+      case 'decision':
+        return <Diamond className="w-3 h-3 text-yellow-600" />;
+      default:
+        return <Circle className="w-3 h-3 text-blue-600" />;
+    }
+  };
+
+  const getStepStyle = (stepType: string = 'task') => {
+    switch (stepType) {
+      case 'start':
+        return "bg-green-100 border-green-300 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200";
+      case 'end':
+        return "bg-red-100 border-red-300 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200";
+      case 'decision':
+        return "bg-yellow-100 border-yellow-300 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-200";
+      default:
+        return "bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200";
+    }
+  };
+
+  return (
+    <div className={`inline-block p-2 rounded-lg border-2 ${getStepStyle(step.stepType)} min-w-[120px] max-w-[200px] text-center`}>
+      <div className="flex items-center justify-center space-x-1 mb-1">
+        {getStepIcon(step.stepType)}
+        <span className="font-bold text-xs">{step.stepNumber}</span>
+      </div>
+      <div className="text-xs font-medium leading-tight">{step.stepName}</div>
+      {step.stepDetails && (
+        <div className="text-xs opacity-75 mt-1 leading-tight line-clamp-2">
+          {step.stepDetails.substring(0, 50)}...
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Component to visualize decision tree processes
+function DecisionTreeVisualization({ graph }: { graph: ProcessGraph }) {
+  if (!graph.nodes || graph.nodes.length === 0) {
+    return (
+      <div className="text-center py-4 text-muted-foreground">
+        <p className="text-xs">No decision tree data available</p>
+      </div>
+    );
+  }
+
+  // Simple tree layout - find start nodes and render levels
+  const startNodes = graph.nodes.filter(node => node.stepType === 'start' || 
+    !graph.edges.some(edge => edge.toStepId === node.id));
+  
+  const getOutgoingEdges = (stepId: string) => 
+    graph.edges.filter(edge => edge.fromStepId === stepId).sort((a, b) => a.priority - b.priority);
+  
+  const renderNode = (node: ProcessStep, level: number = 0, visited: Set<string> = new Set()) => {
+    if (visited.has(node.id) || level > 4) return null; // Prevent cycles and limit depth
+    visited.add(node.id);
+    
+    const outgoingEdges = getOutgoingEdges(node.id);
+    const hasChildren = outgoingEdges.length > 0;
+    
+    return (
+      <div key={node.id} className="flex flex-col items-center space-y-2">
+        <StepNode step={node} />
+        
+        {hasChildren && (
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-0.5 h-4 bg-gray-300"></div>
+            <div className="flex space-x-6">
+              {outgoingEdges.map(edge => {
+                const toNode = graph.nodes.find(n => n.id === edge.toStepId);
+                if (!toNode) return null;
+                
+                return (
+                  <div key={edge.id} className="flex flex-col items-center space-y-1">
+                    {edge.label && (
+                      <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded border">
+                        {edge.label}
+                      </div>
+                    )}
+                    <ArrowRight className="w-3 h-3 text-gray-400 rotate-90" />
+                    {renderNode(toNode, level + 1, new Set(visited))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-4 pl-2">
+      <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
+        Decision Tree:
+      </h5>
+      <div className="overflow-x-auto">
+        <div className="flex flex-col items-center space-y-4 min-w-[300px]">
+          {startNodes.map(startNode => renderNode(startNode))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface ProcessStep {
   id: string;
   stepNumber: number;
+  stepType?: string; // task, decision, start, end
   stepName: string;
   stepDetails?: string;
+}
+
+interface ProcessStepEdge {
+  id: string;
+  fromStepId: string;
+  toStepId: string;
+  label?: string | null;
+  priority: number;
+}
+
+interface ProcessGraph {
+  nodes: ProcessStep[];
+  edges: ProcessStepEdge[];
 }
 
 interface Process {
   id: string;
   processNumber: string;
   name: string;
+  processType?: string; // sequential, decisionTree
   steps?: ProcessStep[];
+  graph?: ProcessGraph;
 }
 
 interface MindMapTreeProps {
@@ -83,8 +212,10 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
                     </div>
                   </div>
 
-                  {/* Sequential Process Steps as Green Bullet Points */}
-                  {process.steps && process.steps.length > 0 && (
+                  {/* Process Steps - Render differently based on process type */}
+                  {process.processType === 'decisionTree' && process.graph ? (
+                    <DecisionTreeVisualization graph={process.graph} />
+                  ) : process.steps && process.steps.length > 0 ? (
                     <div className="space-y-2 pl-2">
                       <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
                         Sequential Steps:
@@ -110,7 +241,7 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
                         </div>
                       ))}
                     </div>
-                  )}
+                  ) : null}
                 </CardContent>
               </Card>
             </div>

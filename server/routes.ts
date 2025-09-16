@@ -5,6 +5,7 @@ import {
   insertOeElementSchema,
   insertOeProcessSchema,
   insertProcessStepSchema,
+  insertProcessStepEdgeSchema,
   insertPerformanceMeasureSchema,
   insertDocumentVersionSchema,
   insertStrategicGoalSchema,
@@ -576,6 +577,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting process step:", error);
       res.status(500).json({ message: "Failed to delete process step" });
+    }
+  });
+
+  // Process Step Edges routes (for decision trees)
+  app.get('/api/oe-processes/:processId/edges', async (req, res) => {
+    try {
+      const edges = await storage.getProcessStepEdges(req.params.processId);
+      res.json(edges);
+    } catch (error) {
+      console.error("Error fetching process step edges:", error);
+      res.status(500).json({ message: "Failed to fetch process step edges" });
+    }
+  });
+
+  app.post('/api/oe-processes/:processId/edges', async (req, res) => {
+    try {
+      const validatedData = insertProcessStepEdgeSchema.parse({
+        ...req.body,
+        processId: req.params.processId,
+      });
+      const edge = await storage.createProcessStepEdge(validatedData);
+      res.status(201).json(edge);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating process step edge:", error);
+      res.status(500).json({ message: "Failed to create process step edge" });
+    }
+  });
+
+  app.put('/api/process-step-edges/:id', async (req, res) => {
+    try {
+      const validatedData = insertProcessStepEdgeSchema.partial().parse(req.body);
+      const edge = await storage.updateProcessStepEdge(req.params.id, validatedData);
+      res.json(edge);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating process step edge:", error);
+      res.status(500).json({ message: "Failed to update process step edge" });
+    }
+  });
+
+  app.delete('/api/process-step-edges/:id', async (req, res) => {
+    try {
+      await storage.deleteProcessStepEdge(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting process step edge:", error);
+      res.status(500).json({ message: "Failed to delete process step edge" });
+    }
+  });
+
+  // Process Graph routes (for decision trees)
+  app.get('/api/oe-processes/:processId/graph', async (req, res) => {
+    try {
+      const graph = await storage.getProcessGraph(req.params.processId);
+      res.json(graph);
+    } catch (error) {
+      console.error("Error fetching process graph:", error);
+      res.status(500).json({ message: "Failed to fetch process graph" });
     }
   });
 
