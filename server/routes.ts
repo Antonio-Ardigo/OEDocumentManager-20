@@ -366,17 +366,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       
+      // Extract steps and performance measures from request body first
+      const { steps = [], performanceMeasures: measuresData = [], ...processData } = req.body;
+      
       // Handle issueDate field  
-      if (req.body.issueDate && typeof req.body.issueDate === 'string' && req.body.issueDate.trim() !== '') {
+      if (processData.issueDate && typeof processData.issueDate === 'string' && processData.issueDate.trim() !== '') {
         // Convert valid date string to Date object
-        req.body.issueDate = new Date(req.body.issueDate);
-      } else if (req.body.issueDate === '' || req.body.issueDate === null || req.body.issueDate === undefined) {
+        processData.issueDate = new Date(processData.issueDate);
+      } else if (processData.issueDate === '' || processData.issueDate === null || processData.issueDate === undefined) {
         // Remove empty/null issueDate field entirely to avoid validation issues
-        delete req.body.issueDate;
+        delete processData.issueDate;
       }
       
       const dataToValidate = {
-        ...req.body,
+        ...processData,
         createdBy: userId,
       };
       
@@ -390,6 +393,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertOeProcessSchema.parse(dataToValidate);
       const process = await storage.createOeProcess(validatedData);
+      
+      // Create process steps if provided
+      const createdSteps: any[] = [];
+      if (steps.length > 0) {
+        for (const step of steps) {
+          const createdStep = await storage.createProcessStep({
+            processId: process.id,
+            stepNumber: step.stepNumber,
+            stepName: step.stepName,
+            stepDetails: step.stepDetails || null,
+            responsibilities: step.responsibilities || null,
+            references: step.references || null,
+            stepType: step.stepType || 'task',
+          });
+          createdSteps.push({ ...createdStep, outcomes: step.outcomes || [] });
+        }
+      }
+
+      // Create decision edges if provided
+      for (const step of createdSteps) {
+        if (step.outcomes && step.outcomes.length > 0) {
+          for (const outcome of step.outcomes) {
+            // Find the target step by step number
+            const targetStep = createdSteps.find(s => s.stepNumber === outcome.toStepNumber);
+            if (targetStep) {
+              await storage.createProcessStepEdge({
+                processId: process.id,
+                fromStepId: step.id,
+                toStepId: targetStep.id,
+                label: outcome.label || null,
+                priority: outcome.priority || 0,
+              });
+            }
+          }
+        }
+      }
+      
+      // Create performance measures if provided
+      if (measuresData.length > 0) {
+        for (const measure of measuresData) {
+          // Filter out "none" strategicGoalId values
+          const strategicGoalId = measure.strategicGoalId === "none" ? null : measure.strategicGoalId;
+          
+          await storage.createPerformanceMeasure({
+            processId: process.id,
+            measureName: measure.measureName,
+            formula: measure.formula || null,
+            source: measure.source || null,
+            frequency: measure.frequency || null,
+            target: measure.target || null,
+            scorecardCategory: measure.scorecardCategory || null,
+            strategicGoalId,
+          });
+        }
+      }
       
       // Log activity
       await storage.logActivity({
