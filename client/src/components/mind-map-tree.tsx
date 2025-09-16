@@ -1,138 +1,24 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Activity, ChevronRight, FileText, Circle, Diamond, ArrowRight, PlayCircle, StopCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-
-// Helper component to render step nodes
-function StepNode({ step }: { step: ProcessStep }) {
-  const getStepIcon = (stepType: string = 'task') => {
-    switch (stepType) {
-      case 'start':
-        return <PlayCircle className="w-3 h-3 text-green-600" />;
-      case 'end':
-        return <StopCircle className="w-3 h-3 text-red-600" />;
-      case 'decision':
-        return <Diamond className="w-3 h-3 text-yellow-600" />;
-      default:
-        return <Circle className="w-3 h-3 text-blue-600" />;
-    }
-  };
-
-  const getStepStyle = (stepType: string = 'task') => {
-    switch (stepType) {
-      case 'start':
-        return "bg-green-100 border-green-300 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200";
-      case 'end':
-        return "bg-red-100 border-red-300 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200";
-      case 'decision':
-        return "bg-yellow-100 border-yellow-300 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-200";
-      default:
-        return "bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200";
-    }
-  };
-
-  return (
-    <div className={`inline-block p-2 rounded-lg border-2 ${getStepStyle(step.stepType)} min-w-[120px] max-w-[200px] text-center`}>
-      <div className="flex items-center justify-center space-x-1 mb-1">
-        {getStepIcon(step.stepType)}
-        <span className="font-bold text-xs">{step.stepNumber}</span>
-      </div>
-      <div className="text-xs font-medium leading-tight">{step.stepName}</div>
-      {step.stepDetails && (
-        <div className="text-xs opacity-75 mt-1 leading-tight line-clamp-2">
-          {step.stepDetails.substring(0, 50)}...
-        </div>
-      )}
-    </div>
-  );
-}
-
+import { Activity, ChevronRight, FileText, Circle } from "lucide-react";
 
 interface ProcessStep {
   id: string;
   stepNumber: number;
-  stepType?: string; // task, decision, start, end
   stepName: string;
   stepDetails?: string;
-}
-
-interface ProcessStepEdge {
-  id: string;
-  fromStepId: string;
-  toStepId: string;
-  label?: string | null;
-  priority: number;
-}
-
-interface ProcessGraph {
-  nodes: ProcessStep[];
-  edges: ProcessStepEdge[];
 }
 
 interface Process {
   id: string;
   processNumber: string;
   name: string;
-  processType?: string; // sequential, decisionTree
   steps?: ProcessStep[];
-  graph?: ProcessGraph;
 }
 
 interface MindMapTreeProps {
   processes: Process[];
   elementTitle: string;
-}
-
-// Component to render a single process
-function ProcessCard({ process }: { process: Process }) {
-  return (
-    <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md">
-      <CardContent className="p-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-            <Activity className="w-4 h-4 text-white" />
-          </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-blue-700 dark:text-blue-300 text-base">
-              {process.processNumber}
-            </h4>
-            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              {process.name}
-            </p>
-          </div>
-        </div>
-
-        {/* Process Steps */}
-        {process.steps && process.steps.length > 0 ? (
-          <div className="space-y-2 pl-2">
-            <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
-              Process Steps:
-            </h5>
-            {process.steps.map((step, stepIndex) => (
-              <div key={step.id} className="flex items-start space-x-2 text-xs">
-                <div className="flex items-center space-x-1 flex-shrink-0">
-                  <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500 mt-1" />
-                  <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                    {step.stepNumber}
-                  </span>
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
-                    {step.stepName}
-                  </p>
-                  {step.stepDetails && (
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                      {step.stepDetails}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
-  );
 }
 
 export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
@@ -180,8 +66,53 @@ export function MindMapTree({ processes, elementTitle }: MindMapTreeProps) {
               {/* Vertical line down to process */}
               <div className="absolute left-1/2 -top-12 w-0.5 h-12 bg-border/40 transform -translate-x-1/2"></div>
               
-              {/* Process Card with graph fetching */}
-              <ProcessCard process={process} />
+              {/* Process Card */}
+              <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Activity className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-700 dark:text-blue-300 text-base">
+                        {process.processNumber}
+                      </h4>
+                      <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        {process.name}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Sequential Process Steps as Green Bullet Points */}
+                  {process.steps && process.steps.length > 0 && (
+                    <div className="space-y-2 pl-2">
+                      <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
+                        Sequential Steps:
+                      </h5>
+                      {process.steps.map((step, stepIndex) => (
+                        <div key={step.id} className="flex items-start space-x-2 text-xs">
+                          <div className="flex items-center space-x-1 flex-shrink-0">
+                            <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500 mt-1" />
+                            <span className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                              {step.stepNumber}
+                            </span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-green-700 dark:text-green-300 leading-tight">
+                              {step.stepName}
+                            </p>
+                            {step.stepDetails && (
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                {step.stepDetails}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>

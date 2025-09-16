@@ -42,7 +42,6 @@ const processFormSchema = z.object({
   name: z.string().min(1, "Process name is required"),
   description: z.string().optional(),
   processOwner: z.string().optional(),
-  processType: z.enum(["sequential", "decisionTree"]).default("sequential"),
   status: z.enum(["draft", "active", "review", "archived"]).default("draft"),
   isMandatory: z.boolean().default(false),
   expectations: z.string().optional(),
@@ -61,12 +60,6 @@ const processFormSchema = z.object({
     stepDetails: z.string().optional(),
     responsibilities: z.string().optional(),
     references: z.string().optional(),
-    stepType: z.enum(["task", "decision", "start", "end"]).default("task"),
-    outcomes: z.array(z.object({
-      label: z.string().min(1, "Outcome label is required"),
-      toStepNumber: z.number().min(1, "Target step number is required"),
-      priority: z.number().default(0),
-    })).optional().default([]),
   })).default([]),
   performanceMeasures: z.array(z.object({
     measureName: z.string().min(1, "Measure name is required"),
@@ -167,7 +160,6 @@ export default function ProcessForm({
       name: process?.name || "",
       description: process?.description || "",
       processOwner: process?.processOwner || "",
-      processType: (process as any)?.processType || "sequential",
       status: (process?.status as any) || "draft",
       isMandatory: process?.isMandatory || false,
       expectations: process?.expectations || "",
@@ -186,8 +178,6 @@ export default function ProcessForm({
         stepDetails: step.stepDetails || "",
         responsibilities: step.responsibilities || "",
         references: step.references || "",
-        stepType: (step as any).stepType || "task",
-        outcomes: [],
       })) || [],
       performanceMeasures: process?.performanceMeasures?.map(measure => ({
         measureName: measure.measureName,
@@ -259,8 +249,6 @@ export default function ProcessForm({
       stepDetails: "",
       responsibilities: "",
       references: "",
-      stepType: "task",
-      outcomes: [],
     });
   };
 
@@ -398,7 +386,7 @@ export default function ProcessForm({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="processOwner"
@@ -416,28 +404,6 @@ export default function ProcessForm({
                         <SelectItem value="Division Head">Division Head</SelectItem>
                         <SelectItem value="Unit Head">Unit Head</SelectItem>
                         <SelectItem value="Process Manager">Process Manager</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="processType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Process Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-process-type">
-                          <SelectValue placeholder="Select Process Type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="sequential">Sequential</SelectItem>
-                        <SelectItem value="decisionTree">Decision Tree</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -691,7 +657,7 @@ export default function ProcessForm({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <FormField
                       control={form.control}
                       name={`steps.${index}.stepName`}
@@ -705,30 +671,6 @@ export default function ProcessForm({
                               data-testid={`input-step-name-${index}`}
                             />
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`steps.${index}.stepType`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Step Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid={`select-step-type-${index}`}>
-                                <SelectValue placeholder="Select Step Type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="task">Task</SelectItem>
-                              <SelectItem value="decision">Decision</SelectItem>
-                              <SelectItem value="start">Start</SelectItem>
-                              <SelectItem value="end">End</SelectItem>
-                            </SelectContent>
-                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -789,101 +731,6 @@ export default function ProcessForm({
                       </FormItem>
                     )}
                   />
-
-                  {/* Decision Outcomes - Only show for decision steps */}
-                  {form.watch(`steps.${index}.stepType`) === 'decision' && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="font-medium text-sm">Decision Outcomes</h5>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const currentOutcomes = form.getValues(`steps.${index}.outcomes`) || [];
-                            const maxStepNumber = stepFields.length;
-                            form.setValue(`steps.${index}.outcomes`, [
-                              ...currentOutcomes,
-                              {
-                                label: "",
-                                toStepNumber: maxStepNumber > 1 ? maxStepNumber : 1,
-                                priority: currentOutcomes.length,
-                              }
-                            ]);
-                          }}
-                          data-testid={`button-add-outcome-${index}`}
-                        >
-                          <Plus className="w-3 h-3 mr-1" />
-                          Add Outcome
-                        </Button>
-                      </div>
-
-                      {form.watch(`steps.${index}.outcomes`)?.map((outcome, outcomeIndex) => (
-                        <div key={outcomeIndex} className="flex gap-2 mb-2">
-                          <FormField
-                            control={form.control}
-                            name={`steps.${index}.outcomes.${outcomeIndex}.label`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="e.g., Yes, No, Critical, Major" 
-                                    {...field} 
-                                    data-testid={`input-outcome-label-${index}-${outcomeIndex}`}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`steps.${index}.outcomes.${outcomeIndex}.toStepNumber`}
-                            render={({ field }) => (
-                              <FormItem className="w-32">
-                                <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                  <FormControl>
-                                    <SelectTrigger data-testid={`select-outcome-step-${index}-${outcomeIndex}`}>
-                                      <SelectValue placeholder="Step" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {stepFields.map((_, stepIdx) => (
-                                      <SelectItem key={stepIdx} value={(stepIdx + 1).toString()}>
-                                        Step {stepIdx + 1}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              const currentOutcomes = form.getValues(`steps.${index}.outcomes`) || [];
-                              const newOutcomes = currentOutcomes.filter((_, idx) => idx !== outcomeIndex);
-                              form.setValue(`steps.${index}.outcomes`, newOutcomes);
-                            }}
-                            data-testid={`button-remove-outcome-${index}-${outcomeIndex}`}
-                          >
-                            <Trash2 className="w-3 h-3 text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
-
-                      {(!form.watch(`steps.${index}.outcomes`) || form.watch(`steps.${index}.outcomes`)?.length === 0) && (
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Add outcomes to define the possible paths from this decision step.
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))
             )}

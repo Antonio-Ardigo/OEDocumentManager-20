@@ -5,14 +5,12 @@ import {
   insertOeElementSchema,
   insertOeProcessSchema,
   insertProcessStepSchema,
-  insertProcessStepEdgeSchema,
   insertPerformanceMeasureSchema,
   insertDocumentVersionSchema,
   insertStrategicGoalSchema,
   insertElementPerformanceMetricSchema,
   insertActivityLogSchema,
   processSteps,
-  processStepEdges,
   performanceMeasures,
 } from "@shared/schema";
 import { z } from "zod";
@@ -366,20 +364,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = 'agent_user'; // Use consistent guest user ID since no auth required
       
-      // Extract steps and performance measures from request body first
-      const { steps = [], performanceMeasures: measuresData = [], ...processData } = req.body;
-      
       // Handle issueDate field  
-      if (processData.issueDate && typeof processData.issueDate === 'string' && processData.issueDate.trim() !== '') {
+      if (req.body.issueDate && typeof req.body.issueDate === 'string' && req.body.issueDate.trim() !== '') {
         // Convert valid date string to Date object
-        processData.issueDate = new Date(processData.issueDate);
-      } else if (processData.issueDate === '' || processData.issueDate === null || processData.issueDate === undefined) {
+        req.body.issueDate = new Date(req.body.issueDate);
+      } else if (req.body.issueDate === '' || req.body.issueDate === null || req.body.issueDate === undefined) {
         // Remove empty/null issueDate field entirely to avoid validation issues
-        delete processData.issueDate;
+        delete req.body.issueDate;
       }
       
       const dataToValidate = {
-        ...processData,
+        ...req.body,
         createdBy: userId,
       };
       
@@ -393,61 +388,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertOeProcessSchema.parse(dataToValidate);
       const process = await storage.createOeProcess(validatedData);
-      
-      // Create process steps if provided
-      const createdSteps: any[] = [];
-      if (steps.length > 0) {
-        for (const step of steps) {
-          const createdStep = await storage.createProcessStep({
-            processId: process.id,
-            stepNumber: step.stepNumber,
-            stepName: step.stepName,
-            stepDetails: step.stepDetails || null,
-            responsibilities: step.responsibilities || null,
-            references: step.references || null,
-            stepType: step.stepType || 'task',
-          });
-          createdSteps.push({ ...createdStep, outcomes: step.outcomes || [] });
-        }
-      }
-
-      // Create decision edges if provided
-      for (const step of createdSteps) {
-        if (step.outcomes && step.outcomes.length > 0) {
-          for (const outcome of step.outcomes) {
-            // Find the target step by step number
-            const targetStep = createdSteps.find(s => s.stepNumber === outcome.toStepNumber);
-            if (targetStep) {
-              await storage.createProcessStepEdge({
-                processId: process.id,
-                fromStepId: step.id,
-                toStepId: targetStep.id,
-                label: outcome.label || null,
-                priority: outcome.priority || 0,
-              });
-            }
-          }
-        }
-      }
-      
-      // Create performance measures if provided
-      if (measuresData.length > 0) {
-        for (const measure of measuresData) {
-          // Filter out "none" strategicGoalId values
-          const strategicGoalId = measure.strategicGoalId === "none" ? null : measure.strategicGoalId;
-          
-          await storage.createPerformanceMeasure({
-            processId: process.id,
-            measureName: measure.measureName,
-            formula: measure.formula || null,
-            source: measure.source || null,
-            frequency: measure.frequency || null,
-            target: measure.target || null,
-            scorecardCategory: measure.scorecardCategory || null,
-            strategicGoalId,
-          });
-        }
-      }
       
       // Log activity
       await storage.logActivity({
@@ -636,108 +576,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting process step:", error);
       res.status(500).json({ message: "Failed to delete process step" });
-    }
-  });
-
-  // Process Step Edges routes (for decision trees)
-  app.get('/api/oe-processes/:processId/edges', async (req, res) => {
-    try {
-      const edges = await storage.getProcessStepEdges(req.params.processId);
-      res.json(edges);
-    } catch (error) {
-      console.error("Error fetching process step edges:", error);
-      res.status(500).json({ message: "Failed to fetch process step edges" });
-    }
-  });
-
-  app.post('/api/oe-processes/:processId/edges', async (req, res) => {
-    try {
-      const validatedData = insertProcessStepEdgeSchema.parse({
-        ...req.body,
-        processId: req.params.processId,
-      });
-      
-      // Validate that both fromStepId and toStepId belong to the same process
-      const fromStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.fromStepId!)).limit(1);
-      const toStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.toStepId!)).limit(1);
-      
-      if (fromStep.length === 0 || toStep.length === 0) {
-        return res.status(400).json({ message: "One or both steps not found" });
-      }
-      
-      if (fromStep[0].processId !== req.params.processId || toStep[0].processId !== req.params.processId) {
-        return res.status(400).json({ message: "Both steps must belong to the specified process" });
-      }
-      
-      const edge = await storage.createProcessStepEdge(validatedData);
-      res.status(201).json(edge);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
-      }
-      console.error("Error creating process step edge:", error);
-      res.status(500).json({ message: "Failed to create process step edge" });
-    }
-  });
-
-  app.put('/api/process-step-edges/:id', async (req, res) => {
-    try {
-      const validatedData = insertProcessStepEdgeSchema.partial().parse(req.body);
-      
-      // If updating step IDs, validate they belong to the same process
-      if (validatedData.fromStepId || validatedData.toStepId) {
-        // Get the existing edge to know the process
-        const existingEdge = await db.select().from(processStepEdges).where(eq(processStepEdges.id, req.params.id)).limit(1);
-        if (existingEdge.length === 0) {
-          return res.status(404).json({ message: "Edge not found" });
-        }
-        
-        const processId = existingEdge[0].processId;
-        
-        if (validatedData.fromStepId) {
-          const fromStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.fromStepId)).limit(1);
-          if (fromStep.length === 0 || fromStep[0].processId !== processId) {
-            return res.status(400).json({ message: "fromStepId must belong to the same process" });
-          }
-        }
-        
-        if (validatedData.toStepId) {
-          const toStep = await db.select().from(processSteps).where(eq(processSteps.id, validatedData.toStepId)).limit(1);
-          if (toStep.length === 0 || toStep[0].processId !== processId) {
-            return res.status(400).json({ message: "toStepId must belong to the same process" });
-          }
-        }
-      }
-      
-      const edge = await storage.updateProcessStepEdge(req.params.id, validatedData);
-      res.json(edge);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid data", errors: error.errors });
-      }
-      console.error("Error updating process step edge:", error);
-      res.status(500).json({ message: "Failed to update process step edge" });
-    }
-  });
-
-  app.delete('/api/process-step-edges/:id', async (req, res) => {
-    try {
-      await storage.deleteProcessStepEdge(req.params.id);
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting process step edge:", error);
-      res.status(500).json({ message: "Failed to delete process step edge" });
-    }
-  });
-
-  // Process Graph routes (for decision trees)
-  app.get('/api/oe-processes/:processId/graph', async (req, res) => {
-    try {
-      const graph = await storage.getProcessGraph(req.params.processId);
-      res.json(graph);
-    } catch (error) {
-      console.error("Error fetching process graph:", error);
-      res.status(500).json({ message: "Failed to fetch process graph" });
     }
   });
 

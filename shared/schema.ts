@@ -57,7 +57,6 @@ export const oeProcesses = pgTable("oe_processes", {
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   processOwner: varchar("process_owner", { length: 255 }),
-  processType: varchar("process_type", { length: 20 }).default("sequential"), // sequential, decisionTree
   issueDate: timestamp("issue_date"),
   revision: integer("revision").default(1),
   status: varchar("status", { length: 50 }).default("draft"), // draft, active, review, archived
@@ -85,7 +84,6 @@ export const processSteps = pgTable("process_steps", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   processId: uuid("process_id").references(() => oeProcesses.id, { onDelete: 'cascade' }),
   stepNumber: integer("step_number").notNull(),
-  stepType: varchar("step_type", { length: 20 }).default("task"), // task, decision, start, end
   stepName: varchar("step_name", { length: 255 }).notNull(),
   stepDetails: text("step_details"),
   responsibilities: text("responsibilities"),
@@ -164,22 +162,6 @@ export const elementPerformanceMetrics = pgTable("element_performance_metrics", 
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Process Step Edges table for decision tree flow
-export const processStepEdges = pgTable("process_step_edges", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  processId: uuid("process_id").references(() => oeProcesses.id, { onDelete: 'cascade' }),
-  fromStepId: uuid("from_step_id").references(() => processSteps.id, { onDelete: 'cascade' }),
-  toStepId: uuid("to_step_id").references(() => processSteps.id, { onDelete: 'cascade' }),
-  label: varchar("label", { length: 255 }), // e.g., "Yes", "No", "Critical", "Non-Critical"
-  priority: integer("priority").default(0), // for ordering multiple branches
-  guard: jsonb("guard"), // JSON condition for branching logic
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => [
-  index("idx_process_step_edges_process").on(table.processId),
-  index("idx_process_step_edges_from_step").on(table.fromStepId),
-]);
-
 // Activity Log table for tracking user actions
 export const activityLog = pgTable("activity_log", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -206,7 +188,6 @@ export const oeProcessesRelations = relations(oeProcesses, ({ one, many }) => ({
     references: [oeElements.id],
   }),
   steps: many(processSteps),
-  stepEdges: many(processStepEdges),
   performanceMeasures: many(performanceMeasures),
   versions: many(documentVersions),
   documents: many(processDocuments),
@@ -216,33 +197,10 @@ export const oeProcessesRelations = relations(oeProcesses, ({ one, many }) => ({
   }),
 }));
 
-export const processStepsRelations = relations(processSteps, ({ one, many }) => ({
+export const processStepsRelations = relations(processSteps, ({ one }) => ({
   process: one(oeProcesses, {
     fields: [processSteps.processId],
     references: [oeProcesses.id],
-  }),
-  outgoingEdges: many(processStepEdges, {
-    relationName: "fromStep",
-  }),
-  incomingEdges: many(processStepEdges, {
-    relationName: "toStep",
-  }),
-}));
-
-export const processStepEdgesRelations = relations(processStepEdges, ({ one }) => ({
-  process: one(oeProcesses, {
-    fields: [processStepEdges.processId],
-    references: [oeProcesses.id],
-  }),
-  fromStep: one(processSteps, {
-    fields: [processStepEdges.fromStepId],
-    references: [processSteps.id],
-    relationName: "fromStep",
-  }),
-  toStep: one(processSteps, {
-    fields: [processStepEdges.toStepId],
-    references: [processSteps.id],
-    relationName: "toStep",
   }),
 }));
 
@@ -324,22 +282,6 @@ export const insertProcessStepSchema = createInsertSchema(processSteps).omit({
   updatedAt: true,
 });
 
-export const insertProcessStepEdgeSchema = createInsertSchema(processStepEdges).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-// Guard condition schema for decision tree branching
-export const guardConditionSchema = z.object({
-  operator: z.enum(["ALL", "ANY"]), // ALL = AND logic, ANY = OR logic
-  rules: z.array(z.object({
-    fieldPath: z.string(), // e.g., "equipment.status", "inspection.result"
-    operator: z.enum(["equals", "not_equals", "contains", "greater_than", "less_than"]),
-    value: z.union([z.string(), z.number(), z.boolean()]),
-  })),
-}).optional();
-
 export const insertPerformanceMeasureSchema = createInsertSchema(performanceMeasures).omit({
   id: true,
   createdAt: true,
@@ -383,9 +325,6 @@ export type OeProcess = typeof oeProcesses.$inferSelect;
 export type InsertOeProcess = z.infer<typeof insertOeProcessSchema>;
 export type ProcessStep = typeof processSteps.$inferSelect;
 export type InsertProcessStep = z.infer<typeof insertProcessStepSchema>;
-export type ProcessStepEdge = typeof processStepEdges.$inferSelect;
-export type InsertProcessStepEdge = z.infer<typeof insertProcessStepEdgeSchema>;
-export type GuardCondition = z.infer<typeof guardConditionSchema>;
 export type PerformanceMeasure = typeof performanceMeasures.$inferSelect;
 export type InsertPerformanceMeasure = z.infer<typeof insertPerformanceMeasureSchema>;
 export type DocumentVersion = typeof documentVersions.$inferSelect;
@@ -403,19 +342,10 @@ export type InsertProcessDocument = z.infer<typeof insertProcessDocumentSchema>;
 export type OeProcessWithDetails = OeProcess & {
   element?: OeElement | null;
   steps?: ProcessStep[];
-  stepEdges?: ProcessStepEdge[];
   performanceMeasures?: PerformanceMeasure[];
   versions?: DocumentVersion[];
   documents?: ProcessDocument[];
   createdByUser?: User | null;
-};
-
-// Decision tree graph types
-export type ProcessGraphNode = ProcessStep;
-export type ProcessGraphEdge = ProcessStepEdge;
-export type ProcessGraph = {
-  nodes: ProcessGraphNode[];
-  edges: ProcessGraphEdge[];
 };
 
 export type OeElementWithProcesses = OeElement & {

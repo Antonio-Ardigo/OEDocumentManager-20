@@ -727,11 +727,9 @@ export default function ElementDetail() {
                         id: process.id,
                         processNumber: process.processNumber,
                         name: process.name,
-                        processType: process.processType || 'sequential',
                         steps: (process as any).steps?.map((step: any) => ({
                           id: step.id,
                           stepNumber: step.stepNumber,
-                          stepType: step.stepType || 'task',
                           stepName: step.stepName,
                           stepDetails: step.stepDetails
                         })) || []

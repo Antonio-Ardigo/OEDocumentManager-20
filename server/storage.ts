@@ -3,7 +3,6 @@ import {
   oeElements,
   oeProcesses,
   processSteps,
-  processStepEdges,
   performanceMeasures,
   documentVersions,
   processDocuments,
@@ -17,9 +16,6 @@ import {
   type InsertOeProcess,
   type ProcessStep,
   type InsertProcessStep,
-  type ProcessStepEdge,
-  type InsertProcessStepEdge,
-  type ProcessGraph,
   type PerformanceMeasure,
   type InsertPerformanceMeasure,
   type DocumentVersion,
@@ -67,15 +63,6 @@ export interface IStorage {
   createProcessStep(step: InsertProcessStep): Promise<ProcessStep>;
   updateProcessStep(id: string, step: Partial<InsertProcessStep>): Promise<ProcessStep>;
   deleteProcessStep(id: string): Promise<void>;
-
-  // Process Step Edge operations (for decision trees)
-  getProcessStepEdges(processId: string): Promise<ProcessStepEdge[]>;
-  createProcessStepEdge(edge: InsertProcessStepEdge): Promise<ProcessStepEdge>;
-  updateProcessStepEdge(id: string, edge: Partial<InsertProcessStepEdge>): Promise<ProcessStepEdge>;
-  deleteProcessStepEdge(id: string): Promise<void>;
-
-  // Process Graph operations (for decision trees)
-  getProcessGraph(processId: string): Promise<ProcessGraph>;
 
   // Performance Measure operations
   getPerformanceMeasures(processId: string): Promise<PerformanceMeasure[]>;
@@ -403,70 +390,6 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProcessStep(id: string): Promise<void> {
     await db.delete(processSteps).where(eq(processSteps.id, id));
-  }
-
-  // Process Step Edge operations (for decision trees)
-  async getProcessStepEdges(processId: string): Promise<ProcessStepEdge[]> {
-    return await db
-      .select()
-      .from(processStepEdges)
-      .where(eq(processStepEdges.processId, processId))
-      .orderBy(processStepEdges.fromStepId, processStepEdges.priority);
-  }
-
-  async createProcessStepEdge(edge: InsertProcessStepEdge): Promise<ProcessStepEdge> {
-    const [newEdge] = await db
-      .insert(processStepEdges)
-      .values(edge)
-      .returning();
-    return newEdge;
-  }
-
-  async updateProcessStepEdge(id: string, edge: Partial<InsertProcessStepEdge>): Promise<ProcessStepEdge> {
-    const [updatedEdge] = await db
-      .update(processStepEdges)
-      .set({ ...edge, updatedAt: new Date() })
-      .where(eq(processStepEdges.id, id))
-      .returning();
-    return updatedEdge;
-  }
-
-  async deleteProcessStepEdge(id: string): Promise<void> {
-    await db.delete(processStepEdges).where(eq(processStepEdges.id, id));
-  }
-
-  // Process Graph operations (for decision trees)
-  async getProcessGraph(processId: string): Promise<ProcessGraph> {
-    // Get all steps for the process
-    const steps = await this.getProcessSteps(processId);
-    
-    // Get the process to check its type
-    const process = await this.getOeProcess(processId);
-    
-    if (!process || process.processType === 'sequential') {
-      // For sequential processes, auto-generate linear edges
-      const edges: ProcessStepEdge[] = [];
-      for (let i = 0; i < steps.length - 1; i++) {
-        const fromStep = steps[i];
-        const toStep = steps[i + 1];
-        edges.push({
-          id: `${fromStep.id}-to-${toStep.id}`,
-          processId,
-          fromStepId: fromStep.id,
-          toStepId: toStep.id,
-          label: null,
-          priority: 0,
-          guard: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
-      return { nodes: steps, edges };
-    } else {
-      // For decision tree processes, get actual edges from database
-      const edges = await this.getProcessStepEdges(processId);
-      return { nodes: steps, edges };
-    }
   }
 
   // Performance Measure operations
