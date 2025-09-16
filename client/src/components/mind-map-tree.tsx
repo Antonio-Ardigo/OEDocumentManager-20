@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity, ChevronRight, FileText, Circle, Diamond, ArrowRight, PlayCircle, StopCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { DecisionTreeVisualization } from "./decision-tree-visualization";
 
 // Helper component to render step nodes
 function StepNode({ step }: { step: ProcessStep }) {
@@ -47,74 +48,6 @@ function StepNode({ step }: { step: ProcessStep }) {
   );
 }
 
-// Component to visualize decision tree processes
-function DecisionTreeVisualization({ graph }: { graph: ProcessGraph }) {
-  if (!graph.nodes || graph.nodes.length === 0) {
-    return (
-      <div className="text-center py-4 text-muted-foreground">
-        <p className="text-xs">No decision tree data available</p>
-      </div>
-    );
-  }
-
-  // Simple tree layout - find start nodes and render levels
-  const startNodes = graph.nodes.filter(node => node.stepType === 'start' || 
-    !graph.edges.some(edge => edge.toStepId === node.id));
-  
-  const getOutgoingEdges = (stepId: string) => 
-    graph.edges.filter(edge => edge.fromStepId === stepId).sort((a, b) => a.priority - b.priority);
-  
-  const renderNode = (node: ProcessStep, level: number = 0, visited: Set<string> = new Set()) => {
-    if (visited.has(node.id) || level > 4) return null; // Prevent cycles and limit depth
-    visited.add(node.id);
-    
-    const outgoingEdges = getOutgoingEdges(node.id);
-    const hasChildren = outgoingEdges.length > 0;
-    
-    return (
-      <div key={node.id} className="flex flex-col items-center space-y-2">
-        <StepNode step={node} />
-        
-        {hasChildren && (
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-0.5 h-4 bg-gray-300"></div>
-            <div className="flex space-x-6">
-              {outgoingEdges.map(edge => {
-                const toNode = graph.nodes.find(n => n.id === edge.toStepId);
-                if (!toNode) return null;
-                
-                return (
-                  <div key={edge.id} className="flex flex-col items-center space-y-1">
-                    {edge.label && (
-                      <div className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded border">
-                        {edge.label}
-                      </div>
-                    )}
-                    <ArrowRight className="w-3 h-3 text-gray-400 rotate-90" />
-                    {renderNode(toNode, level + 1, new Set(visited))}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  return (
-    <div className="space-y-4 pl-2">
-      <h5 className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2 border-b border-blue-200 dark:border-blue-800 pb-1">
-        Decision Tree:
-      </h5>
-      <div className="overflow-x-auto">
-        <div className="flex flex-col items-center space-y-4 min-w-[300px]">
-          {startNodes.map(startNode => renderNode(startNode))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 interface ProcessStep {
   id: string;
